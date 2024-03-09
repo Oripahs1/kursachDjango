@@ -1,10 +1,11 @@
 from bs4 import BeautifulSoup
 import requests
 
-url = 'https://yandex.com.am/weather/?lat=55.75581741&lon=37.61764526'
+url = 'https://www.carwin.ru/japanauc/see/945389787'
 response = requests.get(url)
 print(response)
 bs = BeautifulSoup(response.text,"lxml")
-print(bs)
-temp = bs.find('table', 'content')
-print(temp)
+# print(bs)
+temp = bs.find('div', 'content')
+# print(temp)
+print(temp.text)
