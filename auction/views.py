@@ -14,6 +14,7 @@ from .forms import ParserForm
 class HomePageView(TemplateView):
     template_name = "home.html"
 
+
 # class CarPageView(TemplateView):
 #     template_name = "car.html"
 
@@ -34,7 +35,7 @@ class ParserPageView(TemplateView):
                 Obj.print()
                 return render(request, "car.html",
                               {'title': Obj.title, 'auction_data': Obj.auction_data, 'car_options': Obj.car_options,
-                               'content': Obj.content, 'range': range(4)})
+                               'content': Obj.content, 'image': Obj.image, 'range': range(5)})
                 # return HttpResponseRedirect('/')
         else:
             form = ParserForm()
@@ -54,18 +55,15 @@ class Parser(object):
         print(response)
 
     def parse_title(self):
-
         name = self.html_page.find('div', 'page_title').text
         return name
 
     def parse_auction_data(self):
-
         auction_data = self.html_page.find('div', 'col_left').text
         auction_data = auction_data.split('\n')
         return auction_data
 
     def parse_car_options(self):
-
         car_options = self.html_page.find('div', 'car_description')
         car_options = car_options.find_all('div', 'car_option')
         form_data = [[0] * 2 for i in range(len(car_options))]
@@ -81,7 +79,6 @@ class Parser(object):
         return car_options
 
     def parse_content(self):
-
         content = self.html_page.find('div', 'content')
         content = content.find_all('td')
         form_data = [[0] * 2 for i in range(len(content) // 2)]
@@ -97,6 +94,19 @@ class Parser(object):
         content = form_data
         return content
 
+    def parse_image(self):
+
+        image = self.html_page.find('div', 'my-gallery')
+        image = image.find_all('a')
+        form_data = [[0] * 1 for i in range(len(image))]
+
+        k = 0
+        for el in range(0, len(image)):
+            form_data[k] = image[el].text
+
+        image = form_data
+        return image
+
 
 class Car_data(object):
     url = ''
@@ -104,6 +114,7 @@ class Car_data(object):
     auction_data = ''
     car_options = ''
     content = ''
+    image = ''
 
     def __init__(self, url):
         parser = Parser(url)
@@ -112,6 +123,7 @@ class Car_data(object):
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
         self.content = parser.parse_content()
+        self.image = parser.parse_image()
 
     def print(self):
         print([self.title, self.auction_data, self.car_options, self.content])
