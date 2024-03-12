@@ -30,12 +30,17 @@ class ParserPageView(TemplateView):
         if request.method == 'POST':
             form = ParserForm(request.POST)
             if form.is_valid():
+                url1 = 'https://www.carwin.ru/japanauc/see/'
                 url = form.cleaned_data['url_parser_field']
-                Obj = Car_data(url)
-                Obj.print()
-                return render(request, "car.html",
-                              {'title': Obj.title, 'auction_data': Obj.auction_data, 'car_options': Obj.car_options,
-                               'content': Obj.content, 'range': range(4)})
+                for i in range(945500000, 945500005):
+                    Obj = Car_data(url1 + str(i))
+                    Obj.print()
+                    render(request, "car.html",
+                           {'title': Obj.title, 'auction_data': Obj.auction_data, 'car_options': Obj.car_options,
+                            'content': Obj.content, 'image': Obj.image, 'range': range(5)})
+                    del Obj
+                    # return
+
         else:
             form = ParserForm()
         return render(request, 'parser.html', {'form': form})
@@ -83,6 +88,17 @@ class Parser(object):
         content = form_data
         return content
 
+    def parse_image(self):
+
+        image = self.html_page.find('div', 'my-gallery')
+        image = image.find_all('img')
+        form_data = list()
+
+        for el in range(len(image)):
+            form_data.append(image[el]['src'])
+        image = form_data
+        return image
+
 
 class Car_data(object):
     url = ''
@@ -90,17 +106,24 @@ class Car_data(object):
     auction_data = ''
     car_options = ''
     content = ''
+    image = ''
 
     def __init__(self, url):
         parser = Parser(url)
+
         self.title = parser.parse_title()
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
         self.content = parser.parse_content()
+        self.image = parser.parse_image()
 
     def print(self):
         print('название машины', self.title, 'аукцион', self.auction_data, 'основное про машину', self.car_options,
               'таблица', self.content, sep='\n', end='\n')
+        print('картинки', self.image, end='\n')
+
+    def __del__(self):
+        print('Удален')
 
 # url = 'https://www.carwin.ru/japanauc/see/945389787'
 # Obj = Car_data(url)
