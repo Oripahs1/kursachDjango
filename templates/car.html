@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>car</title>
+    {% extends 'base.html' %}
+    {% load static %}
+</head>
+{% block content %}
+    <body>
+    <div class="parser" style="text-align: center;">
+        <div>
+            {{ title }}
+        </div>
+        <div>
+            {% for i in auction_data %}
+                {% if i is not null %}
+                    {{ auction_data.i }}
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div>
+            {{ car_options }}
+        </div>
+        <div>
+            {{ content }}
+        </div>
+    </div>
+    </body>
+{% endblock content %}
+</html>
