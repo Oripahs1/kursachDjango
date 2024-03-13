@@ -7,7 +7,7 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-
+from .models import Car, Car_for_page
 from .forms import ParserForm
 
 
@@ -38,6 +38,7 @@ class ParserPageView(TemplateView):
                     render(request, "car.html",
                            {'title': Obj.title, 'auction_data': Obj.auction_data, 'car_options': Obj.car_options,
                             'content': Obj.content, 'image': Obj.image, 'range': range(5)})
+                    Obj.save_me_to_bd()
                     del Obj
                     # return
 
@@ -124,6 +125,10 @@ class Car_data(object):
 
     def __del__(self):
         print('Удален')
+
+    def save_me_to_bd(self):
+        new_car = Car_for_page.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
+        print(new_car)
 
 # url = 'https://www.carwin.ru/japanauc/see/945389787'
 # Obj = Car_data(url)
