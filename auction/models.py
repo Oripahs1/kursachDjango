@@ -32,7 +32,7 @@ class Order(models.Model):
     date_start = models.DateField()
     date_end = models.DateField()
     comment = models.TextField()
-    id_car = models.ForeignKey('Car_data', on_delete=models.CASCADE)
+    id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
 
 
 class Customer(models.Model):
@@ -42,7 +42,7 @@ class Customer(models.Model):
     tel_num = models.TextField()
 
 
-class Car_data(models.Model):
+class Car(models.Model):
     id_car = models.AutoField(primary_key=True)
     auc_link = models.TextField()
     title = models.TextField()
@@ -64,7 +64,7 @@ class Car_data(models.Model):
 
     # content
     cooling = models.TextField()
-    equipment = models.TextField()
+    set = models.TextField()
     result = models.TextField()
     start_price = models.TextField()
     transmission = models.TextField()
@@ -79,13 +79,13 @@ class Car_data(models.Model):
     number_of_sessions = models.TextField()
 
 
-
 class Car_for_page(models.Model):
     id_car = models.AutoField(primary_key=True)
     title = models.TextField()
     auction_data = models.TextField()
     car_options = models.TextField()
     content = models.TextField()
+
 
 class Worker(models.Model):
     id_worker = models.AutoField(primary_key=True)
