@@ -7,7 +7,7 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, Car_for_page
+from .models import Car_data, Car_for_page
 from .forms import ParserForm
 
 
@@ -34,6 +34,7 @@ class ParserPageView(TemplateView):
                 url = form.cleaned_data['url_parser_field']
                 for i in range(945500000, 945500005):
                     Obj = Car_data(url1 + str(i))
+                    print(url1 + str(i))
                     Obj.print()
                     render(request, "car.html",
                            {'title': Obj.title, 'auction_data': Obj.auction_data, 'car_options': Obj.car_options,
@@ -71,12 +72,33 @@ class Parser(object):
         car_options = self.html_page.find('div', 'car_description')
         car_options = car_options.find_all('div', 'car_option')
         form_data = list()
+        data_set = {}
 
         # Условие не трогать, работает и слава богу
         for el in range(0, len(car_options)):
             split_data_of_car = car_options[el].text.split()
-            form_data.append([split_data_of_car[0], split_data_of_car[1]])
-        car_options = form_data
+
+            match split_data_of_car[0]:
+                case 'Год':
+                    data_set['year_car'] = split_data_of_car[1]
+                case 'Пробег':
+                    data_set['mileage'] = split_data_of_car[1]
+                case 'Цвет':
+                    data_set['color'] = split_data_of_car[1]
+                case 'Опции':
+                    data_set['options'] = split_data_of_car[1]
+                case 'Кузов':
+                    data_set['the_body'] = split_data_of_car[1]
+                case 'Объем':
+                    data_set['volume'] = split_data_of_car[1]
+                case 'КПП':
+                    data_set['cpp'] = split_data_of_car[1]
+                case 'Оценка':
+                    data_set['estimation'] = split_data_of_car[1]
+
+            print('ДАТА СЕТ', data_set['year_car'])
+
+        car_options = data_set
         return car_options
 
     def parse_content(self):
@@ -109,19 +131,52 @@ class Car_data(object):
     content = ''
     image = ''
 
+    auc_name = ''
+    auc_number = ''
+    auc_date = ''
+
+    year_car = ''
+    mileage = ''
+    color = ''
+    options = ''
+    the_body = ''
+    volume = ''
+    cpp = ''
+    estimation = ''
     def __init__(self, url):
         parser = Parser(url)
 
+        # для Car_of_page
         self.title = parser.parse_title()
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
         self.content = parser.parse_content()
         self.image = parser.parse_image()
 
+        # для Car_data
+
+        # auction_data
+        self.auc_name = parser.parse_auction_data()[0]
+        self.auc_number = parser.parse_auction_data()[1]
+        self.auc_date = parser.parse_auction_data()[2]
+
+        # car_options
+        form_data = parser.parse_auction_data()
+        # self.year_car = form_data['year_car']
+        # self.mileage = form_data['mileage']
+        # self.color = form_data['color']
+        # self.options = form_data['options']
+        # self.the_body = form_data['the_body']
+        # self.volume = form_data['volume']
+        # self.cpp = form_data['cpp']
+        # self.estimation = form_data['estimation']
+
     def print(self):
         print('название машины', self.title, 'аукцион', self.auction_data, 'основное про машину', self.car_options,
               'таблица', self.content, sep='\n', end='\n')
         print('картинки', self.image, end='\n')
+        print(self.auc_name, self.auc_number, self.auc_date, sep='\n', end='\n')
+        # print(self.year_car, self.mileage, self.color, self.options, self.the_body, self.volume, self.cpp, self.estimation, sep='\n', end='\n')
 
     def __del__(self):
         print('Удален')
@@ -130,6 +185,4 @@ class Car_data(object):
         new_car = Car_for_page.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
         print(new_car)
 
-# url = 'https://www.carwin.ru/japanauc/see/945389787'
-# Obj = Car_data(url)
-# Obj.print()
+

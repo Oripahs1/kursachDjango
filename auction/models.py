@@ -32,7 +32,7 @@ class Order(models.Model):
     date_start = models.DateField()
     date_end = models.DateField()
     comment = models.TextField()
-    id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
+    id_car = models.ForeignKey('Car_data', on_delete=models.CASCADE)
 
 
 class Customer(models.Model):
@@ -42,17 +42,42 @@ class Customer(models.Model):
     tel_num = models.TextField()
 
 
-class Car(models.Model):
+class Car_data(models.Model):
     id_car = models.AutoField(primary_key=True)
     auc_link = models.TextField()
-    name = models.TextField()
-    price_start = models.IntegerField()
-    price_buy = models.IntegerField()
-    auc_list = models.TextField()
-    SBTS = models.TextField()
-    PTD = models.TextField()
-    auc_buy_date = models.DateField()
     title = models.TextField()
+
+    # auction_data
+    auc_name = models.TextField()
+    auc_number = models.TextField()
+    auc_date = models.DateField()
+
+    # car_options
+    year_car = models.TextField()
+    mileage = models.TextField()
+    color = models.TextField()
+    options = models.TextField()
+    the_body = models.TextField()
+    volume = models.TextField()
+    cpp = models.TextField()
+    estimation = models.TextField()
+
+    # content
+    cooling = models.TextField()
+    equipment = models.TextField()
+    result = models.TextField()
+    start_price = models.TextField()
+    transmission = models.TextField()
+    location_auction = models.TextField()
+    year = models.TextField()
+    alt_color = models.TextField()
+    condition = models.TextField()
+    fuel = models.TextField()
+    equipment = models.TextField()
+    deadline_for_the_price_offer = models.TextField()
+    day_of_the_event = models.TextField()
+    number_of_sessions = models.TextField()
+
 
 
 class Car_for_page(models.Model):
