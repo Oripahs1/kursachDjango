@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 import requests
 
 
-
 class Parser(object):
     html_page = None
 
@@ -66,27 +65,43 @@ class Parser(object):
         content = form_data
         return content
 
+    def parse_image(self):
+
+        image = self.html_page.find('div', 'my-gallery')
+        image = image.find_all('img')
+
+        form_data = [[0] * 1 for i in range(len(image))]
+
+        k = 0
+        for el in range(len(image)):
+            form_data[k] = image[el]['src']
+            k += 1
+        image = form_data
+        return image
+
+
 class Car_data(object):
     url = ''
     title = ''
     auction_data = ''
     car_options = ''
     content = ''
+    image = ''
 
     def __init__(self, url):
-
         parser = Parser(url)
 
         self.title = parser.parse_title()
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
         self.content = parser.parse_content()
+        self.image = parser.parse_image()
 
     def print(self):
+        print([self.title, self.auction_data, self.car_options, self.content, self.image])
+        print(self.image)
 
-        print([self.title, self.auction_data, self.car_options, self.content])
 
 url = 'https://www.carwin.ru/japanauc/see/945389787'
 Obj = Car_data(url)
 Obj.print()
-
