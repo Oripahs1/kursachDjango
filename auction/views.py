@@ -89,6 +89,7 @@ class Parser(object):
         return content
 
     def parse_image(self):
+
         image = self.html_page.find('div', 'my-gallery')
         image = image.find_all('img')
         form_data = list()
@@ -109,6 +110,7 @@ class Car_data(object):
 
     def __init__(self, url):
         parser = Parser(url)
+
         self.title = parser.parse_title()
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
