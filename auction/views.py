@@ -7,7 +7,7 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, Car_for_page
+from .models import Car, CarForPage
 from .forms import ParserForm
 
 
@@ -32,7 +32,7 @@ class ParserPageView(TemplateView):
             if form.is_valid():
                 url1 = 'https://www.carwin.ru/japanauc/see/'
                 url = form.cleaned_data['url_parser_field']
-                for i in range(945500000, 945500005):
+                for i in range(945500050, 945500055):
                     Obj = Car_data(url1 + str(i))
                     print(url1 + str(i))
                     Obj.print()
