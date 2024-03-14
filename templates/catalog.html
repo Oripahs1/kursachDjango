@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>parser</title>
+    {% extends 'base.html' %}
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'catalog.css' %}">
+</head>
+{% block content %}
+
+<style>
+    .card {
+            position: relative;
+            display: block;
+            height: 100%;
+            border-radius: calc(var(--curve) * 1px);
+            overflow: hidden;
+            text-decoration: none;
+    }
+</style>
+
+<body translate="no">
+    <ul class="cards">
+        {% for el in cars %}
+            <li>
+                <a href="" class="card">
+                    <img src="{{ el.image }}" class="card__image" alt="">
+                    <div class="card__overlay">
+                        <div class="card__header">
+
+
+
+                                <h3 class="card__title">{{ el.title }}</h3>
+
+
+
+                                <p class="car_option"><span>Кузов</span> {{ el.the_body }}</p>
+                                <p class="car_option"><span>Объем</span> {{ el.volume }}</p>
+                                <p class="car_option"><span>КПП</span> {{ el.cpp }}</p>
+                                <p class="car_option"><span>Год</span> {{ el.year_car }}</p>
+                                <p class="car_option"><span>Пробег</span><strong> {{ el.mileage }}</strong></p>
+                                <p class="car_option"><span>Оценка</span><strong> {{ el.estimation }}</strong></p>
+
+{#                                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores, blanditiis?</p>#}
+{#                                <p class="card__description"> <span></span> </p>#}
+
+                        </div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+
+
+
+</body>
+
+
+
+{#    <body>#}
+{#    <div class="catalog" style="text-align: center;">#}
+{#        <div class="car">#}
+{##}
+{#        </div>#}
+{#    </div>#}
+{#    <div class="catalog" style="text-align: center;">#}
+{#        {% for el in cars %}#}
+{##}
+{##}
+{#            <h1>{{ el.id_car }}</h1>#}
+{#            <h1>{{ el.image }}</h1>#}
+{#            <img src="{{ el.image }}">#}
+{#        {% endfor %}#}
+{#    </div>#}
+{#    </body>#}
+{% endblock content %}
+</html>

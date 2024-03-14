@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>parser</title>
+    {% extends 'base.html' %}
+    {% load static %}
+</head>
+{% block content %}
+    <body>
+    <div class="parser" style="text-align: center;">
+        <form action="{% url 'parser' %}" method="post">
+            {% csrf_token %}
+            <label for="parser_url">Ссылочка</label>
+            {{ form }}
+            <button class="btn btn-success" type="submit">
+                Go
+            </button>
+            <style>
+                button{
+                    margin-top: 15px;
+                }
+            </style>
+        </form>
+    </div>
+    </body>
+{% endblock content %}
+</html>
