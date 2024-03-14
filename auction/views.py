@@ -16,6 +16,18 @@ class HomePageView(TemplateView):
     template_name = "home.html"
 
 
+class LoginPageView(TemplateView):
+    template_name = "login.html"
+
+
+class LogoutPageView(TemplateView):
+    template_name = "logout.html"
+
+
+class RegistrationPageView(TemplateView):
+    template_name = "registration/"
+
+
 # class CarPageView(TemplateView):
 #     template_name = "car.html"
 
@@ -179,7 +191,6 @@ class Parser(object):
         return content
 
     def parse_image(self):
-
         image = self.html_page.find('div', 'my-gallery')
         image = image.find_all('img')
         form_data = list()
@@ -190,7 +201,6 @@ class Parser(object):
         return image
 
     def parse_auc_list(self):
-
         auc_list = self.html_page.find('div', 'scheme_block')
         auc_list = auc_list.find('img')
         auc_list = auc_list['src']
@@ -284,20 +294,21 @@ class Car_data(object):
 
         self.auc_list = parser.parse_auc_list()
 
-
     def print(self):
         print('название машины', self.title, 'аукцион', self.auction_data, 'основное про машину', self.car_options,
               'таблица', self.content, sep='\n', end='\n')
         print('картинки', self.image, end='\n')
         print(self.auc_name, self.auc_number, self.auc_date, sep='\n', end='\n')
-        print(self.year_car, self.mileage, self.color, self.options, self.the_body, self.volume, self.cpp, self.estimation, sep='\n', end='\n')
+        print(self.year_car, self.mileage, self.color, self.options, self.the_body, self.volume, self.cpp,
+              self.estimation, sep='\n', end='\n')
         print(self.cooling, self.condition, self.fuel, self.equipment)
 
     def __del__(self):
         print('Удален')
 
     def save_me_to_bd(self):
-        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
+        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content,
+                                            car_options=self.car_options)
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -332,5 +343,3 @@ class Car_data(object):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
         print(new_car)
         print(new_car_new)
-
-
