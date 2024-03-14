@@ -7,7 +7,7 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, Car_for_page
+from .models import Car, CarForPage, PhotoCar
 from .forms import ParserForm
 
 
@@ -44,6 +44,18 @@ class ParserPageView(TemplateView):
         else:
             form = ParserForm()
         return render(request, 'parser.html', {'form': form})
+
+
+class CatalogPageView(TemplateView):
+    template_name = "catalog.html"
+
+    def get(self, request, *args, **kwargs):
+
+        return render(request, 'catalog.html', {'form': 'hello'})
+
+    def post(self, request, *args, **kwargs):
+
+        return 'buy'
 
 
 class Parser(object):
@@ -169,6 +181,7 @@ class Parser(object):
         auc_list = auc_list['src']
         return auc_list
 
+
 class Car_data(object):
     title = ''
     auction_data = ''
@@ -204,6 +217,7 @@ class Car_data(object):
     deadline_for_the_price_offer = ''
     day_of_the_event = ''
     number_of_sessions = ''
+
     auc_list = ''
 
     def __init__(self, url):
@@ -255,6 +269,7 @@ class Car_data(object):
 
         self.auc_list = parser.parse_auc_list()
 
+
     def print(self):
         print('название машины', self.title, 'аукцион', self.auction_data, 'основное про машину', self.car_options,
               'таблица', self.content, sep='\n', end='\n')
@@ -267,7 +282,7 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-        new_car = Car_for_page.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
+        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -298,6 +313,8 @@ class Car_data(object):
             number_of_sessions=self.number_of_sessions,
             auc_list=self.auc_list
         )
+        for el in range(len(self.image)):
+            PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
         print(new_car)
         print(new_car_new)
 

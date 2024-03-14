@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Car, Car_for_page
+from .models import Car, CarForPage, PhotoCar
 
 admin.site.register(Car)
-admin.site.register(Car_for_page)
+admin.site.register(PhotoCar)
+admin.site.register(CarForPage)
 # Register your models here.
