@@ -12,7 +12,7 @@
 {% block content %}
     {% include 'messages.html' %}
 
-    <form method="POST" style="margin-left: 100px">
+    <form method="POST" style="margin-left: 38%; margin-top: 50px">
         {% csrf_token %}
         <h2>Регистрация пользователя</h2>
         {{ form.as_p }}
