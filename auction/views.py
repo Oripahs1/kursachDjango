@@ -59,6 +59,10 @@ class CatalogPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         cars = Car.objects.all()
+
+        for el in cars:
+            el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
+
         return render(request, 'catalog.html', {'cars': cars})
 
 
