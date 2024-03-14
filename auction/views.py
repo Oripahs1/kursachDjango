@@ -162,6 +162,13 @@ class Parser(object):
         image = form_data
         return image
 
+    def parse_auc_list(self):
+
+        auc_list = self.html_page.find('div', 'scheme_block')
+        auc_list = auc_list.find('img')
+        auc_list = auc_list['src']
+        return auc_list
+
 
 class Car_data(object):
     title = ''
@@ -198,6 +205,8 @@ class Car_data(object):
     deadline_for_the_price_offer = ''
     day_of_the_event = ''
     number_of_sessions = ''
+
+    auc_list = ''
 
     def __init__(self, url):
         parser = Parser(url)
@@ -246,6 +255,8 @@ class Car_data(object):
         self.day_of_the_event = form_data['day_of_the_event']
         self.number_of_sessions = form_data['number_of_sessions']
 
+        self.auc_list = parser.parse_auc_list()
+
 
     def print(self):
         print('название машины', self.title, 'аукцион', self.auction_data, 'основное про машину', self.car_options,
@@ -287,7 +298,8 @@ class Car_data(object):
             equipment=self.equipment,
             deadline_for_the_price_offer=self.deadline_for_the_price_offer,
             day_of_the_event=self.day_of_the_event,
-            number_of_sessions=self.number_of_sessions
+            number_of_sessions=self.number_of_sessions,
+            auc_list = self.auc_list
         )
         print(new_car)
         print(new_car_new)
