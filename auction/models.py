@@ -1,12 +1,6 @@
 from django.db import models
 
 
-class PhotoCar(models.Model):
-    id_photo = models.AutoField(primary_key=True)
-    id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
-    photo = models.TextField()
-
-
 class Invoices(models.Model):
     id_invoice = models.AutoField(primary_key=True)
     payer = models.TextField()
@@ -87,7 +81,7 @@ class Car(models.Model):
     auc_list = models.TextField()
 
 
-class CarForPage(models.Model):
+class Car_for_page(models.Model):
     id_car = models.AutoField(primary_key=True)
     title = models.TextField()
     auction_data = models.TextField()
