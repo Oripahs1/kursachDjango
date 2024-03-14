@@ -9,7 +9,9 @@
 {% block content %}
     <body>
     <div class="catalog" style="text-align: center;">
-
+        {% for el in cars %}
+            <h1>{{ el.title }}</h1>
+        {% endfor %}
     </div>
     </body>
 {% endblock content %}

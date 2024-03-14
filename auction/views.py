@@ -4,7 +4,8 @@
 # После парсинга сделал так, чтобы данные выводились на стричку car
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
-
+from bs4 import BeautifulSoup
+import requests
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .models import Car, CarForPage, PhotoCar
@@ -32,13 +33,21 @@ class ParserPageView(TemplateView):
             if form.is_valid():
                 url1 = 'https://www.carwin.ru/japanauc/see/'
                 url = form.cleaned_data['url_parser_field']
-                for i in range(945500050, 945500055):
-                    Obj = Car_data(url1 + str(i))
-                    print(url1 + str(i))
-                    Obj.print()
+                for i in range(945500000, 945500100):
 
-                    Obj.save_me_to_bd()
-                    del Obj
+                    response = requests.get(url1 + str(i))
+                    html_page = BeautifulSoup(response.text, "lxml")
+                    # print(html_page.find('div', 'page_title'))
+
+                    # name = html_page.find('div', 'page_title').text
+                    # print(name)
+                    if html_page.find('div', 'page_title') is not None:
+                        Obj = Car_data(url1 + str(i))
+                        print(url1 + str(i))
+                        Obj.print()
+
+                        Obj.save_me_to_bd()
+                        del Obj
                     # return
 
         else:
@@ -47,24 +56,18 @@ class ParserPageView(TemplateView):
 
 
 class CatalogPageView(TemplateView):
-    template_name = "catalog.html"
 
     def get(self, request, *args, **kwargs):
+        cars = Car.objects.all()
+        return render(request, 'catalog.html', {'cars': cars})
 
-        return render(request, 'catalog.html', {'form': 'hello'})
 
-    def post(self, request, *args, **kwargs):
-
-        return 'buy'
 
 
 class Parser(object):
     html_page = None
 
     def __init__(self, url):
-        from bs4 import BeautifulSoup
-        import requests
-
         response = requests.get(url)
         self.html_page = BeautifulSoup(response.text, "lxml")
         print(response)
@@ -91,21 +94,29 @@ class Parser(object):
 
             match split_data_of_car[0]:
                 case 'Год':
-                    data_set['year_car'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['year_car'] = split_data_of_car[1]
                 case 'Пробег':
-                    data_set['mileage'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['mileage'] = split_data_of_car[1]
                 case 'Цвет':
-                    data_set['color'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['color'] = split_data_of_car[1]
                 case 'Опции':
-                    data_set['options'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['options'] = split_data_of_car[1]
                 case 'Кузов':
-                    data_set['the_body'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['the_body'] = split_data_of_car[1]
                 case 'Объем':
-                    data_set['volume'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['volume'] = split_data_of_car[1]
                 case 'КПП':
-                    data_set['cpp'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['cpp'] = split_data_of_car[1]
                 case 'Оценка':
-                    data_set['estimation'] = split_data_of_car[1]
+                    if len(split_data_of_car) > 1:
+                        data_set['estimation'] = split_data_of_car[1]
 
         car_options = data_set
         return car_options
