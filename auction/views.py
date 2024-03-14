@@ -4,11 +4,13 @@
 # После парсинга сделал так, чтобы данные выводились на стричку car
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
-
+import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .models import Car, CarForPage
-from .forms import ParserForm
+from .forms import ParserForm, RegistrationForm
+from django.contrib import messages
+from .models import Worker
 
 
 class HomePageView(TemplateView):
@@ -16,18 +18,50 @@ class HomePageView(TemplateView):
 
 
 class LoginPageView(TemplateView):
-    template_name = "login.html"
+    template_name = "registration/login.html"
 
 
 class LogoutPageView(TemplateView):
-    template_name = "logout.html"
+    template_name = "registration/logout.html"
 
 
 class RegistrationPageView(TemplateView):
-    template_name = "registration/"
+    template_name = "registration/registration.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = RegistrationForm()
+            return render(request, self.template_name, {'form': form})
+
+    # def username_clean(self, response, *args, **kwargs):
+    #     form = RegistrationForm(response.Post)
+    #     username = form.cleaned_data['username']
+    #     new = Worker.objects.filter(full_name=username)
+    #     if Worker.objects.filter(full_name=username).exists():
+    #         messages.info(response, 'Your password has been changed successfully!')
+    #         return render(response, 'registration/registration.html', {'form': form},
+    #                       messages.info(response, 'Save complete'))
+    #     return username
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = RegistrationForm(request.POST)
+            if form.is_valid():
+                # form.username_clean()
+                if form.username_clean() == '#':
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.info(request, "Данное имя пользователя уже используется")
+                    return render(request, 'registration/registration.html', {'form': form})
+                form.clean_password2()
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+        else:
+            form = RegistrationForm()
+        return render(request, 'registration/registration.html', {'form': form})
+
+        # class CarPageView(TemplateView):
 
 
-# class CarPageView(TemplateView):
 #     template_name = "car.html"
 
 
