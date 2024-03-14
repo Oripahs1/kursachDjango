@@ -259,7 +259,7 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-        new_car = Car_for_page.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
+        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content, car_options=self.car_options)
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
