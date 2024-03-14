@@ -78,6 +78,8 @@ class Car(models.Model):
     day_of_the_event = models.TextField()
     number_of_sessions = models.TextField()
 
+    auc_list = models.TextField()
+
 
 class Car_for_page(models.Model):
     id_car = models.AutoField(primary_key=True)
