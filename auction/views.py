@@ -7,7 +7,7 @@
 
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, CarForPage
+from .models import Car, CarForPage, PhotoCar
 from .forms import ParserForm
 
 
@@ -44,6 +44,18 @@ class ParserPageView(TemplateView):
         else:
             form = ParserForm()
         return render(request, 'parser.html', {'form': form})
+
+
+class CatalogPageView(TemplateView):
+    template_name = "catalog.html"
+
+    def get(self, request, *args, **kwargs):
+
+        return render(request, 'catalog.html', {'form': 'hello'})
+
+    def post(self, request, *args, **kwargs):
+
+        return 'buy'
 
 
 class Parser(object):
@@ -299,8 +311,10 @@ class Car_data(object):
             deadline_for_the_price_offer=self.deadline_for_the_price_offer,
             day_of_the_event=self.day_of_the_event,
             number_of_sessions=self.number_of_sessions,
-            auc_list = self.auc_list
+            auc_list=self.auc_list
         )
+        for el in range(len(self.image)):
+            PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
         print(new_car)
         print(new_car_new)
 
