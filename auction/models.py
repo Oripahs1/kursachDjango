@@ -96,6 +96,22 @@ class CarForPage(models.Model):
 
 
 class Worker(models.Model):
+    MANAGER = 'Клиент-менеджер'
+    LOGIST = 'Логист'
+    HR = 'HR'
+    ACCOUNTANT = 'Бухгалтер'
+    OPERATIVNIK = 'Оперативник'
+    JOB_CHOICE = [
+        (MANAGER, 'Менеджер'),
+        (LOGIST, 'Логист'),
+        (HR, 'HR'),
+        (ACCOUNTANT, 'Бухгалтер'),
+        (OPERATIVNIK, 'Оперативник')
+    ]
     id_worker = models.AutoField(primary_key=True)
-    full_name = models.TextField()
-    job_title = models.TextField()
+    full_name = models.TextField(unique=True)
+    job_title = models.TextField(choices=JOB_CHOICE)
+    password = models.TextField()
+
+    def __str__(self):
+        return str(self.full_name)
