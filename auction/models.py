@@ -136,7 +136,6 @@ class Car(models.Model):
                     poles.append(['День проведения', field.value_to_string(self)])
                 case 'number_of_sessions':
                     poles.append(['Количество проведений', field.value_to_string(self)])
-            print(poles)
         return poles
 
 # class CarForPage(models.Model):
