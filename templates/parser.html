@@ -9,7 +9,7 @@
 {% block content %}
     <body>
     <div class="parser" style="text-align: center;">
-        <form action="{% url 'car' car_id %}" method="post">
+        <form action="{% url 'parser' %}" method="post">
             {% csrf_token %}
             <label for="parser_url">Ссылочка</label>
             {{ form }}
