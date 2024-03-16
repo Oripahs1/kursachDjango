@@ -9,7 +9,7 @@ import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, CarForPage, PhotoCar, Worker
+from .models import Car, PhotoCar, Worker
 from .forms import ParserForm, RegistrationForm
 from django.contrib import messages
 
@@ -34,16 +34,6 @@ class RegistrationPageView(TemplateView):
             form = RegistrationForm()
             return render(request, self.template_name, {'form': form})
 
-    # def username_clean(self, response, *args, **kwargs):
-    #     form = RegistrationForm(response.Post)
-    #     username = form.cleaned_data['username']
-    #     new = Worker.objects.filter(full_name=username)
-    #     if Worker.objects.filter(full_name=username).exists():
-    #         messages.info(response, 'Your password has been changed successfully!')
-    #         return render(response, 'registration/registration.html', {'form': form},
-    #                       messages.info(response, 'Save complete'))
-    #     return username
-
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
@@ -60,8 +50,30 @@ class RegistrationPageView(TemplateView):
             form = RegistrationForm()
         return render(request, 'registration/registration.html', {'form': form})
 
-# class CarPageView(TemplateView):
-#     template_name = "car.html"
+
+class CatalogPageView(TemplateView):
+
+    def get(self, request, *args, **kwargs):
+        cars = Car.objects.all()
+
+        for el in cars:
+            el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
+
+        return render(request, 'catalog.html', {'cars': cars})
+
+
+    # def post(self, request, *args, **kwargs):
+    #     car_id = Car.objects.get(id_car=)
+
+
+class CarPageView(TemplateView):
+    template_name = "car.html"
+
+    # def get(self, request, *args, **kwargs):
+
+
+    # def lections_detail(request, lecture_id):  # lecture_id
+    #     lect = Car.objects.get(id_car=lecture_id)
 
 
 class ParserPageView(TemplateView):
@@ -97,19 +109,6 @@ class ParserPageView(TemplateView):
         else:
             form = ParserForm()
         return render(request, 'parser.html', {'form': form})
-
-
-class CatalogPageView(TemplateView):
-
-    def get(self, request, *args, **kwargs):
-        cars = Car.objects.all()
-
-        for el in cars:
-            el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
-
-        return render(request, 'catalog.html', {'cars': cars})
-
-
 
 
 class Parser(object):

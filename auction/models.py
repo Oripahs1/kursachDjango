@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 
 class PhotoCar(models.Model):
@@ -86,13 +87,16 @@ class Car(models.Model):
 
     auc_list = models.TextField()
 
+    def get_absolute_url(self):
+        return reverse('car', kwargs={'car_id': self.pk})
 
-class CarForPage(models.Model):
-    id_car = models.AutoField(primary_key=True)
-    title = models.TextField()
-    auction_data = models.TextField()
-    car_options = models.TextField()
-    content = models.TextField()
+
+# class CarForPage(models.Model):
+#     id_car = models.AutoField(primary_key=True)
+#     title = models.TextField()
+#     auction_data = models.TextField()
+#     car_options = models.TextField()
+#     content = models.TextField()
 
 
 class Worker(models.Model):

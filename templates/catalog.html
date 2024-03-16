@@ -24,7 +24,7 @@
     <ul class="cards">
         {% for el in cars %}
             <li>
-                <a href="" class="card">
+                <a href="{{ el.get_absolute_url }}" class="card">
                     <img src="{{ el.image }}" class="card__image" alt="">
                     <div class="card__overlay">
                         <div class="card__header">
