@@ -4,6 +4,8 @@
 # После парсинга сделал так, чтобы данные выводились на стричку car
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
+import datetime
+
 from bs4 import BeautifulSoup
 import requests
 import django.http
@@ -99,6 +101,7 @@ class CatalogPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         cars = Car.objects.all()
+        cars = Car.objects.filter(auc_date__gte=datetime.date.today())
 
         for el in cars:
             el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
@@ -124,31 +127,56 @@ class ParserPageView(TemplateView):
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = ParserForm(request.POST)
-            if form.is_valid():
-                url1 = 'https://www.carwin.ru/japanauc/see/'
-                url = form.cleaned_data['url_parser_field']
-                for i in range(945500000, 945500100):
+        linked_list = list()
+        print('Пришел пост запрос')
+        if request.method == 'POST' and 'import' in request.POST:
+            url = 'https://www.carwin.ru/japanauc/'
+            response = requests.get(url)
+            html_page = BeautifulSoup(response.text, 'lxml')
+            urls_list = html_page.find('ul', 'pagination')
+            urls_list = urls_list.find_all('a')
 
-                    response = requests.get(url1 + str(i))
-                    html_page = BeautifulSoup(response.text, "lxml")
-                    # print(html_page.find('div', 'page_title'))
+            for i in range(1, len(urls_list)+1):
 
-                    # name = html_page.find('div', 'page_title').text
-                    # print(name)
-                    if html_page.find('div', 'page_title') is not None:
-                        Obj = Car_data(url1 + str(i))
-                        print(url1 + str(i))
-                        Obj.print()
+                response = requests.get(url+str(i))
+                html_page = BeautifulSoup(response.text, 'lxml')
+                links = html_page.find_all('a', 'pic')
+                for link in links:
+                    linked_list.append(link['href'])
 
-                        Obj.save_me_to_bd()
-                        del Obj
-                    # return
+            url = 'https://www.carwin.ru'
+            print(url+linked_list[0])
+            k = 0
+            for link in linked_list:
+                k += 1
+                print(k)
+                self.link_obr(url+link)
 
+        return render(request, 'parser.html', {'response': 'success'})
+
+    def link_obr(self, url):
+
+        response = requests.get(url)
+        html_page = BeautifulSoup(response.text, "lxml")
+        number_of_auc = html_page.find('div', 'row_desc_middle')
+
+        car = Car.objects.filter(auc_number=number_of_auc.text)
+
+
+        if html_page.find('div', 'page_title') is not None and not car:
+
+
+            Obj = Car_data(url)
+            print(url)
+            Obj.print()
+
+            Obj.save_me_to_bd()
+            del Obj
         else:
-            form = ParserForm()
-        return render(request, 'parser.html', {'form': form})
+
+            print('Было, знаем!', url)
+            # return
+
 
 
 class Parser(object):
