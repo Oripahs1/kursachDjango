@@ -22,6 +22,23 @@ class HomePageView(TemplateView):
             return render(request, self.template_name)
 
 
+class WorkersPageView(TemplateView):
+    template_name = "workers.html"
+
+    def get(self, request, *args, **kwargs):
+        workers = Worker.objects.all()
+        return render(request, 'workers.html', {'workers': workers})
+
+
+class WorkersCardPageView(TemplateView):
+    template_name = "worker_card.html"
+
+    def get(self, request, *args, **kwargs):
+        worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
+        worker_data = Worker.objects.all()
+        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data})
+
+
 class LoginPageView(TemplateView):
     template_name = "registration/login.html"
 
@@ -92,10 +109,10 @@ class CatalogPageView(TemplateView):
 class CarPageView(TemplateView):
     template_name = "car.html"
 
-    # def get(self, request, *args, **kwargs):
-    #     car = get_object_or_404(Car, id=id, available=True)
-    #     print()
-    #     return render(request, 'car.html', {'car': car})
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        photo = PhotoCar.objects.filter(id_car=car)
+        return render(request, 'car.html', {'car': car, 'photo': photo})
 
 
 class ParserPageView(TemplateView):
@@ -360,8 +377,8 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content,
-                                            car_options=self.car_options)
+        # new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content,
+        #                                     car_options=self.car_options)
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -394,5 +411,5 @@ class Car_data(object):
         )
         for el in range(len(self.image)):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
-        print(new_car)
+        # print(new_car)
         print(new_car_new)
