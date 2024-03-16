@@ -344,8 +344,6 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-        new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content,
-                                            car_options=self.car_options)
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -378,5 +376,5 @@ class Car_data(object):
         )
         for el in range(len(self.image)):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
-        print(new_car)
-        print(new_car_new)
+
+

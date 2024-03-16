@@ -138,13 +138,6 @@ class Car(models.Model):
                     poles.append(['Количество проведений', field.value_to_string(self)])
         return poles
 
-# class CarForPage(models.Model):
-#     id_car = models.AutoField(primary_key=True)
-#     title = models.TextField()
-#     auction_data = models.TextField()
-#     car_options = models.TextField()
-#     content = models.TextField()
-
 
 class Worker(models.Model):
     MANAGER = 'Клиент-менеджер'
