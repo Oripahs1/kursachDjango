@@ -1,121 +1,52 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'base.css' %}">
-    <link rel="apple-touch-icon" type="image/png"
-          href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png">
-    <meta name="apple-mobile-web-app-title" content="CodePen">
-    <link rel="shortcut icon" type="image/x-icon"
-          href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico">
-    <link rel="mask-icon" type="image/x-icon"
-          href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg"
-          color="#111">
-    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
-    <title>Car</title>
-    <link rel="canonical" href="https://codepen.io/seyedi/pen/zYoeLEv">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swapps://github.com/produle/MockFlowFont/blob/master/MockFlowFont1/dist/MockFlowFont1.woff">
-    <link rel="stylesheet" href="https://assets.css-tricks.ir/font/font.css">
 
 
+{% extends 'base.html' %}
+{% load static %}
 
-    <script>
-        window.console = window.console || function (t) {
-        };
-    </script>
+    {% block head %}
+        <title>{{ car.title }}</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'car.css' %}">
+    {% endblock head %}
 
+    {% block content %}
+        <div class="container_width">
+            <div class="ecommerce-gallery" data-mdb-zoom-effect="true" data-mdb-auto-height="true">
+                <div class="row py-3 shadow-5">
+                    {% for img in photo %}
 
-</head>
+                        {% if forloop.first %}
+                            <div class="col-12 mb-1">
+                                <div class="lightbox">
+                                    <img class="ecommerce-gallery-main-img active w-100" src="{{ img.photo }}"/>
+                                </div>
+                            </div>
+                        {% else %}
+                             <div class="col-3 mt-1">
+                                <img class="active w-100" src="{{ img.photo }}"/>
+                            </div>
+                        {% endif %}
 
-<body translate="no">
-<ul class="cards">
-    <li>
-        <a href="" class="card">
-            <img src="https://i.imgur.com/oYiTqum.jpg" class="card__image" alt="">
-            <div class="card__overlay">
-                <div class="card__header">
-                    <svg class="card__arc" xmlns="http://www.w3.org/2000/svg">
-                        <path></path>
-                    </svg>
-                    <img class="card__thumb" src="https://i.imgur.com/7D7I6dI.png" alt="">
-                    <div class="card__header-text">
-                        <h3 class="card__title">Jessica Parker</h3>
-                        <span class="card__status">1 hour ago</span>
-                    </div>
+                    {% endfor %}
                 </div>
-                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores,
-                    blanditiis?</p>
-            </div>
-        </a>
-    </li>
-    <li>
-        <a href="" class="card">
-            <img src="https://i.imgur.com/2DhmtJ4.jpg" class="card__image" alt="">
-            <div class="card__overlay">
-                <div class="card__header">
-                    <svg class="card__arc" xmlns="http://www.w3.org/2000/svg">
-                        <path></path>
-                    </svg>
-                    <img class="card__thumb" src="https://i.imgur.com/sjLMNDM.png" alt="">
-                    <div class="card__header-text">
-                        <h3 class="card__title">kim Cattrall</h3>
-                        <span class="card__status">3 hours ago</span>
-                    </div>
-                </div>
-                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores,
-                    blanditiis?</p>
-            </div>
-        </a>
-    </li>
-    <li>
-        <a href="" class="card">
-            <img src="https://i.imgur.com/oYiTqum.jpg" class="card__image" alt="">
-            <div class="card__overlay">
-                <div class="card__header">
-                    <svg class="card__arc" xmlns="http://www.w3.org/2000/svg">
-                        <path></path>
-                    </svg>
-                    <img class="card__thumb" src="https://i.imgur.com/7D7I6dI.png" alt="">
-                    <div class="card__header-text">
-                        <h3 class="card__title">Jessica Parker</h3>
-                        <span class="card__tagline">Lorem ipsum dolor sit amet consectetur</span>
-                        <span class="card__status">1 hour ago</span>
-                    </div>
-                </div>
-                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores,
-                    blanditiis?</p>
-            </div>
-        </a>
-    </li>
-    <li>
-        <a href="" class="card">
-            <img src="https://i.imgur.com/2DhmtJ4.jpg" class="card__image" alt="">
-            <div class="card__overlay">
-                <div class="card__header">
-                    <svg class="card__arc" xmlns="http://www.w3.org/2000/svg">
-                        <path></path>
-                    </svg>
-                    <img class="card__thumb" src="https://i.imgur.com/sjLMNDM.png" alt="">
-                    <div class="card__header-text">
-                        <h3 class="card__title">kim Cattrall</h3>
-                        <span class="card__status">3 hours ago</span>
-                    </div>
-                </div>
-                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores, blanditiis?</p>
-            </div>
-        </a>
-    </li>
-</ul>
+                <div class="table">
+                    <table class="table table-hover table-striped">
+                        {% for name, value in car.get_fields %}
 
-<script id="rendered-js">
-    // Credits:
-    // Technique: https://css-irl.info/css-only-slide-up-caption-hover-effect
-    // Design: https://dribbble.com/shots/10951466-Social-Mobile-App
-    //# sourceURL=pen.js
-</script>
+                            {% if value %}
+                                <tr>
+                                    <td>{{ name }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endif %}
+
+                        {% endfor %}
 
 
-</body>
-</html>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-primary" style="margin: auto; display: block">Заказать</button>
+            </div>
+
+        </div>
+
+    {% endblock content %}

@@ -11,14 +11,14 @@
 
 {% block content %}
     {% include 'messages.html' %}
-
-    <form method="POST" style="margin-left: 38%; margin-top: 50px">
-        {% csrf_token %}
-        <h2>Регистрация пользователя</h2>
-        {{ form.as_p }}
-        <input type="submit" value="Зарегистрироваться"/>
-    </form>
-
+    <div style="margin-top: 50px; display: flex; justify-content: space-evenly">
+        <form method="POST" >
+            {% csrf_token %}
+            <h2>Регистрация пользователя</h2>
+            {{ form.as_p }}
+            <input type="submit" value="Зарегистрироваться"/>
+        </form>
+    </div>
 {% endblock content %}
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"

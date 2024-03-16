@@ -12,6 +12,7 @@ from django.shortcuts import render
 from .models import Car, PhotoCar, Worker
 from .forms import ParserForm, RegistrationForm
 from django.contrib import messages
+from django.views import generic
 
 
 class HomePageView(TemplateView):
@@ -69,12 +70,17 @@ class CatalogPageView(TemplateView):
 class CarPageView(TemplateView):
     template_name = "car.html"
 
-    # def get(self, request, *args, **kwargs):
-
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        photo = PhotoCar.objects.filter(id_car=car)
+        return render(request, 'car.html', {'car': car, 'photo': photo})
 
     # def lections_detail(request, lecture_id):  # lecture_id
     #     lect = Car.objects.get(id_car=lecture_id)
 
+
+# def test(request, id_car):
+#     return render(request, 'car.html', {'car': id_car})
 
 class ParserPageView(TemplateView):
     template_name = "parser.html"
