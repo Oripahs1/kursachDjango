@@ -87,7 +87,7 @@ class Car(models.Model):
 
     auc_list = models.TextField()
 
-    def get_absolute_url(self):
+    def get_absolute_url_car(self):
         return reverse('car', kwargs={'car_id': self.pk})
 
     def get_fields(self):
@@ -153,9 +153,15 @@ class Worker(models.Model):
         (OPERATIVNIK, 'Оперативник')
     ]
     id_worker = models.AutoField(primary_key=True)
-    full_name = models.TextField(unique=True)
+    username = models.TextField(unique=True)
+    full_name = models.TextField()
     job_title = models.TextField(choices=JOB_CHOICE)
+    phone_number = models.TextField()
+    passport = models.TextField(unique=True)
     password = models.TextField()
 
     def __str__(self):
         return str(self.full_name)
+
+    def get_absolute_url_worker(self):
+        return reverse('workers_card', kwargs={'worker_id': self.pk})

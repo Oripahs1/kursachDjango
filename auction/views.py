@@ -10,21 +10,64 @@ import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm
 from django.contrib import messages
-from django.views import generic
 
 
 class HomePageView(TemplateView):
     template_name = "home.html"
 
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            return render(request, self.template_name)
+
+
+class WorkersPageView(TemplateView):
+    template_name = "workers.html"
+
+    def get(self, request, *args, **kwargs):
+        workers = Worker.objects.all()
+        return render(request, 'workers.html', {'workers': workers})
+
+
+class WorkersCardPageView(TemplateView):
+    template_name = "worker_card.html"
+
+    def get(self, request, *args, **kwargs):
+        worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
+        worker_data = Worker.objects.all()
+        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data})
+
 
 class LoginPageView(TemplateView):
     template_name = "registration/login.html"
 
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = LoginForm()
+            return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = LoginForm(request.POST)
+            if form.is_valid():
+                if form.login_clean() == '#':
+                    messages.info(request, "Данное имя пользователя не найдено")
+                    return render(request, 'registration/login.html', {'form': form})
+                messages.info(request, "Вход выполнен")
+                return render(request, 'home.html')
+        else:
+            form = LoginForm()
+        return render(request, 'registration/login.html', {'form': form})
+
 
 class LogoutPageView(TemplateView):
     template_name = "registration/logout.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = LogoutForm()
+            return render(request, self.template_name, {'form': form})
 
 
 class RegistrationPageView(TemplateView):
@@ -63,10 +106,6 @@ class CatalogPageView(TemplateView):
         return render(request, 'catalog.html', {'cars': cars})
 
 
-    # def post(self, request, *args, **kwargs):
-    #     car_id = Car.objects.get(id_car=)
-
-
 class CarPageView(TemplateView):
     template_name = "car.html"
 
@@ -75,12 +114,7 @@ class CarPageView(TemplateView):
         photo = PhotoCar.objects.filter(id_car=car)
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
-    # def lections_detail(request, lecture_id):  # lecture_id
-    #     lect = Car.objects.get(id_car=lecture_id)
 
-
-# def test(request, id_car):
-#     return render(request, 'car.html', {'car': id_car})
 
 class ParserPageView(TemplateView):
     template_name = "parser.html"
@@ -344,6 +378,7 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
+
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -377,4 +412,4 @@ class Car_data(object):
         for el in range(len(self.image)):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
 
-
+        print(new_car_new)

@@ -12,22 +12,36 @@ class ParserForm(forms.Form):
     url_parser_field = forms.CharField(label='Cars url')
 
 
+class LogoutForm(forms.Form):
+    url_parser_field = forms.CharField(label='Cars url')
+
+
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30)
     password = forms.CharField(min_length=3, max_length=65, widget=forms.PasswordInput)
 
+    def login_clean(self):
+        username = self.cleaned_data['username']
+        password = self.cleaned_data['password']
+        if Worker.objects.filter(username=username, password=password).exists():
+            return username
+        else:
+            return '#'
+
 
 class RegistrationForm(forms.Form):
-
     username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150)
+    full_name = forms.CharField(label='ФИО')
     job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
+    passport = forms.CharField(label='Серия и номер паспорта')
+    phone_num = forms.CharField(label='Номер телефона')
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
 
     def username_clean(self):
         username = self.cleaned_data['username']
-        new = Worker.objects.filter(full_name=username)
-        if Worker.objects.filter(full_name=username).exists():
+        new = Worker.objects.filter(username=username)
+        if Worker.objects.filter(username=username).exists():
             return '#'
         return username
 
@@ -48,7 +62,19 @@ class RegistrationForm(forms.Form):
 
     def save(self, commit=True):
         Worker.objects.create(
-            full_name=self.cleaned_data['username'].strip(),
+            username=self.cleaned_data['username'].strip(),
+            full_name=self.cleaned_data['full_name'],
             job_title=self.cleaned_data['job_title'],
-            password=self.cleaned_data['password1']
+            passport=self.cleaned_data['passport'],
+            phone_number=self.cleaned_data['phone_num'],
+            password=self.cleaned_data['password1'],
         )
+
+
+class UpdateWorker(forms.Form):
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, )
+    full_name = forms.CharField(label='ФИО')
+    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
+    passport = forms.CharField(label='Серия и номер паспорта')
+    phone_num = forms.CharField(label='Номер телефона')
+    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
