@@ -8,22 +8,49 @@ from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm
 from django.contrib import messages
 
 
 class HomePageView(TemplateView):
     template_name = "home.html"
 
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            return render(request, self.template_name)
+
 
 class LoginPageView(TemplateView):
     template_name = "registration/login.html"
 
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = LoginForm()
+            return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = LoginForm(request.POST)
+            if form.is_valid():
+                if form.login_clean() == '#':
+                    messages.info(request, "Данное имя пользователя не найдено")
+                    return render(request, 'registration/login.html', {'form': form})
+                messages.info(request, "Вход выполнен")
+                return render(request, 'home.html')
+        else:
+            form = LoginForm()
+        return render(request, 'registration/login.html', {'form': form})
+
 
 class LogoutPageView(TemplateView):
     template_name = "registration/logout.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = LogoutForm()
+            return render(request, self.template_name, {'form': form})
 
 
 class RegistrationPageView(TemplateView):
@@ -62,18 +89,13 @@ class CatalogPageView(TemplateView):
         return render(request, 'catalog.html', {'cars': cars})
 
 
-    # def post(self, request, *args, **kwargs):
-    #     car_id = Car.objects.get(id_car=)
-
-
 class CarPageView(TemplateView):
     template_name = "car.html"
 
     # def get(self, request, *args, **kwargs):
-
-
-    # def lections_detail(request, lecture_id):  # lecture_id
-    #     lect = Car.objects.get(id_car=lecture_id)
+    #     car = get_object_or_404(Car, id=id, available=True)
+    #     print()
+    #     return render(request, 'car.html', {'car': car})
 
 
 class ParserPageView(TemplateView):
