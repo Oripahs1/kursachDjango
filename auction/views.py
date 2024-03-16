@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from .models import Car, PhotoCar, Worker
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm
 from django.contrib import messages
@@ -113,6 +113,7 @@ class CarPageView(TemplateView):
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         photo = PhotoCar.objects.filter(id_car=car)
         return render(request, 'car.html', {'car': car, 'photo': photo})
+
 
 
 class ParserPageView(TemplateView):
@@ -377,8 +378,7 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-        # new_car = CarForPage.objects.create(title=self.title, auction_data=self.auction_data, content=self.content,
-        #                                     car_options=self.car_options)
+
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -411,5 +411,5 @@ class Car_data(object):
         )
         for el in range(len(self.image)):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
-        # print(new_car)
+
         print(new_car_new)

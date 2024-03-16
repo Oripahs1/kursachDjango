@@ -90,6 +90,53 @@ class Car(models.Model):
     def get_absolute_url_car(self):
         return reverse('car', kwargs={'car_id': self.pk})
 
+    def get_fields(self):
+        poles = list()
+        for field in Car._meta.fields:
+            match field.name:
+                case 'year_car':
+                    poles.append(['Год', field.value_to_string(self)])
+                case 'mileage':
+                    poles.append(['Пробег', field.value_to_string(self)])
+                case 'alt_color':
+                    poles.append(['Цвет', field.value_to_string(self)])
+                case 'options':
+                    poles.append(['Опции', field.value_to_string(self)])
+                case 'the_body':
+                    poles.append(['Кузов', field.value_to_string(self)])
+                case 'volume':
+                    poles.append(['Объем', field.value_to_string(self)])
+                case 'cpp':
+                    poles.append(['КПП', field.value_to_string(self)])
+                case 'estimation':
+                    poles.append(['Оценка', field.value_to_string(self)])
+                case 'cooling':
+                    poles.append(['Охлаждение', field.value_to_string(self)])
+                case 'set':
+                    poles.append(['Комплектация', field.value_to_string(self)])
+                case 'result':
+                    poles.append(['Результат', field.value_to_string(self)])
+                case 'start_price':
+                    poles.append(['Стартовая цена', field.value_to_string(self)])
+                case 'transmission':
+                    poles.append(['Коробка передач', field.value_to_string(self)])
+                case 'location_auction':
+                    poles.append(['Место проведения', field.value_to_string(self)])
+                case 'location_auction':
+                    poles.append(['Место проведения', field.value_to_string(self)])
+                case 'condition':
+                    poles.append(['Состояние аукциона', field.value_to_string(self)])
+                case 'fuel':
+                    poles.append(['Топливо', field.value_to_string(self)])
+                case 'equipment':
+                    poles.append(['Оборудование', field.value_to_string(self)])
+                case 'deadline_for_the_price_offer':
+                    poles.append(['Конечный срок предложения цены', field.value_to_string(self)])
+                case 'day_of_the_event':
+                    poles.append(['День проведения', field.value_to_string(self)])
+                case 'number_of_sessions':
+                    poles.append(['Количество проведений', field.value_to_string(self)])
+        return poles
 
 # class CarForPage(models.Model):
 #     id_car = models.AutoField(primary_key=True)
