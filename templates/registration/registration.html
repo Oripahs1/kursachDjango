@@ -1,24 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Регистрация</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-</head>
-<body>
+
 {% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Регистрация</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'registration.css' %}">
+{% endblock head %}
 
 {% block content %}
     {% include 'messages.html' %}
-    <div style="margin-top: 50px; display: flex; justify-content: space-evenly">
+     <div class="d-grid gap-2 col-6 mx-auto">
+
         <form method="POST">
             {% csrf_token %}
-            <h2>Регистрация пользователя</h2>
-            <div style="align-content: center">
-                {{ form.as_p }}
-                <input type="submit" style="width: 400px" value="Зарегистрироваться"/>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">@</span>
+                        </div>
+                        {{ form.username }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.job_title.id_for_label }}">{{ form.job_title.label }}</label>
+                    {{ form.job_title }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport.id_for_label }}">{{ form.passport.label }}</label>
+                    {{ form.passport }}
+                </div>
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.phone_num.id_for_label }}">{{ form.phone_num.label }}</label>
+                    {{ form.phone_num }}
+                </div>
+
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                    {{ form.password1 }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                    {{ form.password2 }}
+                </div>
+            </div>
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" class="btn btn-dark position-relative" value="Зарегистрироваться"/>
             </div>
         </form>
     </div>

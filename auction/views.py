@@ -12,7 +12,7 @@ import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm
 from django.contrib import messages
 
 
@@ -38,7 +38,31 @@ class WorkersCardPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
         worker_data = Worker.objects.all()
-        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data})
+        form = RegistrationForm()
+        form.fields['username'].widget.attrs.update({'value': worker.username, 'class': 'form-control'})
+        form.fields['full_name'].widget.attrs.update({'value': worker.full_name, 'class': 'form-control'})
+        # Вот тут хуй знает как сделать не нашел
+        form.fields['job_title'].widget.attrs.update({'value': '2', 'class': 'custom-select'})
+        # Вот тут хуй знает как сделать не нашел
+        form.fields['passport'].widget.attrs.update({'value': worker.passport, 'class': 'form-control'})
+        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number, 'class': 'form-control'})
+        form.fields['password1'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
+        form.fields['password2'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
+
+        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = RegistrationForm(request.POST)
+            if form.is_valid():
+                # form.username_clean()
+
+                form.clean_password2()
+                form.update()
+                messages.info(request, "Данные обновалены")
+        else:
+            form = RegistrationForm()
+        return render(request, 'registration/registration.html', {'form': form})
 
 
 class LoginPageView(TemplateView):
@@ -88,6 +112,10 @@ class RegistrationPageView(TemplateView):
                 if form.username_clean() == '#':
                     # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.info(request, "Данное имя пользователя уже используется")
+                    return render(request, 'registration/registration.html', {'form': form})
+                if form.passport_clean() == '#':
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.info(request, "Пользователь с таким паспортом уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
                 form.clean_password2()
                 form.save()

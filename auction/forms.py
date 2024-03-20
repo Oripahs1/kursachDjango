@@ -30,13 +30,15 @@ class LoginForm(forms.Form):
 
 
 class RegistrationForm(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150)
-    full_name = forms.CharField(label='ФИО')
-    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
-    passport = forms.CharField(label='Серия и номер паспорта')
-    phone_num = forms.CharField(label='Номер телефона')
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE, widget=forms.Select(attrs={'class': 'custom-select'}))
+    passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    phone_num = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+    password1.widget.attrs.update({'class': 'form-control'})
+    password2.widget.attrs.update({'class': 'form-control'})
 
     def username_clean(self):
         username = self.cleaned_data['username']
@@ -44,6 +46,13 @@ class RegistrationForm(forms.Form):
         if Worker.objects.filter(username=username).exists():
             return '#'
         return username
+
+    def passport_clean(self):
+        passport = self.cleaned_data['passport']
+        new = Worker.objects.filter(passport=passport)
+        if Worker.objects.filter(passport=passport).exists():
+            return '#'
+        return passport
 
     # def email_clean(self):
     #     email = self.cleaned_data['email'].lower()
@@ -69,6 +78,17 @@ class RegistrationForm(forms.Form):
             phone_number=self.cleaned_data['phone_num'],
             password=self.cleaned_data['password1'],
         )
+    def update(self, commit=True):
+        worker_obl = Worker.objects.filter(username=self.cleaned_data['username'])
+        print(worker_obl)
+        worker_obl.update(
+            username=self.cleaned_data['username'].strip(),
+            full_name=self.cleaned_data['full_name'],
+            job_title=self.cleaned_data['job_title'],
+            passport=self.cleaned_data['passport'],
+            phone_number=self.cleaned_data['phone_num'],
+            password=self.cleaned_data['password1'],
+        )
 
 
 class UpdateWorker(forms.Form):
@@ -78,3 +98,20 @@ class UpdateWorker(forms.Form):
     passport = forms.CharField(label='Серия и номер паспорта')
     phone_num = forms.CharField(label='Номер телефона')
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+
+
+class WorkerForm(forms.Form):
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    full_name = forms.CharField(label='ФИО')
+    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
+    passport = forms.CharField(label='Серия и номер паспорта')
+    phone_num = forms.CharField(label='Номер телефона')
+    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+
+    def input_for_form(self, obj):
+        print('Вроде заносим')
+        print(obj.username)
+        # print(self.cleaned_data)
+        print(self.cleaned_data['username'])
+        self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control', 'value': obj.username}))
