@@ -11,8 +11,8 @@ import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm
+from .models import Car, PhotoCar, Worker, Order
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm
 from django.contrib import messages
 
 
@@ -39,15 +39,15 @@ class WorkersCardPageView(TemplateView):
         worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
         worker_data = Worker.objects.all()
         form = RegistrationForm()
-        form.fields['username'].widget.attrs.update({'value': worker.username, 'class': 'form-control'})
-        form.fields['full_name'].widget.attrs.update({'value': worker.full_name, 'class': 'form-control'})
+        form.fields['username'].widget.attrs.update({'value': worker.username})
+        form.fields['full_name'].widget.attrs.update({'value': worker.full_name})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['job_title'].widget.attrs.update({'value': '2', 'class': 'custom-select'})
+        form.fields['job_title'].widget.attrs.update({'value': worker.job_title})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['passport'].widget.attrs.update({'value': worker.passport, 'class': 'form-control'})
-        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number, 'class': 'form-control'})
-        form.fields['password1'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
-        form.fields['password2'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
+        form.fields['passport'].widget.attrs.update({'value': worker.passport})
+        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number})
+        form.fields['password1'].widget.attrs.update({'value': worker.password})
+        form.fields['password2'].widget.attrs.update({'value': worker.password})
 
         return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
 
@@ -125,6 +125,53 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+class OrderInOrdersPageView(TemplateView):
+    template_name = 'order_in_orders.html'
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.get(id_order=kwargs['order_id'])
+        print(order)
+        return render(request, self.template_name, {'order': order})
+
+
+class OrdersPageView(TemplateView):
+    template_name = "orders.html"
+
+    def get(self, request, *args, **kwargs):
+        print('Пришел запрос')
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
+class OrderPageView(TemplateView):
+    template_name = "order.html"
+
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        form = OrderForm()
+        photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
+        form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
 class CatalogPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
@@ -146,7 +193,6 @@ class CarPageView(TemplateView):
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
 
-
 class ParserPageView(TemplateView):
     template_name = "parser.html"
 
@@ -164,21 +210,21 @@ class ParserPageView(TemplateView):
             urls_list = html_page.find('ul', 'pagination')
             urls_list = urls_list.find_all('a')
 
-            for i in range(1, len(urls_list)+1):
+            for i in range(1, len(urls_list) + 1):
 
-                response = requests.get(url+str(i))
+                response = requests.get(url + str(i))
                 html_page = BeautifulSoup(response.text, 'lxml')
                 links = html_page.find_all('a', 'pic')
                 for link in links:
                     linked_list.append(link['href'])
 
             url = 'https://www.carwin.ru'
-            print(url+linked_list[0])
+            print(url + linked_list[0])
             k = 0
             for link in linked_list:
                 k += 1
                 print(k)
-                self.link_obr(url+link)
+                self.link_obr(url + link)
 
         return render(request, 'parser.html', {'response': 'success'})
 
@@ -190,9 +236,7 @@ class ParserPageView(TemplateView):
 
         car = Car.objects.filter(auc_number=number_of_auc.text)
 
-
         if html_page.find('div', 'page_title') is not None and not car:
-
 
             Obj = Car_data(url)
             print(url)
@@ -204,7 +248,6 @@ class ParserPageView(TemplateView):
 
             print('Было, знаем!', url)
             # return
-
 
 
 class Parser(object):
@@ -434,7 +477,6 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,

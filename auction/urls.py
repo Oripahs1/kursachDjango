@@ -11,4 +11,7 @@ urlpatterns = [
     path('catalog/car/<int:car_id>', views.CarPageView.as_view(), name='car'),
     path('workers/', views.WorkersPageView.as_view(), name='workers'),
     path('workers/card/<int:worker_id>', views.WorkersCardPageView.as_view(), name='workers_card'),
+    path('order/<int:car_id>', views.OrderPageView.as_view(), name='order'),
+    path('orders/', views.OrdersPageView.as_view(), name='orders'),
+    path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
 ]

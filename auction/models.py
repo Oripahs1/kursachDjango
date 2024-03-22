@@ -8,7 +8,7 @@ class PhotoCar(models.Model):
     photo = models.TextField()
 
 
-class Invoices(models.Model):
+class Invoice(models.Model):
     id_invoice = models.AutoField(primary_key=True)
     payer = models.TextField()
     receipent = models.TextField()
@@ -21,7 +21,7 @@ class Invoices(models.Model):
 
 class Trans(models.Model):
     id_trans = models.AutoField(primary_key=True)
-    id_invoice = models.ForeignKey(Invoices, on_delete=models.CASCADE)
+    id_invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     trans_comp = models.TextField()
     departure_point = models.TextField()
     destination_point = models.TextField()
@@ -32,21 +32,34 @@ class Trans(models.Model):
 
 class Order(models.Model):
     id_order = models.AutoField(primary_key=True)
+    # клиент
     id_customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
     id_worker = models.ForeignKey('Worker', on_delete=models.CASCADE)
-    id_invoice_comp = models.ForeignKey(Invoices, on_delete=models.CASCADE)
     status = models.TextField()
     date_start = models.DateField()
-    date_end = models.DateField()
+    date_end = models.DateField(null=True)
     comment = models.TextField()
     id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
+    sbts = models.TextField()
+    ptd = models.TextField()
+    price = models.TextField()
+
+    def get_absolute_url_order(self):
+        return reverse('order_in_orders', kwargs={'order_id': self.pk})
 
 
 class Customer(models.Model):
     id_customer = models.AutoField(primary_key=True)
-    full_name = models.TextField()
-    passport_num = models.TextField()
-    tel_num = models.TextField()
+    first_name_client = models.TextField()
+    last_name_client = models.TextField()
+    patronymic_client = models.TextField()
+    date_of_birth = models.TextField()
+    place_of_birth = models.TextField()
+    passport_series = models.TextField()
+    passport_number = models.TextField()
+    passport_department_code = models.TextField()
+    passport_department_name = models.TextField()
+    telephone = models.TextField()
 
 
 class Car(models.Model):
@@ -89,6 +102,10 @@ class Car(models.Model):
 
     def get_absolute_url_car(self):
         return reverse('car', kwargs={'car_id': self.pk})
+
+    def get_absolute_url_order(self):
+        print('ХОП')
+        return reverse('order', kwargs={'car_id': self.pk})
 
     def get_fields(self):
         poles = list()
