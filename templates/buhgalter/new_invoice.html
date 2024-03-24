@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block head %}
-    <title>Регистрация</title>
+    <title>Создание счета на оплату</title>
     <link rel="stylesheet" type="text/css" href="{% static 'registration.css' %}">
 {% endblock head %}
 
@@ -15,54 +15,64 @@
             {% csrf_token %}
             <div class="form_flex">
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
-                    {{ form.full_name }}
+                    <label for="{{ form.payer.id_for_label }}">{{ form.payer.label }}</label>
+                    {{ form.payer }}
                 </div>
 
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    <label for="{{ form.seller.id_for_label }}">{{ form.seller.label }}</label>
                     <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">@</span>
-                        </div>
-                        {{ form.username }}
+                        {{ form.seller }}
                     </div>
                 </div>
             </div>
             <div class="form_flex">
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.job_title.id_for_label }}">{{ form.job_title.label }}</label>
-                    {{ form.job_title }}
+                    <label for="{{ form.date_form.id_for_label }}">{{ form.date_form.label }}</label>
+                    {{ form.date_form }}
                 </div>
 
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.passport.id_for_label }}">{{ form.passport.label }}</label>
-                    {{ form.passport }}
+                    <label for="{{ form.date_pay.id_for_label }}">{{ form.date_pay.label }}</label>
+                    {{ form.date_pay }}
                 </div>
             </div>
 
             <div class="form_flex">
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.phone_num.id_for_label }}">{{ form.phone_num.label }}</label>
-                    {{ form.phone_num }}
+                    <label for="{{ form.sum.id_for_label }}">{{ form.sum.label }}</label>
+                    {{ form.sum }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.assigning.id_for_label }}">{{ form.assigning.label }}</label>
+                    {{ form.assigning }}
                 </div>
 
             </div>
 
             <div class="form_flex">
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
-                    {{ form.password1 }}
+                    <label for="{{ form.check_document.id_for_label }}">{{ form.check_document.label }}</label>
+                    {{ form.check_document }}
                 </div>
 
                 <div class="col-md-6 mb-2">
-                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
-                    {{ form.password2 }}
+                    <label for="{{ form.scan.id_for_label }}">{{ form.scan.label }}</label>
+                    {{ form.scan }}
                 </div>
             </div>
+            <div class="form_flex">
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
+                    {{ form.type }}
+                </div>
+            </div>
+
 
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <input type="submit" class="btn btn-dark position-relative" value="Зарегистрироваться"/>
+                <input type="submit" class="btn btn-dark position-relative" value="Сохранить счет на оплату"/>
             </div>
         </form>
     </div>

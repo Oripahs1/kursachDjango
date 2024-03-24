@@ -9,13 +9,14 @@
 {% block content %}
     <body>
     <div class="parser" style="text-align: center;">
+
         <form action="{% url 'parser' %}" method="post">
             {% csrf_token %}
-            <label for="parser_url">Ссылочка</label>
-            {{ form }}
-            <button class="btn btn-success" type="submit">
-                Go
-            </button>
+            <input type="submit" name="import" value="Импортировать новые машины с аукционов" class="btn btn-success">
+{#            <button class="btn btn-success" type="submit">#}
+{#                Go#}
+{#            </button>#}
+
             <style>
                 button{
                     margin-top: 15px;

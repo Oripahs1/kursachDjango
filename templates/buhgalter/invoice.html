@@ -1,0 +1,89 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>{{ invoice.id_invoice }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'worker_card.css' %}">
+{% endblock head %}
+
+
+
+{% block content %}
+    <div class="d-grid gap-2 col-6 mx-auto">
+
+       <form method="POST">
+            {% csrf_token %}
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.payer.id_for_label }}">{{ form.payer.label }}</label>
+                    {{ form.payer }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.seller.id_for_label }}">{{ form.seller.label }}</label>
+                    <div class="input-group">
+                        {{ form.seller }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.date_form.id_for_label }}">{{ form.date_form.label }}</label>
+                    {{ form.date_form }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.date_pay.id_for_label }}">{{ form.date_pay.label }}</label>
+                    {{ form.date_pay }}
+                </div>
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.sum.id_for_label }}">{{ form.sum.label }}</label>
+                    {{ form.sum }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.assigning.id_for_label }}">{{ form.assigning.label }}</label>
+                    {{ form.assigning }}
+                </div>
+
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.check_document.id_for_label }}">{{ form.check_document.label }}</label>
+                    {{ form.check_document }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.scan.id_for_label }}">{{ form.scan.label }}</label>
+                    {{ form.scan }}
+                </div>
+            </div>
+            <div class="form_flex">
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
+                    {{ form.type }}
+                </div>
+            </div>
+
+           <div class="form_flex">
+
+                <div class="col-md-6 mb-2" style="display: none">
+                    <label for="{{ form.id_invoice.id_for_label }}">{{ form.id_invoice.label }}</label>
+                    {{ form.id_invoice }}
+                </div>
+            </div>
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" class="btn btn-dark position-relative" value="Сохранить обновленные данные"/>
+            </div>
+        </form>
+    </div>
+{% endblock content %}
+

@@ -1,0 +1,125 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Новый заказ</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'order.css' %}">
+{% endblock head %}
+
+{% block content %}
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <img src="{{ photo }}">
+                </div>
+                <div class="col">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <th scope="row">Кузов</th>
+                            <td>{{ car.the_body }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Объем</th>
+                            <td>{{ car.volume }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">КПП</th>
+                            <td>{{ car.cpp }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Год</th>
+                            <td>{{ car.year_car }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Пробег</th>
+                            <td>{{ car.mileage }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Оценка</th>
+                            <td>{{ car.estimation }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form_flex">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.first_name_client.id_for_label }}">{{ form.first_name_client.label }}</label>
+                    {{ form.first_name_client }}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.last_name_client.id_for_label }}">{{ form.last_name_client.label }}</label>
+                    {{ form.last_name_client }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.patronymic_client.id_for_label }}">{{ form.patronymic_client.label }}</label>
+                    {{ form.patronymic_client }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
+                    {{ form.date_of_birth }}
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.place_of_birth.id_for_label }}">{{ form.place_of_birth.label }}</label>
+                    {{ form.place_of_birth }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport_series.id_for_label }}">{{ form.passport_series.label }}</label>
+                    {{ form.passport_series }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport_number.id_for_label }}">{{ form.passport_number.label }}</label>
+                    {{ form.passport_number }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport_department_code.id_for_label }}">{{ form.passport_department_code.label }}</label>
+                    {{ form.passport_department_code }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport_department_name.id_for_label }}">{{ form.passport_department_name.label }}</label>
+                    {{ form.passport_department_name }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }}</label>
+                    {{ form.telephone }}
+                </div>
+            </div>
+            <div class="form_flex" style="display: none">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.id_car.id_for_label }}">{{ form.id_car.label }}</label>
+                    {{ form.id_car }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.worker.id_for_label }}">{{ form.worker.label }}</label>
+                    <div class="input-group">
+                        {{ form.worker }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" class="btn btn-outline-dark position-relative" value="Оформить заказ"/>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

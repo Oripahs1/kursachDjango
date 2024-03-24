@@ -1,30 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    {% extends 'base.html' %}
-    {% load static %}
-    <title>{{ worker_data.full_name }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"></script>
-</head>
-<body>
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>{{ worker.full_name }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'worker_card.css' %}">
+{% endblock head %}
+
+
+
 {% block content %}
-    {% include 'messages.html' %}
-    <div style="margin-top: 50px; display: flex; justify-content: space-evenly">
-        <form method="get">
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <form method="POST">
             {% csrf_token %}
-            <h2>Регистрация пользователя</h2>
-            <div style="align-content: center">
-                {{ form.as_p }}
-                <input type="submit" style="width: 400px" value="Зарегистрироваться"/>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                    {{ form.full_name }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">@</span>
+                        </div>
+                        {{ form.username }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.job_title.id_for_label }}">{{ form.job_title.label }}</label>
+                    {{ form.job_title }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.passport.id_for_label }}">{{ form.passport.label }}</label>
+                    {{ form.passport }}
+                </div>
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.phone_num.id_for_label }}">{{ form.phone_num.label }}</label>
+                    {{ form.phone_num }}
+                </div>
+
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                    {{ form.password1 }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                    {{ form.password2 }}
+                </div>
+            </div>
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" class="btn btn-outline-dark position-relative" value="Обновить"/>
             </div>
         </form>
     </div>
-
 {% endblock content %}
-</body>
-</html>
+

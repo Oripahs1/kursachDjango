@@ -4,13 +4,15 @@
 # После парсинга сделал так, чтобы данные выводились на стричку car
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
+import datetime
+
 from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
-from django.shortcuts import render, get_object_or_404
-from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, UpdateWorker
+from django.shortcuts import render
+from .models import Car, PhotoCar, Worker, Order, Invoice
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
 from django.contrib import messages
 
 
@@ -34,21 +36,33 @@ class WorkersCardPageView(TemplateView):
     template_name = "worker_card.html"
 
     def get(self, request, *args, **kwargs):
-        # worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
-        # form = UpdateWorker
-        # form.full_name = worker.full_name
-        # form.passport = worker.passport
-        # form.password = worker.password
-        # form.username = worker.username
-        # form.job_title = worker.job_title
-        # form.phone_num = worker.phone_number
-        # print(worker)
-        # return render(request, 'worker_card.html', {'form': form, 'worker': worker})
-        post = get_object_or_404(Worker, pk=Worker.objects.get(id_worker=kwargs.get('worker_id')))
-        if request.method == 'GET':
-            form = UpdateWorker
+        worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
+        worker_data = Worker.objects.all()
+        form = RegistrationForm()
+        form.fields['username'].widget.attrs.update({'value': worker.username})
+        form.fields['full_name'].widget.attrs.update({'value': worker.full_name})
+        # Вот тут хуй знает как сделать не нашел
+        form.fields['job_title'].widget.attrs.update({'value': worker.job_title})
+        # Вот тут хуй знает как сделать не нашел
+        form.fields['passport'].widget.attrs.update({'value': worker.passport})
+        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number})
+        form.fields['password1'].widget.attrs.update({'value': worker.password})
+        form.fields['password2'].widget.attrs.update({'value': worker.password})
+
+        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = RegistrationForm(request.POST)
             if form.is_valid():
-                pass
+                # form.username_clean()
+
+                form.clean_password2()
+                form.update()
+                messages.info(request, "Данные обновалены")
+        else:
+            form = RegistrationForm()
+        return render(request, 'registration/registration.html', {'form': form})
 
 
 class LoginPageView(TemplateView):
@@ -99,6 +113,10 @@ class RegistrationPageView(TemplateView):
                     # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.info(request, "Данное имя пользователя уже используется")
                     return render(request, 'registration/registration.html', {'form': form})
+                if form.passport_clean() == '#':
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.info(request, "Пользователь с таким паспортом уже существует")
+                    return render(request, 'registration/registration.html', {'form': form})
                 form.clean_password2()
                 form.save()
                 messages.info(request, "Пользователь зарегистрирован")
@@ -107,10 +125,96 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+class OrderInOrdersPageView(TemplateView):
+    template_name = 'order_in_orders.html'
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.get(id_order=kwargs['order_id'])
+        print(order)
+        form = OrderInOrdersForm()
+        print(order.comment)
+        form.fields['id_order'].widget.attrs.update({'value': order.id_order})
+        form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
+        form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
+        form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
+        form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
+        form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        if order.date_end is not None:
+            form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
+        if order.comment is not None:
+            form.fields['comment'].widget.attrs.update({'value': order.comment})
+        if order.sbts is not None:
+            form.fields['sbts'].widget.attrs.update({'value': order.sbts})
+        if order.ptd is not None:
+            form.fields['ptd'].widget.attrs.update({'value': order.ptd})
+        return render(request, self.template_name, {'order': order, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        print(request.FILES)
+        if request.method == 'POST':
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+
+                order = Order.objects.filter(id_order=form.cleaned_data['id_order'])
+                order = order[0]
+                order.ptd = request.FILES.get('ptd')
+                order.sbts = request.FILES.get('sbts')
+                order.save()
+                messages.info(request, "Заказ изменен")
+                form.save()
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+        orders = Order.objects.all()
+        return render(request, 'orders.html', {"orders": orders})
+
+
+class OrdersPageView(TemplateView):
+    template_name = "orders.html"
+
+    def get(self, request, *args, **kwargs):
+        print('Пришел запрос')
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
+class OrderPageView(TemplateView):
+    template_name = "order.html"
+
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        form = OrderForm()
+        photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
+        form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
 class CatalogPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         cars = Car.objects.all()
+        cars = Car.objects.filter(auc_date__gte=datetime.date.today())
 
         for el in cars:
             el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
@@ -135,31 +239,53 @@ class ParserPageView(TemplateView):
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = ParserForm(request.POST)
-            if form.is_valid():
-                url1 = 'https://www.carwin.ru/japanauc/see/'
-                url = form.cleaned_data['url_parser_field']
-                for i in range(945500000, 945500100):
+        linked_list = list()
+        print('Пришел пост запрос')
+        if request.method == 'POST' and 'import' in request.POST:
+            url = 'https://www.carwin.ru/japanauc/'
+            response = requests.get(url)
+            html_page = BeautifulSoup(response.text, 'lxml')
+            urls_list = html_page.find('ul', 'pagination')
+            urls_list = urls_list.find_all('a')
 
-                    response = requests.get(url1 + str(i))
-                    html_page = BeautifulSoup(response.text, "lxml")
-                    # print(html_page.find('div', 'page_title'))
+            for i in range(1, len(urls_list) + 1):
 
-                    # name = html_page.find('div', 'page_title').text
-                    # print(name)
-                    if html_page.find('div', 'page_title') is not None:
-                        Obj = Car_data(url1 + str(i))
-                        print(url1 + str(i))
-                        Obj.print()
+                response = requests.get(url + str(i))
+                html_page = BeautifulSoup(response.text, 'lxml')
+                links = html_page.find_all('a', 'pic')
+                for link in links:
+                    linked_list.append(link['href'])
 
-                        Obj.save_me_to_bd()
-                        del Obj
-                    # return
+            url = 'https://www.carwin.ru'
+            print(url + linked_list[0])
+            k = 0
+            for link in linked_list:
+                k += 1
+                print(k)
+                self.link_obr(url + link)
 
+        return render(request, 'parser.html', {'response': 'success'})
+
+    def link_obr(self, url):
+
+        response = requests.get(url)
+        html_page = BeautifulSoup(response.text, "lxml")
+        number_of_auc = html_page.find('div', 'row_desc_middle')
+
+        car = Car.objects.filter(auc_number=number_of_auc.text)
+
+        if html_page.find('div', 'page_title') is not None and not car:
+
+            Obj = Car_data(url)
+            print(url)
+            Obj.print()
+
+            Obj.save_me_to_bd()
+            del Obj
         else:
-            form = ParserForm()
-        return render(request, 'parser.html', {'form': form})
+
+            print('Было, знаем!', url)
+            # return
 
 
 class Parser(object):
@@ -423,3 +549,74 @@ class Car_data(object):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
 
         print(new_car_new)
+
+
+class BuhgalterPageView(TemplateView):
+    template_name = "buhgalter/buhgalter.html"
+
+    def get(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        print('Тут должен быть инвойс')
+        print(invoices)
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
+
+
+class BuhgalterInvoicePageView(TemplateView):
+    template_name = "buhgalter/invoice.html"
+
+    def get(self, request, *args, **kwargs):
+        invoice = Invoice.objects.get(id_invoice=kwargs.get('invoice_id'))
+        invoice_data = Invoice.objects.all()
+        form = InvoiceForm()
+        form.fields['id_invoice'].widget.attrs.update({'value': invoice.id_invoice})
+        form.fields['payer'].widget.attrs.update({'value': invoice.payer})
+        form.fields['seller'].widget.attrs.update({'value': invoice.seller})
+        form.fields['date_form'].widget.attrs.update({'value': invoice.date_form})
+        form.fields['date_pay'].widget.attrs.update({'value': invoice.date_pay})
+        form.fields['sum'].widget.attrs.update({'value': invoice.sum})
+        form.fields['check_document'].widget.attrs.update({'value': invoice.check_document})
+        form.fields['assigning'].widget.attrs.update({'value': invoice.assigning})
+        form.fields['scan'].widget.attrs.update({'value': invoice.scan})
+        form.fields['type'].widget.attrs.update({'value': invoice.type})
+
+        return render(request, 'buhgalter/invoice.html',
+                      {'invoice': invoice, 'invoice_data': invoice_data, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        if request.method == 'POST':
+            form = InvoiceForm(request.POST)
+            print('Валидная или инвалидная форма', form.is_valid())
+            print(form.errors)
+            if form.is_valid():
+                form.update()
+                messages.info(request, "Данные обновлены")
+        else:
+            form = InvoiceForm()
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
+
+
+class BuhgalterNewInvoicePageView(TemplateView):
+    template_name = "buhgalter/new_invoice.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = InvoiceForm()
+            return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        if request.method == 'POST':
+            print('Запрос пришел')
+            form = NewInvoiceForm(request.POST)
+            print(form.is_valid())
+            print(form.errors)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Счет на оплату сохранен")
+                return render(request, 'buhgalter/new_invoice.html', {'form': form})
+            # form.save()
+            # messages.info(request, "Счет на оплату сохранен")
+        else:
+            form = NewInvoiceForm()
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
