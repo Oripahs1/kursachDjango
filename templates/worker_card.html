@@ -12,6 +12,19 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
+{% block content %}
+    {% include 'messages.html' %}
+    <div style="margin-top: 50px; display: flex; justify-content: space-evenly">
+        <form method="get">
+            {% csrf_token %}
+            <h2>Регистрация пользователя</h2>
+            <div style="align-content: center">
+                {{ form.as_p }}
+                <input type="submit" style="width: 400px" value="Зарегистрироваться"/>
+            </div>
+        </form>
+    </div>
 
+{% endblock content %}
 </body>
 </html>

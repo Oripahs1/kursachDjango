@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, UpdateWorker
 from django.contrib import messages
 
 
@@ -34,9 +34,21 @@ class WorkersCardPageView(TemplateView):
     template_name = "worker_card.html"
 
     def get(self, request, *args, **kwargs):
-        worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
-        worker_data = Worker.objects.all()
-        return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data})
+        # worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
+        # form = UpdateWorker
+        # form.full_name = worker.full_name
+        # form.passport = worker.passport
+        # form.password = worker.password
+        # form.username = worker.username
+        # form.job_title = worker.job_title
+        # form.phone_num = worker.phone_number
+        # print(worker)
+        # return render(request, 'worker_card.html', {'form': form, 'worker': worker})
+        post = get_object_or_404(Worker, pk=Worker.objects.get(id_worker=kwargs.get('worker_id')))
+        if request.method == 'GET':
+            form = UpdateWorker
+            if form.is_valid():
+                pass
 
 
 class LoginPageView(TemplateView):
@@ -113,7 +125,6 @@ class CarPageView(TemplateView):
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         photo = PhotoCar.objects.filter(id_car=car)
         return render(request, 'car.html', {'car': car, 'photo': photo})
-
 
 
 class ParserPageView(TemplateView):
@@ -378,7 +389,6 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,

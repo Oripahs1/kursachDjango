@@ -72,9 +72,9 @@ class RegistrationForm(forms.Form):
 
 
 class UpdateWorker(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, )
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={"class":""}))
     full_name = forms.CharField(label='ФИО')
     job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
     passport = forms.CharField(label='Серия и номер паспорта')
-    phone_num = forms.CharField(label='Номер телефона')
-    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    phone _num = forms.CharField(label='Номер телефона')
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
