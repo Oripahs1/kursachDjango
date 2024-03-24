@@ -1,24 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Вход</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-</head>
-<body>
 {% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Вход </title>
+    <link rel="stylesheet" type="text/css" href="{% static 'login.css' %}">
+{% endblock head %}
+
 {% block content %}
     {% include 'messages.html' %}
 
-    <form method="POST" style="margin-left: 38%; margin-top: 50px">
-        {% csrf_token %}
-        <h2>Вход</h2>
-        {{ form.as_p }}
-        <input type="submit" value="Войти"/>
-    </form>
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <form method="POST">
+            {% csrf_token %}
+            <h2 class="text-center">Вход</h2>
+            <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                    {{ form.password }}
+                </div>
+            </div>
+           <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" class="btn btn-outline-dark position-relative" value="Войти"/>
+            </div>
+        </form>
+    </div>
+
 {% endblock content %}
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>
@@ -28,5 +41,4 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
         integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
         crossorigin="anonymous"></script>
-</body>
-</html>
+

@@ -14,4 +14,7 @@ urlpatterns = [
     path('buhgalter/', views.BuhgalterPageView.as_view(), name='buhgalter'),
     path('buhgalter/invoice/<int:invoice_id>', views.BuhgalterInvoicePageView.as_view(), name='invoice'),
     path('buhgalter/new_invoice', views.BuhgalterNewInvoicePageView.as_view(), name='buhgalter_new_invoice'),
+    path('order/<int:car_id>', views.OrderPageView.as_view(), name='order'),
+    path('orders/', views.OrdersPageView.as_view(), name='orders'),
+    path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
 ]

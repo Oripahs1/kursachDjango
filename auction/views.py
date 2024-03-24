@@ -11,8 +11,8 @@ import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, PhotoCar, Worker, Invoice
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm, InvoiceForm, NewInvoiceForm
+from .models import Car, PhotoCar, Worker, Order, Invoice
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
 from django.contrib import messages
 
 
@@ -39,15 +39,15 @@ class WorkersCardPageView(TemplateView):
         worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
         worker_data = Worker.objects.all()
         form = RegistrationForm()
-        form.fields['username'].widget.attrs.update({'value': worker.username, 'class': 'form-control'})
-        form.fields['full_name'].widget.attrs.update({'value': worker.full_name, 'class': 'form-control'})
+        form.fields['username'].widget.attrs.update({'value': worker.username})
+        form.fields['full_name'].widget.attrs.update({'value': worker.full_name})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['job_title'].widget.attrs.update({'value': '2', 'class': 'custom-select'})
+        form.fields['job_title'].widget.attrs.update({'value': worker.job_title})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['passport'].widget.attrs.update({'value': worker.passport, 'class': 'form-control'})
-        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number, 'class': 'form-control'})
-        form.fields['password1'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
-        form.fields['password2'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
+        form.fields['passport'].widget.attrs.update({'value': worker.passport})
+        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number})
+        form.fields['password1'].widget.attrs.update({'value': worker.password})
+        form.fields['password2'].widget.attrs.update({'value': worker.password})
 
         return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
 
@@ -123,6 +123,91 @@ class RegistrationPageView(TemplateView):
         else:
             form = RegistrationForm()
         return render(request, 'registration/registration.html', {'form': form})
+
+
+class OrderInOrdersPageView(TemplateView):
+    template_name = 'order_in_orders.html'
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.get(id_order=kwargs['order_id'])
+        print(order)
+        form = OrderInOrdersForm()
+        print(order.comment)
+        form.fields['id_order'].widget.attrs.update({'value': order.id_order})
+        form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
+        form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
+        form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
+        form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
+        form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        if order.date_end is not None:
+            form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
+        if order.comment is not None:
+            form.fields['comment'].widget.attrs.update({'value': order.comment})
+        if order.sbts is not None:
+            form.fields['sbts'].widget.attrs.update({'value': order.sbts})
+        if order.ptd is not None:
+            form.fields['ptd'].widget.attrs.update({'value': order.ptd})
+        return render(request, self.template_name, {'order': order, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        print(request.FILES)
+        if request.method == 'POST':
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+
+                order = Order.objects.filter(id_order=form.cleaned_data['id_order'])
+                order = order[0]
+                order.ptd = request.FILES.get('ptd')
+                order.sbts = request.FILES.get('sbts')
+                order.save()
+                messages.info(request, "Заказ изменен")
+                form.save()
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+        orders = Order.objects.all()
+        return render(request, 'orders.html', {"orders": orders})
+
+
+class OrdersPageView(TemplateView):
+    template_name = "orders.html"
+
+    def get(self, request, *args, **kwargs):
+        print('Пришел запрос')
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
+class OrderPageView(TemplateView):
+    template_name = "order.html"
+
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        form = OrderForm()
+        photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
+        form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+
+        orders = Order.objects.all()
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
 
 
 class CatalogPageView(TemplateView):
