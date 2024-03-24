@@ -12,7 +12,7 @@ import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from .models import Car, PhotoCar, Worker, Order
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm
 from django.contrib import messages
 
 
@@ -131,7 +131,45 @@ class OrderInOrdersPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
         print(order)
-        return render(request, self.template_name, {'order': order})
+        form = OrderInOrdersForm()
+        print(order.comment)
+        form.fields['id_order'].widget.attrs.update({'value': order.id_order})
+        form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
+        form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
+        form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
+        form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
+        form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        if order.date_end is not None:
+            form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
+        if order.comment is not None:
+            form.fields['comment'].widget.attrs.update({'value': order.comment})
+        if order.sbts is not None:
+            form.fields['sbts'].widget.attrs.update({'value': order.sbts})
+        if order.ptd is not None:
+            form.fields['ptd'].widget.attrs.update({'value': order.ptd})
+        return render(request, self.template_name, {'order': order, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        print(request.FILES)
+        if request.method == 'POST':
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+
+                order = Order.objects.filter(id_order=form.cleaned_data['id_order'])
+                order = order[0]
+                order.ptd = request.FILES.get('ptd')
+                order.sbts = request.FILES.get('sbts')
+                order.save()
+                messages.info(request, "Заказ изменен")
+                form.save()
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+        orders = Order.objects.all()
+        return render(request, 'orders.html', {"orders": orders})
 
 
 class OrdersPageView(TemplateView):

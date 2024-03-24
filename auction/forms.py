@@ -136,10 +136,30 @@ class OrderForm(forms.Form):
             date_start=datetime.date.today(),
         )
 
-class OrderInOrdersForm(forms.ModelForm):
-    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+class OrderInOrdersForm(forms.Form):
+    id_order = forms.CharField(label='Заказ', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_start = forms.DateField(label='Дата открытия заказа', widget=forms.DateInput(attrs={'class': 'form-control'}))
-    comment = forms.CharField(label='Комментарий к заказу', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_start = forms.DateField(label='Дата открытия заказа', widget=forms.DateInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    date_end = forms.CharField(label='Дата закрытия заказа', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}))
+    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}))
+    sbts = forms.FileField(label='Добавить СБТС', widget=forms.FileInput(attrs={'class': 'form-control'}))
+    ptd = forms.FileField(label='Добавить ПТД', widget=forms.FileInput(attrs={'class': 'form-control'}))
+
+    def save(self,  commit=True):
+        order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
+        order.update(
+            date_end=self.cleaned_data['date_end'],
+            comment=self.cleaned_data['comment'],
+        )
+        customer = order[0].id_customer
+        customer.telephone = self.cleaned_data['telephone']
+        customer.save()
