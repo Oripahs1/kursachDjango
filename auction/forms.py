@@ -6,6 +6,7 @@ from django.forms.fields import EmailField
 from django.forms.forms import Form
 from django.contrib import messages
 from .models import Worker
+from .models import Invoice
 
 
 class ParserForm(forms.Form):
@@ -30,9 +31,11 @@ class LoginForm(forms.Form):
 
 
 class RegistrationForm(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+                               widget=forms.TextInput(attrs={'class': 'form-control'}))
     full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE, widget=forms.Select(attrs={'class': 'custom-select'}))
+    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE,
+                                  widget=forms.Select(attrs={'class': 'custom-select'}))
     passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
     phone_num = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
@@ -54,13 +57,6 @@ class RegistrationForm(forms.Form):
             return '#'
         return passport
 
-    # def email_clean(self):
-    #     email = self.cleaned_data['email'].lower()
-    #     new = User.objects.filter(email=email)
-    #     if new.count():
-    #         raise ValidationError(" Email Already Exist")
-    #     return email
-
     def clean_password2(self):
         password1 = self.cleaned_data['password1']
         password2 = self.cleaned_data['password2']
@@ -78,6 +74,7 @@ class RegistrationForm(forms.Form):
             phone_number=self.cleaned_data['phone_num'],
             password=self.cleaned_data['password1'],
         )
+
     def update(self, commit=True):
         worker_obl = Worker.objects.filter(username=self.cleaned_data['username'])
         print(worker_obl)
@@ -101,7 +98,8 @@ class UpdateWorker(forms.Form):
 
 
 class WorkerForm(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+                               widget=forms.TextInput(attrs={'class': 'form-control'}))
     full_name = forms.CharField(label='ФИО')
     job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
     passport = forms.CharField(label='Серия и номер паспорта')
@@ -114,4 +112,60 @@ class WorkerForm(forms.Form):
         print(obj.username)
         # print(self.cleaned_data)
         print(self.cleaned_data['username'])
-        self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, widget=forms.TextInput(attrs={'class': 'form-control', 'value': obj.username}))
+        self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+                                        widget=forms.TextInput(attrs={'class': 'form-control', 'value': obj.username}))
+
+
+class InvoiceForm(forms.Form):
+    id_invoice = forms.IntegerField(label='ID',
+                                    widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
+    payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice, widget=forms.Select(attrs={'class': 'custom-select'}))
+    scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    def update(self, commit=True):
+        invoice_obl = Invoice.objects.filter(id_invoice=self.cleaned_data['id_invoice'])
+        print(invoice_obl)
+        invoice_obl.update(
+            payer=self.cleaned_data['payer'],
+            seller=self.cleaned_data['seller'],
+            date_form=self.cleaned_data['date_form'],
+            date_pay=self.cleaned_data['date_pay'],
+            sum=self.cleaned_data['sum'],
+            type=self.cleaned_data['type'],
+            check_document=self.cleaned_data['check_document'],
+            scan=self.cleaned_data['scan'],
+            assigning=self.cleaned_data['assigning'],
+        )
+
+
+class NewInvoiceForm(forms.Form):
+    payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,widget=forms.Select(attrs={'class': 'custom-select'}))
+    scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    def save(self, commit=True):
+        print('Пытаемся сохранить')
+        Invoice.objects.create(
+            payer=self.cleaned_data['payer'].strip(),
+            seller=self.cleaned_data['seller'].strip(),
+            date_form=self.cleaned_data['date_form'],
+            date_pay=self.cleaned_data['date_pay'],
+            sum=self.cleaned_data['sum'],
+            type=self.cleaned_data['type'],
+            check_document=self.cleaned_data['check_document'],
+            scan=self.cleaned_data['scan'],
+            assigning=self.cleaned_data['assigning'],
+        )

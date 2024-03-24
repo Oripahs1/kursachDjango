@@ -8,20 +8,39 @@ class PhotoCar(models.Model):
     photo = models.TextField()
 
 
-class Invoices(models.Model):
+class Invoice(models.Model):
     id_invoice = models.AutoField(primary_key=True)
     payer = models.TextField()
-    receipent = models.TextField()
-    date_form = models.DateField()
-    date_pay = models.DateField()
+    seller = models.TextField()
+    date_form = models.TextField()
+    date_pay = models.TextField()
     sum = models.IntegerField()
-    check_to_client = models.TextField()
-    type = models.CharField(max_length=50)  # Уточните ENUM-тип
+    check_document = models.TextField()  # Ссылка на pdf
+    assigning = models.TextField()
+    scan = models.TextField()  # Ссылка на pdf
+
+    # choice
+    Japan = 'Оплата авто в Японии'
+    Transportation = 'Оплата услуг ТК'
+    Customs = 'Оплата таможенного взноса(ПТД)'
+    Laboratory = 'Оплата услуг лаборатории(СБТС)'
+    Company = 'Оплата услуг компании'
+    type_choice = [
+        (Japan, 'Оплата авто в Японии'),
+        (Transportation, 'Оплата услуг ТК'),
+        (Customs, 'Оплата таможенного взноса(ПТД)'),
+        (Laboratory, 'Оплата услуг лаборатории(СБТС)'),
+        (Company, 'Оплата услуг компании'),
+    ]
+    type = models.TextField(choices=type_choice)
+
+    def get_absolute_url_invoice(self):
+        return reverse('invoice', kwargs={'invoice_id': self.pk})
 
 
 class Trans(models.Model):
     id_trans = models.AutoField(primary_key=True)
-    id_invoice = models.ForeignKey(Invoices, on_delete=models.CASCADE)
+    id_invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE)
     trans_comp = models.TextField()
     departure_point = models.TextField()
     destination_point = models.TextField()
@@ -34,7 +53,7 @@ class Order(models.Model):
     id_order = models.AutoField(primary_key=True)
     id_customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
     id_worker = models.ForeignKey('Worker', on_delete=models.CASCADE)
-    id_invoice_comp = models.ForeignKey(Invoices, on_delete=models.CASCADE)
+    id_invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE)
     status = models.TextField()
     date_start = models.DateField()
     date_end = models.DateField()

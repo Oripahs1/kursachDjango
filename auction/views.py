@@ -11,8 +11,8 @@ import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, PhotoCar, Worker
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm
+from .models import Car, PhotoCar, Worker, Invoice
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm, InvoiceForm, NewInvoiceForm
 from django.contrib import messages
 
 
@@ -146,7 +146,6 @@ class CarPageView(TemplateView):
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
 
-
 class ParserPageView(TemplateView):
     template_name = "parser.html"
 
@@ -164,21 +163,21 @@ class ParserPageView(TemplateView):
             urls_list = html_page.find('ul', 'pagination')
             urls_list = urls_list.find_all('a')
 
-            for i in range(1, len(urls_list)+1):
+            for i in range(1, len(urls_list) + 1):
 
-                response = requests.get(url+str(i))
+                response = requests.get(url + str(i))
                 html_page = BeautifulSoup(response.text, 'lxml')
                 links = html_page.find_all('a', 'pic')
                 for link in links:
                     linked_list.append(link['href'])
 
             url = 'https://www.carwin.ru'
-            print(url+linked_list[0])
+            print(url + linked_list[0])
             k = 0
             for link in linked_list:
                 k += 1
                 print(k)
-                self.link_obr(url+link)
+                self.link_obr(url + link)
 
         return render(request, 'parser.html', {'response': 'success'})
 
@@ -190,9 +189,7 @@ class ParserPageView(TemplateView):
 
         car = Car.objects.filter(auc_number=number_of_auc.text)
 
-
         if html_page.find('div', 'page_title') is not None and not car:
-
 
             Obj = Car_data(url)
             print(url)
@@ -204,7 +201,6 @@ class ParserPageView(TemplateView):
 
             print('Было, знаем!', url)
             # return
-
 
 
 class Parser(object):
@@ -434,7 +430,6 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
-
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -469,3 +464,74 @@ class Car_data(object):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])
 
         print(new_car_new)
+
+
+class BuhgalterPageView(TemplateView):
+    template_name = "buhgalter/buhgalter.html"
+
+    def get(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        print('Тут должен быть инвойс')
+        print(invoices)
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
+
+
+class BuhgalterInvoicePageView(TemplateView):
+    template_name = "buhgalter/invoice.html"
+
+    def get(self, request, *args, **kwargs):
+        invoice = Invoice.objects.get(id_invoice=kwargs.get('invoice_id'))
+        invoice_data = Invoice.objects.all()
+        form = InvoiceForm()
+        form.fields['id_invoice'].widget.attrs.update({'value': invoice.id_invoice})
+        form.fields['payer'].widget.attrs.update({'value': invoice.payer})
+        form.fields['seller'].widget.attrs.update({'value': invoice.seller})
+        form.fields['date_form'].widget.attrs.update({'value': invoice.date_form})
+        form.fields['date_pay'].widget.attrs.update({'value': invoice.date_pay})
+        form.fields['sum'].widget.attrs.update({'value': invoice.sum})
+        form.fields['check_document'].widget.attrs.update({'value': invoice.check_document})
+        form.fields['assigning'].widget.attrs.update({'value': invoice.assigning})
+        form.fields['scan'].widget.attrs.update({'value': invoice.scan})
+        form.fields['type'].widget.attrs.update({'value': invoice.type})
+
+        return render(request, 'buhgalter/invoice.html',
+                      {'invoice': invoice, 'invoice_data': invoice_data, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        if request.method == 'POST':
+            form = InvoiceForm(request.POST)
+            print('Валидная или инвалидная форма', form.is_valid())
+            print(form.errors)
+            if form.is_valid():
+                form.update()
+                messages.info(request, "Данные обновлены")
+        else:
+            form = InvoiceForm()
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
+
+
+class BuhgalterNewInvoicePageView(TemplateView):
+    template_name = "buhgalter/new_invoice.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = InvoiceForm()
+            return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        invoices = Invoice.objects.all()
+        if request.method == 'POST':
+            print('Запрос пришел')
+            form = NewInvoiceForm(request.POST)
+            print(form.is_valid())
+            print(form.errors)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Счет на оплату сохранен")
+                return render(request, 'buhgalter/new_invoice.html', {'form': form})
+            # form.save()
+            # messages.info(request, "Счет на оплату сохранен")
+        else:
+            form = NewInvoiceForm()
+        return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
