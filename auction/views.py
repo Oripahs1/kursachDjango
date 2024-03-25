@@ -130,23 +130,31 @@ class OrderInOrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
-        print(order)
+        print(order.ptd == '')
+        print(order.sbts == '')
+
         form = OrderInOrdersForm()
-        print(order.comment)
+
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
         form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
         form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
         form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
         form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
         form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        form.fields['sbts'].widget.initial_text = ''
+        form.fields['sbts'].widget.input_text = 'Заменить'
+        form.fields['ptd'].widget.initial_text = ''
+        form.fields['ptd'].widget.input_text = 'Заменить'
+        form.fields['ptd'].widget.clear_checkbox_label = ''
+        form.fields['sbts'].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
-            form.fields['comment'].widget.attrs.update({'media': order.comment})
+            form.fields['comment'].initial = order.comment
         if order.sbts is not None:
-            form.fields['sbts'].widget.attrs.update({'value': order.sbts})
+            form.fields['sbts'].initial = order.sbts
         if order.ptd is not None:
-            form.fields['ptd'].widget.attrs.update({'value': order.ptd})
+            form.fields['ptd'].initial = order.ptd
         return render(request, self.template_name, {'order': order, 'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -157,9 +165,23 @@ class OrderInOrdersPageView(TemplateView):
 
                 order = Order.objects.filter(id_order=form.cleaned_data['id_order'])
                 order = order[0]
-                order.ptd = request.FILES.get('ptd')
-                order.sbts = request.FILES.get('sbts')
+                # is_initial
+                print(form.initial)
+                print(form.cleaned_data['date_end'])
+                # print(form.fields['ptd'].initial)
+
+                if order.ptd == '':
+                    order.ptd = request.FILES.get('ptd')
+                else:
+                    order.ptd = order.ptd
+
+                if order.sbts == '':
+                    order.sbts = request.FILES.get('sbts')
+                else:
+                    order.sbts = order.sbts
+
                 order.save()
+
                 messages.info(request, "Заказ изменен")
                 form.save()
             else:
@@ -168,7 +190,7 @@ class OrderInOrdersPageView(TemplateView):
                     print("Field Error:", field.name, field.errors)
         else:
             form = OrderForm()
-        orders = Order.objects.all()
+        orders = Order.objects.filter(date_end=None)
         return render(request, 'orders.html', {"orders": orders})
 
 
@@ -177,7 +199,7 @@ class OrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         print('Пришел запрос')
-        orders = Order.objects.all()
+        orders = Order.objects.filter(date_end=None)
         print(orders)
         return render(request, 'orders.html', {'orders': orders})
 

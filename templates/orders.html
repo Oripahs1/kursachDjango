@@ -9,7 +9,7 @@
 {% endblock head %}
 
 {% block content %}
-    <ul class="d-grid gap-2 col-6 mx-auto">
+    <ul class="d-grid gap-2 col-8 mx-auto">
         <table class="table table-striped">
             <thead>
             <tr>
@@ -17,6 +17,7 @@
                 <th scope="col">ФИО клиента</th>
                 <th scope="col">Название машины</th>
                 <th scope="col">Номер телефона клиента</th>
+                <th scope="col">Дата</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -27,6 +28,7 @@
                     <td>{{ el.id_customer.first_name_client }} {{ el.id_customer.last_name_client }} {{ el.id_customer.patronymic_client }}</td>
                     <td>{{ el.id_car.title }}</td>
                     <td>{{ el.id_customer.telephone }}</td>
+                    <td>{{ el.date_start }}</td>
                     <td>
                         <a href="{{ el.get_absolute_url_order }}">
                             <button style="width: 100px"

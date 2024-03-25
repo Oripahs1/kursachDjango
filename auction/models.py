@@ -54,13 +54,13 @@ class Order(models.Model):
     # клиент
     id_customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
     id_worker = models.ForeignKey('Worker', on_delete=models.CASCADE)
-    status = models.TextField(null=True)
+    status = models.TextField(null=True, blank=True)
     date_start = models.DateField()
     date_end = models.DateField(null=True, blank=True)
     comment = models.TextField(null=True)
     id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
-    sbts = models.FileField(null=True, upload_to='sbts/')
-    ptd = models.FileField(null=True, upload_to='ptd/')
+    sbts = models.FileField(null=True, upload_to='sbts/', blank=True)
+    ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
 
     def get_absolute_url_order(self):

@@ -149,16 +149,19 @@ class OrderInOrdersForm(forms.Form):
     date_start = forms.DateField(label='Дата открытия заказа', widget=forms.DateInput(
         attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     date_end = forms.CharField(label='Дата закрытия заказа', widget=forms.TextInput(
-        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}))
-    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}))
-    sbts = forms.FileField(label='Добавить СБТС', widget=forms.FileInput(attrs={'class': 'form-control'}))
-    ptd = forms.FileField(label='Добавить ПТД', widget=forms.FileInput(attrs={'class': 'form-control'}))
+        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}), required=False)
+    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}), required=False)
+    sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    ptd = forms.FileField(label='ПТД', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
 
     def save(self,  commit=True):
+        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
+        if self.cleaned_data['date_end'] != '':
+            order.update(date_end=self.cleaned_data['date_end'])
+
         order.update(
-            date_end=self.cleaned_data['date_end'],
-            comment=self.cleaned_data['comment'],
+            comment=self.cleaned_data['comment']
         )
         customer = order[0].id_customer
         customer.telephone = self.cleaned_data['telephone']
