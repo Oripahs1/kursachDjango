@@ -66,6 +66,9 @@ class Order(models.Model):
     def get_absolute_url_order(self):
         return reverse('order_in_orders', kwargs={'order_id': self.pk})
 
+    def __str__(self):
+        return str(self.id_order)
+
 
 class Customer(models.Model):
     id_customer = models.AutoField(primary_key=True)
@@ -79,6 +82,9 @@ class Customer(models.Model):
     passport_department_code = models.TextField()
     passport_department_name = models.TextField()
     telephone = models.TextField()
+
+    def __str__(self):
+        return str(self.last_name_client)
 
 
 class Car(models.Model):
@@ -173,6 +179,9 @@ class Car(models.Model):
                 case 'number_of_sessions':
                     poles.append(['Количество проведений', field.value_to_string(self)])
         return poles
+
+    def __str__(self):
+        return str(self.title)
 
 
 class Worker(models.Model):
