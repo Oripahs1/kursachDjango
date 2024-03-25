@@ -10,10 +10,19 @@ from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Car, PhotoCar, Worker, Order, Invoice
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
+    NewInvoiceForm
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.admin import UserAdmin
+
+
+# from django.conf import settings
+# from django.contrib.auth.backends import BaseBackend
+# from django.contrib.auth.hashers import check_password
+# from django.contrib.auth.models import User
 
 
 class HomePageView(TemplateView):
@@ -24,11 +33,128 @@ class HomePageView(TemplateView):
             return render(request, self.template_name)
 
 
+# class SettingsBackend(BaseBackend):
+#     """
+#     Authenticate against the settings ADMIN_LOGIN and ADMIN_PASSWORD.
+#
+#     Use the login name and a hash of the password. For example:
+#
+#     ADMIN_LOGIN = 'admin'
+#     ADMIN_PASSWORD = 'pbkdf2_sha256$30000$Vo0VlMnkR4Bk$qEvtdyZRWTcOsCnI/oQ7fVOu1XAURIZYoOZ3iq8Dr4M='
+#     """
+#
+#     def authenticate(self, request, username=None, password=None):
+#         login_valid = (settings.ADMIN_LOGIN == username)
+#         pwd_valid = check_password(password, settings.ADMIN_PASSWORD)
+#         if login_valid and pwd_valid:
+#             try:
+#                 user = User.objects.get(username=username)
+#             except User.DoesNotExist:
+#                 # Create a new user. There's no need to set a password
+#                 # because only the password from settings.py is checked.
+#                 user = User(username=username)
+#                 user.is_staff = True
+#                 user.is_superuser = True
+#                 user.save()
+#             return user
+#         return None
+#
+#     def get_user(self, user_id):
+#         try:
+#             return User.objects.get(pk=user_id)
+#         except User.DoesNotExist:
+#             return None
+
+
+class LoginPageView(TemplateView):
+    template_name = "registration/login.html"
+
+    def get(self, request, *args, **kwargs):
+        # if request.method == 'GET':
+        form = LoginForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        # if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            # if form.login_clean() == '#':
+            #     messages.info(request, "Данное имя пользователя не найдено")
+            #     return render(request, 'registration/login.html', {'form': form})
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            print(form.cleaned_data.get('username'), form.cleaned_data.get('password'))
+            print(user)
+            # if Worker.objects.filter(username=username, password=password, is_staff=False).exists():
+            if user is not None:
+                login(request, user)
+                messages.info(request, "Вход выполнен")
+                return redirect('home')
+            else:
+                messages.info(request, "Неправильное имя пользователя или пароль")
+        else:
+            messages.info(request, "Ошибка валидации формы")
+        # else:
+        #     form = LoginForm()
+        return render(request, 'registration/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
+
+
+# class LogoutPageView(TemplateView):
+#     template_name = "registration/logout.html"
+#
+#     def get(self, request, *args, **kwargs):
+#         if request.method == 'GET':
+#             form = LogoutForm()
+#             return render(request, self.template_name, {'form': form})
+#
+#     def post(self, request, *args, **kwargs):
+#         if request.method == 'GET':
+#             logout(request)
+#             return render(request, self.template_name, {'form': form})
+
+
+class RegistrationPageView(TemplateView):
+    template_name = "registration/registration.html"
+
+    def get(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            form = RegistrationForm()
+            return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = RegistrationForm(request.POST)
+            if form.is_valid():
+                # form.username_clean()
+                if form.username_clean() == '#':
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.error(request, "Данное имя пользователя уже используется")
+                    return render(request, 'registration/registration.html', {'form': form})
+                if form.passport_clean() == '#':
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.error(request, "Пользователь с таким паспортом уже существует")
+                    return render(request, 'registration/registration.html', {'form': form})
+                if form.clean_password2() == '#':
+                    messages.error(request, "Пароли не совпадают")
+                    return render(request, 'registration/registration.html', {'form': form})
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+        else:
+            form = RegistrationForm()
+        return render(request, 'registration/registration.html', {'form': form})
+
+
 class WorkersPageView(TemplateView):
     template_name = "workers.html"
 
     def get(self, request, *args, **kwargs):
-        workers = Worker.objects.all()
+        workers = Worker.objects.filter(is_superuser=False)
         return render(request, 'workers.html', {'workers': workers})
 
 
@@ -54,75 +180,26 @@ class WorkersCardPageView(TemplateView):
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
+            # if form.is_valid():
+            #     # form.username_clean()
+            #     form.clean_password2()
+            #     form.update()
+            #     messages.info(request, "Данные обновалены")
             if form.is_valid():
                 # form.username_clean()
-
-                form.clean_password2()
-                form.update()
-                messages.info(request, "Данные обновалены")
-        else:
-            form = RegistrationForm()
-        return render(request, 'registration/registration.html', {'form': form})
-
-
-class LoginPageView(TemplateView):
-    template_name = "registration/login.html"
-
-    def get(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            form = LoginForm()
-            return render(request, self.template_name, {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = LoginForm(request.POST)
-            if form.is_valid():
-                if form.login_clean() == '#':
-                    messages.info(request, "Данное имя пользователя не найдено")
-                    return render(request, 'registration/login.html', {'form': form})
-                messages.info(request, "Вход выполнен")
-                return render(request, 'home.html')
-        else:
-            form = LoginForm()
-        return render(request, 'registration/login.html', {'form': form})
-
-
-class LogoutPageView(TemplateView):
-    template_name = "registration/logout.html"
-
-    def get(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            form = LogoutForm()
-            return render(request, self.template_name, {'form': form})
-
-
-class RegistrationPageView(TemplateView):
-    template_name = "registration/registration.html"
-
-    def get(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            form = RegistrationForm()
-            return render(request, self.template_name, {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = RegistrationForm(request.POST)
-            if form.is_valid():
-                # form.username_clean()
-                if form.username_clean() == '#':
+                if form.clean_password2() == '#':
                     # message = messages.info(request, 'Your password has been changed successfully!')
-                    messages.info(request, "Данное имя пользователя уже используется")
+                    messages.info(request, "Пароли не совпадают")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.passport_clean() == '#':
                     # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.info(request, "Пользователь с таким паспортом уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
-                form.clean_password2()
-                form.save()
-                messages.info(request, "Пользователь зарегистрирован")
+                form.update()
+                messages.info(request, "Данные обновалены")
         else:
             form = RegistrationForm()
-        return render(request, 'registration/registration.html', {'form': form})
+        return render(request, 'registration/registration.html', {'form': RegistrationForm()})
 
 
 class OrderInOrdersPageView(TemplateView):

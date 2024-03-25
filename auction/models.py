@@ -252,13 +252,30 @@ class Worker(AbstractUser):
     job_title = models.TextField(choices=JOB_CHOICE)
     phone_number = models.TextField()
     passport = models.TextField(unique=True)
-    # username = models.CharField(max_length=40, unique=True)
-    # USERNAME_FIELD = username
-    # REQUIRED_FIELDS = [USERNAME_FIELD, ]
-    # password = models.TextField()
+    # is_active = models.BooleanField(default=True)
+    # is_admin = models.BooleanField(default=False)
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['full_name', 'job_title', 'phone_number', 'passport']
+    password = models.TextField()
 
     def __str__(self):
         return str(self.full_name)
 
     def get_absolute_url_worker(self):
         return reverse('workers_card', kwargs={'worker_id': self.pk})
+
+    def has_perm(self, perm, obj=None):
+        "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    def has_module_perms(self, app_label):
+        "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    # @property
+    # def is_staff(self):
+    #     "Is the user a member of staff?"
+    #     # Simplest possible answer: All admins are staff
+    #     return self.is_admin

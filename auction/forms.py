@@ -14,7 +14,8 @@ class ParserForm(forms.Form):
 
 
 class LogoutForm(forms.Form):
-    url_parser_field = forms.CharField(label='Cars url')
+    pass
+
 
 
 class LoginForm(forms.Form):
@@ -23,12 +24,14 @@ class LoginForm(forms.Form):
     password.widget.attrs.update({'class': 'form-control'})
 
     def login_clean(self):
-        username = self.cleaned_data['username']
-        password = self.cleaned_data['password']
-        if Worker.objects.filter(username=username, password=password).exists():
-            return username
-        else:
+        # username = self.cleaned_data['username']
+        # password = self.cleaned_data['password']
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        # if Worker.objects.filter(username=username, password=password).exists():
+        if not Worker.objects.filter(username=username).exists():
             return '#'
+        return username
 
 
 class RegistrationForm(forms.Form):
@@ -61,9 +64,8 @@ class RegistrationForm(forms.Form):
     def clean_password2(self):
         password1 = self.cleaned_data['password1']
         password2 = self.cleaned_data['password2']
-
-        if password1 and password2 and password1 != password2 or password1 == '' or password2 == '':
-            raise ValidationError("Password don't match")
+        if password1 and password2 and password1 != password2:
+            return '#'
         return password2
 
     def save(self, commit=True):
