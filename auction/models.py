@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse
-
+from django.contrib.auth.models import AbstractUser
 
 class PhotoCar(models.Model):
     id_photo = models.AutoField(primary_key=True)
@@ -184,7 +184,56 @@ class Car(models.Model):
         return str(self.title)
 
 
-class Worker(models.Model):
+# class Worker(models.Model):
+#     MANAGER = 'Клиент-менеджер'
+#     LOGIST = 'Логист'
+#     HR = 'HR'
+#     ACCOUNTANT = 'Бухгалтер'
+#     OPERATIVNIK = 'Оперативник'
+#     JOB_CHOICE = [
+#         (MANAGER, 'Менеджер'),
+#         (LOGIST, 'Логист'),
+#         (HR, 'HR'),
+#         (ACCOUNTANT, 'Бухгалтер'),
+#         (OPERATIVNIK, 'Оперативник')
+#     ]
+#     id_worker = models.AutoField(primary_key=True)
+#     username = models.TextField(unique=True)
+#     full_name = models.TextField()
+#     job_title = models.TextField(choices=JOB_CHOICE)
+#     phone_number = models.TextField()
+#     passport = models.TextField(unique=True)
+#     password = models.TextField()
+#
+#     def __str__(self):
+#         return str(self.full_name)
+#
+#     def get_absolute_url_worker(self):
+#         return reverse('workers_card', kwargs={'worker_id': self.pk})
+
+
+# class Worker2(AbstractUser):
+#     MANAGER = 'Клиент-менеджер'
+#     LOGIST = 'Логист'
+#     HR = 'HR'
+#     ACCOUNTANT = 'Бухгалтер'
+#     OPERATIVNIK = 'Оперативник'
+#     JOB_CHOICE = [
+#         (MANAGER, 'Менеджер'),
+#         (LOGIST, 'Логист'),
+#         (HR, 'HR'),
+#         (ACCOUNTANT, 'Бухгалтер'),
+#         (OPERATIVNIK, 'Оперативник')
+#     ]
+#     id_worker2 = models.AutoField(primary_key=True)
+#     username = models.TextField(unique=True)
+#     full_name = models.TextField()
+#     job_title = models.TextField(choices=JOB_CHOICE)
+#     phone_number = models.TextField()
+#     passport = models.TextField(unique=True)
+#     password = models.TextField()
+
+class Worker(AbstractUser):
     MANAGER = 'Клиент-менеджер'
     LOGIST = 'Логист'
     HR = 'HR'
@@ -203,7 +252,10 @@ class Worker(models.Model):
     job_title = models.TextField(choices=JOB_CHOICE)
     phone_number = models.TextField()
     passport = models.TextField(unique=True)
-    password = models.TextField()
+    # username = models.CharField(max_length=40, unique=True)
+    # USERNAME_FIELD = username
+    # REQUIRED_FIELDS = [USERNAME_FIELD, ]
+    # password = models.TextField()
 
     def __str__(self):
         return str(self.full_name)
