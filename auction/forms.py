@@ -130,6 +130,13 @@ class OrderForm(forms.Form):
         )
 
 
+class TextareaWithValueHandling(forms.Textarea):
+    """
+    Ugly hack to get a default value preset within a textarea. (not supported by django)
+    This template renders widget.attrs.value within the textarea body if there is no real value
+    """
+    template_name = 'form/widget/textarea_with_value_handling.html'
+
 class OrderInOrdersForm(forms.Form):
     id_order = forms.CharField(label='Заказ', widget=forms.TextInput(attrs={'class': 'form-control'}))
     first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(

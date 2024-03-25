@@ -142,7 +142,7 @@ class OrderInOrdersPageView(TemplateView):
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
-            form.fields['comment'].widget.attrs.update({'value': order.comment})
+            form.fields['comment'].widget.attrs.update({'media': order.comment})
         if order.sbts is not None:
             form.fields['sbts'].widget.attrs.update({'value': order.sbts})
         if order.ptd is not None:
