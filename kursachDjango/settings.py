@@ -119,3 +119,7 @@ AUTH_USER_MODEL = 'auction.Worker'
 CSRF_TRUSTED_ORIGINS = [
     'https://appname.herokuapp.com'
 ]
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',  # По умолчанию используется модель пользователя
+#     # Добавьте здесь другие бэкэнды аутентификации, если необходимо
+# ]

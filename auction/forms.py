@@ -8,6 +8,7 @@ from django.contrib import messages
 from .models import Worker, Order, Customer, Car, Invoice
 from django.db import IntegrityError
 import datetime
+from django.contrib.auth import authenticate
 
 
 class ParserForm(forms.Form):
@@ -20,18 +21,17 @@ class LogoutForm(forms.Form):
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(min_length=3, max_length=65, widget=forms.PasswordInput)
+    password = forms.CharField(min_length=1, max_length=65, widget=forms.PasswordInput)
     password.widget.attrs.update({'class': 'form-control'})
 
-    def login_clean(self):
-        # username = self.cleaned_data['username']
-        # password = self.cleaned_data['password']
-        cleaned_data = super().clean()
-        username = cleaned_data.get('username')
-        # if Worker.objects.filter(username=username, password=password).exists():
-        if not Worker.objects.filter(username=username).exists():
-            return '#'
-        return username
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     username = cleaned_data.get('username')
+    #     password = cleaned_data.get('password')
+    #     user = authenticate(username=username, password=password)
+    #     if user is None:
+    #         raise ValidationError("Неправильное имя пользователя или пароль")
+    #     return cleaned_data
 
 
 # class RegistrationForm(forms.ModelForm):
@@ -126,6 +126,8 @@ class RegistrationForm(forms.ModelForm):
     phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+    is_active = forms.BooleanField(initial=True, widget=forms.HiddenInput())  # Установим is_active в True по умолчанию
+    is_staff = forms.BooleanField(initial=True, widget=forms.HiddenInput())  # Установим is_staff в True по умолчанию
 
     class Meta:
         model = Worker
@@ -154,6 +156,8 @@ class RegistrationForm(forms.ModelForm):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         if commit:
+            user.is_active = True  # Установим is_active в True
+            user.is_staff = True  # Установим is_staff в True
             if user.pk is None:  # Если пользователь новый
                 existing_user = Worker.objects.filter(username=user.username).exists()
                 if existing_user:
@@ -173,7 +177,7 @@ class RegistrationForm(forms.ModelForm):
                     'full_name': self.cleaned_data['full_name'],
                     'job_title': self.cleaned_data['job_title'],
                     'phone_number': self.cleaned_data['phone_number'],
-                    'passport': self.cleaned_data['passport']
+                    'passport': self.cleaned_data['passport'],
                 }
             )
 

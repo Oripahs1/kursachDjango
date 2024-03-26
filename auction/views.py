@@ -71,33 +71,26 @@ class LoginPageView(TemplateView):
     template_name = "registration/login.html"
 
     def get(self, request, *args, **kwargs):
-        # if request.method == 'GET':
         form = LoginForm()
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        # if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            # if form.login_clean() == '#':
-            #     messages.info(request, "Данное имя пользователя не найдено")
-            #     return render(request, 'registration/login.html', {'form': form})
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=username, password=password)
-            print(form.cleaned_data.get('username'), form.cleaned_data.get('password'))
+            # user = authenticate(request, **form.cleaned_data)
             print(user)
-            # if Worker.objects.filter(username=username, password=password, is_staff=False).exists():
             if user is not None:
                 login(request, user)
                 messages.info(request, "Вход выполнен")
                 return redirect('home')
-            else:
-                messages.info(request, "Неправильное имя пользователя или пароль")
+            messages.info(request, "Неправильное имя пользователя или пароль")
         else:
+            for field in form:
+                print("Field Error:", field.name, field.errors)
             messages.info(request, "Ошибка валидации формы")
-        # else:
-        #     form = LoginForm()
         return render(request, 'registration/login.html', {'form': form})
 
 
@@ -127,48 +120,37 @@ class RegistrationPageView(TemplateView):
         if request.method == 'GET':
             form = RegistrationForm()
             form.fields['date_joined'].widget.attrs.update({'value': datetime.date.today()})
+            form.fields['is_active'].widget.attrs.update({'value': True})
+            form.fields['is_staff'].widget.attrs.update({'value': True})
+            form.fields['is_superuser'].widget.attrs.update({'value': True})
             return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
-            print('работает 1')
             if form.is_valid():
-                print('работает 2')
-                # form.username_clean()
                 if form.username_clean() is None:
-                    print('работает 3')
-                    # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.error(request, "Данное имя пользователя уже используется")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.passport_clean() is None:
-                    print('работает 4')
-                    # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.error(request, "Пользователь с таким паспортом уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.clean_password2() is None:
-                    print('работает 5')
                     messages.error(request, "Пароли не совпадают")
                     return render(request, 'registration/registration.html', {'form': form})
-                print('работает 6')
                 if form.save() == None:
-                    print('работает 7')
                     messages.error(request,
                                    "Этот номер паспорта уже используется. Пожалуйста, выберите другой номер паспорта.")
                     return render(request, 'registration/registration.html', {'form': form})
                 else:
                     form.save()
-                    print('работает 8')
                     messages.info(request, "Пользователь зарегистрирован")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
                 messages.error(request, "Инвалидная форма")
         else:
-            print('работает 8')
             form = RegistrationForm()
-            messages.error(request, "Не прошли ПОСТ запрос")
-        print('работает 9')
         return render(request, 'registration/registration.html', {'form': form})
 
 
