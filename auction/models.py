@@ -248,17 +248,11 @@ class Worker(AbstractUser):
         (ACCOUNTANT, 'Бухгалтер'),
         (OPERATIVNIK, 'Оперативник')
     ]
-    id = models.AutoField(primary_key=True)
-    username = models.TextField(unique=True)
+
     full_name = models.TextField()
     job_title = models.TextField(choices=JOB_CHOICE)
     phone_number = models.TextField()
     passport = models.TextField(unique=True)
-    # is_active = models.BooleanField(default=True)
-    # is_admin = models.BooleanField(default=False)
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['full_name', 'job_title', 'phone_number', 'passport']
-    password = models.TextField()
 
     def __str__(self):
         return str(self.full_name)
@@ -276,12 +270,6 @@ class Worker(AbstractUser):
         # Simplest possible answer: Yes, always
         return True
 
-
-    # @property
-    # def is_staff(self):
-    #     "Is the user a member of staff?"
-    #     # Simplest possible answer: All admins are staff
-    #     return self.is_admin
 @receiver(pre_save, sender=Worker)
 def set_worker_id(sender, instance, **kwargs):
     if not instance.id:
