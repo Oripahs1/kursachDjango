@@ -5,7 +5,6 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 
-
 admin.site.register(Car)
 admin.site.register(PhotoCar)
 # admin.site.register(Worker)
@@ -20,12 +19,36 @@ admin.site.register(Customer)
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
+    # username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+    #                            widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE,
+    #                               widget=forms.Select(attrs={'class': 'custom-select'}))
+    # passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # phone_num = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    # password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    # password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+    # password1.widget.attrs.update({'class': 'form-control'})
+    # password2.widget.attrs.update({'class': 'form-control'})
+
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
     class Meta:
         model = Worker
-        fields = ('full_name', 'job_title', 'phone_number', 'passport')
+        fields = ('username', 'password', 'full_name', 'job_title', 'phone_number', 'passport')
+
+    # def username_clean(self):
+    #     username = self.cleaned_data['username']
+    #     if Worker.objects.filter(username=username).exists():
+    #         return None
+    #     return username
+
+    def passport_clean(self):
+        passport = self.cleaned_data['passport']
+        if Worker.objects.filter(passport=passport).exists():
+            return None
+        return passport
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -38,7 +61,7 @@ class UserCreationForm(forms.ModelForm):
     def save(self, commit=True):
         # Save the provided password in hashed format
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])
+        user.set_password(self.cleaned_data.get("password1"))
         if commit:
             user.save()
         return user
@@ -50,9 +73,9 @@ class UserChangeForm(forms.ModelForm):
     disabled password hash display field.
     """
 
-    # class Meta:
-    #     model = Worker
-    fields = ('username', 'full_name', 'job_title', 'phone_number', 'passport')
+    class Meta:
+        model = Worker
+        fields = ('username', 'full_name', 'job_title', 'phone_number', 'passport')
 
 
 class UserAdmin(BaseUserAdmin):

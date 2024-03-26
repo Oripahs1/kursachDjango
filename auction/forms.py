@@ -6,6 +6,7 @@ from django.forms.fields import EmailField
 from django.forms.forms import Form
 from django.contrib import messages
 from .models import Worker, Order, Customer, Car, Invoice
+from django.db import IntegrityError
 import datetime
 
 
@@ -15,7 +16,6 @@ class ParserForm(forms.Form):
 
 class LogoutForm(forms.Form):
     pass
-
 
 
 class LoginForm(forms.Form):
@@ -34,49 +34,108 @@ class LoginForm(forms.Form):
         return username
 
 
-class RegistrationForm(forms.Form):
+class RegistrationForm(forms.ModelForm):
     username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
                                widget=forms.TextInput(attrs={'class': 'form-control'}))
     full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
     job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE,
                                   widget=forms.Select(attrs={'class': 'custom-select'}))
     passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    phone_num = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
-    password1.widget.attrs.update({'class': 'form-control'})
-    password2.widget.attrs.update({'class': 'form-control'})
+
+    # password1.widget.attrs.update({'class': 'form-control'})
+    # password2.widget.attrs.update({'class': 'form-control'})
+
+    class Meta:
+        model = Worker
+        exclude = ['username', 'password', 'full_name', 'job_title', 'phone_number', 'passport']
+
+        # def __init__(self):
+        #     self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+        #                                widget=forms.TextInput(attrs={'class': 'form-control'}))
+        #     self.phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def username_clean(self):
         username = self.cleaned_data['username']
-        new = Worker.objects.filter(username=username)
         if Worker.objects.filter(username=username).exists():
-            return '#'
+            return None
         return username
 
     def passport_clean(self):
         passport = self.cleaned_data['passport']
-        new = Worker.objects.filter(passport=passport)
         if Worker.objects.filter(passport=passport).exists():
-            return '#'
+            return None
         return passport
 
     def clean_password2(self):
-        password1 = self.cleaned_data['password1']
+        password1 = self.cleaned_data['password']
         password2 = self.cleaned_data['password2']
         if password1 and password2 and password1 != password2:
-            return '#'
-        return password2
+            return None
+        return password1
 
+    # def save(self, commit=True):
+    #     user = super().save(commit=False)
+    #     user.username = self.cleaned_data['username']
+    #     user.set_password(self.cleaned_data['password'])
+    #     if commit:
+    #         try:
+    #             user.save()
+    #             # Создание объекта Worker и сохранение его в базе данных
+    #             Worker.objects.create(
+    #                 user=user.username,
+    #                 full_name=self.cleaned_data['full_name'],
+    #                 job_title=self.cleaned_data['job_title'],
+    #                 phone_number=self.cleaned_data['phone_number'],
+    #                 passport=self.cleaned_data['passport']
+    #             )
+    #         except:
+    #             return None
+    #         return user
+    #     else:
+    #         return None
     def save(self, commit=True):
-        Worker.objects.create(
-            username=self.cleaned_data['username'].strip(),
-            full_name=self.cleaned_data['full_name'],
-            job_title=self.cleaned_data['job_title'],
-            passport=self.cleaned_data['passport'],
-            phone_number=self.cleaned_data['phone_num'],
-            password=self.cleaned_data['password1'],
-        )
+        user = super().save(commit=False)
+        user.username = self.cleaned_data['username']
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            try:
+                user.save()
+                # Создание объекта Worker и сохранение его в базе данных
+                worker = Worker.objects.create(
+                    user=user,
+                    full_name=self.cleaned_data['full_name'],
+                    job_title=self.cleaned_data['job_title'],
+                    phone_number=self.cleaned_data['phone_number'],
+                    passport=self.cleaned_data['passport']
+                )
+                return user  # Возвращаем объект пользователя
+            except IntegrityError:
+                # Если произошла ошибка, например, номер паспорта неуникален
+                user.delete()  # Удаляем созданного пользователя
+                raise  # Переопределяем ошибку
+        else:
+            return None
+
+        # user.set_password(password)
+        # user.save(using=self._db)
+        # return user
+        # user = super(RegistrationForm, self).save(commit=False)
+        # user.set_password(self.cleaned_data.get("password1"))
+        # if commit:
+        #     user.save()
+        # return user
+
+        # Worker.objects.create(
+        #     username=self.cleaned_data['username'].strip(),
+        #     full_name=self.cleaned_data['full_name'],
+        #     job_title=self.cleaned_data['job_title'],
+        #     passport=self.cleaned_data['passport'],
+        #     phone_number=self.cleaned_data['phone_num'],
+        #     password=self.cleaned_data['password1'],
+        # )
 
     def update(self, commit=True):
         worker_obl = Worker.objects.filter(username=self.cleaned_data['username'])
@@ -149,7 +208,7 @@ class OrderInOrdersForm(forms.Form):
     sbts = forms.FileField(label='Добавить СБТС', widget=forms.FileInput(attrs={'class': 'form-control'}))
     ptd = forms.FileField(label='Добавить ПТД', widget=forms.FileInput(attrs={'class': 'form-control'}))
 
-    def save(self,  commit=True):
+    def save(self, commit=True):
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
         order.update(
             date_end=self.cleaned_data['date_end'],
@@ -165,11 +224,14 @@ class InvoiceForm(forms.Form):
                                     widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice, widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
@@ -192,11 +254,14 @@ class InvoiceForm(forms.Form):
 class NewInvoiceForm(forms.Form):
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 

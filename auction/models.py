@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 class PhotoCar(models.Model):
     id_photo = models.AutoField(primary_key=True)
@@ -246,7 +248,7 @@ class Worker(AbstractUser):
         (ACCOUNTANT, 'Бухгалтер'),
         (OPERATIVNIK, 'Оперативник')
     ]
-    id_worker = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     username = models.TextField(unique=True)
     full_name = models.TextField()
     job_title = models.TextField(choices=JOB_CHOICE)
@@ -262,7 +264,7 @@ class Worker(AbstractUser):
         return str(self.full_name)
 
     def get_absolute_url_worker(self):
-        return reverse('workers_card', kwargs={'worker_id': self.pk})
+        return reverse('workers_card', kwargs={'worker_id': self.id})
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -274,8 +276,50 @@ class Worker(AbstractUser):
         # Simplest possible answer: Yes, always
         return True
 
+
     # @property
     # def is_staff(self):
     #     "Is the user a member of staff?"
     #     # Simplest possible answer: All admins are staff
     #     return self.is_admin
+@receiver(pre_save, sender=Worker)
+def set_worker_id(sender, instance, **kwargs):
+    if not instance.id:
+        # Получаем максимальное значение worker_id, если оно есть, иначе устанавливаем 0
+        max_id = Worker.objects.aggregate(models.Max('id'))['id__max'] or 0
+        instance.id = max_id + 1
+
+
+# class MyUserManager(BaseUserManager):
+#     def create_user(self, username, password, passport):
+#         """
+#         Creates and saves a User with the given email, date of
+#         birth and password.
+#         """
+#         if not username:
+#             raise ValueError('Users must have an email address')
+#
+#         user = self.model(
+#
+#             username=self.username,
+#             password=self.password,
+#             passport=self.passport,
+#         )
+#
+#         user.set_password(password)
+#         user.save(using=self._db)
+#         return user
+
+    # def create_superuser(self, email, date_of_birth, password=None):
+    #     """
+    #     Creates and saves a superuser with the given email, date of
+    #     birth and password.
+    #     """
+    #     user = self.create_user(
+    #         email,
+    #         password=password,
+    #         date_of_birth=date_of_birth,
+    #     )
+    #     user.is_admin = True
+    #     user.save(using=self._db)
+    #     return user

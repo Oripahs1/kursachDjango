@@ -16,7 +16,8 @@ from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderFor
     NewInvoiceForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.admin import UserAdmin
+from .admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin, UserCreationForm, UserChangeForm
 
 
 # from django.conf import settings
@@ -125,28 +126,49 @@ class RegistrationPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         if request.method == 'GET':
             form = RegistrationForm()
+            form.fields['date_joined'].widget.attrs.update({'value': datetime.date.today()})
             return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
+            print('работает 1')
             if form.is_valid():
+                print('работает 2')
                 # form.username_clean()
-                if form.username_clean() == '#':
+                if form.username_clean() is None:
+                    print('работает 3')
                     # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.error(request, "Данное имя пользователя уже используется")
                     return render(request, 'registration/registration.html', {'form': form})
-                if form.passport_clean() == '#':
+                if form.passport_clean() is None:
+                    print('работает 4')
                     # message = messages.info(request, 'Your password has been changed successfully!')
                     messages.error(request, "Пользователь с таким паспортом уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
-                if form.clean_password2() == '#':
+                if form.clean_password2() is None:
+                    print('работает 5')
                     messages.error(request, "Пароли не совпадают")
                     return render(request, 'registration/registration.html', {'form': form})
-                form.save()
-                messages.info(request, "Пользователь зарегистрирован")
+                print('работает 6')
+                if form.save() == None:
+                    print('работает 7')
+                    messages.error(request,
+                                   "Этот номер паспорта уже используется. Пожалуйста, выберите другой номер паспорта.")
+                    return render(request, 'registration/registration.html', {'form': form})
+                else:
+                    form.save()
+                    print('работает 8')
+                    messages.info(request, "Пользователь зарегистрирован")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.error(request, "Инвалидная форма")
         else:
+            print('работает 8')
             form = RegistrationForm()
+            messages.error(request, "Не прошли ПОСТ запрос")
+        print('работает 9')
         return render(request, 'registration/registration.html', {'form': form})
 
 
