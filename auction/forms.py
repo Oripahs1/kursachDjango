@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.forms.fields import EmailField
 from django.forms.forms import Form
 from django.contrib import messages
-from .models import Worker, Order, Customer, Car, Invoice
+from .models import Worker, Order, Customer, Car, Invoice, Duty, Price, CustomsDuty, Excise
 from django.db import IntegrityError
 import datetime
 from django.contrib.auth import authenticate
@@ -223,6 +223,8 @@ class OrderForm(forms.Form):
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
     worker = forms.ModelChoiceField(label='Сотрудник', queryset=Worker.objects,
                                     widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    price = forms.CharField(label='Предварительная цена',
+                            widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
 
     def save(self, commit=True):
         customer = Customer.objects.create(
@@ -239,20 +241,13 @@ class OrderForm(forms.Form):
         )
 
         car = Car.objects.get(pk=self.cleaned_data['id_car'])
+
         Order.objects.create(
             id_customer=customer,
             id_worker=self.cleaned_data['worker'],
             id_car=car,
             date_start=datetime.date.today(),
         )
-
-
-class TextareaWithValueHandling(forms.Textarea):
-    """
-    Ugly hack to get a default value preset within a textarea. (not supported by django)
-    This template renders widget.attrs.value within the textarea body if there is no real value
-    """
-    template_name = 'form/widget/textarea_with_value_handling.html'
 
 
 class OrderInOrdersForm(forms.Form):
@@ -272,7 +267,16 @@ class OrderInOrdersForm(forms.Form):
                               required=False)
     sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
                            required=False)
-    ptd = forms.FileField(label='ПТД', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    ptd = forms.FileField(label='ПТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    contract = forms.FileField(label='Договор купли продажи из ЯП',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    price = forms.CharField(label='Рассчитанная цена',
+                            widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}),
+                            required=False)
+    price_for_buhgalter = forms.CharField(label='Цена покупки машины из договора купли прождажи',
+                                          widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
+    power = forms.CharField(label='Мощность машины в л.с.', widget=forms.TextInput(attrs={'class': 'form-control'}),
+                            required=False)
 
     def save(self, commit=True):
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
@@ -345,4 +349,111 @@ class NewInvoiceForm(forms.Form):
             check_document=self.cleaned_data['check_document'],
             scan=self.cleaned_data['scan'],
             assigning=self.cleaned_data['assigning'],
+        )
+
+
+class DutyForm(forms.Form):
+    volume_first = forms.DecimalField(label='Объем двигателя от', decimal_places=2, max_digits=5,
+                                      widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    volume_last = forms.DecimalField(label='Объем двигателя до', decimal_places=2, max_digits=5,
+                                     widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    coefficient_less_3 = forms.DecimalField(label='До 3 лет', decimal_places=2, max_digits=5,
+                                            widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    coefficient_more_3 = forms.DecimalField(label='Старше 3 лет', decimal_places=2, max_digits=5,
+                                            widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    def save(self):
+        Duty.objects.create(
+            volume_first=self.cleaned_data['volume_first'],
+            volume_last=self.cleaned_data['volume_last'],
+            coefficient_less_3=self.cleaned_data['coefficient_less_3'],
+            coefficient_more_3=self.cleaned_data['coefficient_more_3']
+        )
+
+    def update(self, duty_id):
+        duty = Duty.objects.filter(pk=duty_id)
+        duty.update(
+            volume_first=self.cleaned_data['volume_first'],
+            volume_last=self.cleaned_data['volume_last'],
+            coefficient_less_3=self.cleaned_data['coefficient_less_3'],
+            coefficient_more_3=self.cleaned_data['coefficient_more_3'],
+        )
+
+        print('Обновляем')
+
+
+class PriceForm(forms.Form):
+    price_first_car = forms.IntegerField(label='Цена машины от',
+                                         widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    price_last_car = forms.IntegerField(label='Цена машины до',
+                                        widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
+    price_transportation = forms.IntegerField(label='Цена перевозки',
+                                              widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    def save(self):
+        Price.objects.create(
+            price_first_car=self.cleaned_data['price_first_car'],
+            price_last_car=self.cleaned_data['price_last_car'],
+            price_transportation=self.cleaned_data['price_transportation'],
+        )
+
+    def update(self, price_id):
+        price = Price.objects.filter(pk=price_id)
+        price.update(
+            price_first_car=self.cleaned_data['price_first_car'],
+            price_last_car=self.cleaned_data['price_last_car'],
+            price_transportation=self.cleaned_data['price_transportation'],
+        )
+
+
+
+class CustomsDutyForm(forms.Form):
+    type = forms.ChoiceField(label='Возраст машины', choices=CustomsDuty.TYPE_CHOICE,
+                                         widget=forms.Select(attrs={'class': 'custom-select'}))
+    value_first = forms.IntegerField(label='От значения',
+                                        widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
+    value_last = forms.IntegerField(label='До Значения',
+                                              widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    bet = forms.DecimalField(label='Ставка за 1 куб. см.', decimal_places=2, max_digits=10,
+                                            widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    def save(self):
+        CustomsDuty.objects.create(
+            type=self.cleaned_data['type'],
+            value_first=self.cleaned_data['value_first'],
+            value_last=self.cleaned_data['value_last'],
+            bet=self.cleaned_data['bet'],
+        )
+
+    def update(self, customs_duty_id):
+        customs_duty = CustomsDuty.objects.filter(pk=customs_duty_id)
+        customs_duty.update(
+            type=self.cleaned_data['type'],
+            value_first=self.cleaned_data['value_first'],
+            value_last=self.cleaned_data['value_last'],
+            bet=self.cleaned_data['bet'],
+        )
+
+
+class ExciseForm(forms.Form):
+    power_first_car = forms.IntegerField(label='Мощность двигателя от',
+                                         widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    power_last_car = forms.IntegerField(label='Мощность двигателя до',
+                                        widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
+    bet = forms.IntegerField(label='Цена за 1 л.с. в р.',
+                                              widget=forms.NumberInput(attrs={'class': 'form-control'}))
+
+    def save(self):
+        Excise.objects.create(
+            power_first_car=self.cleaned_data['power_first_car'],
+            power_last_car=self.cleaned_data['power_last_car'],
+            bet=self.cleaned_data['bet'],
+        )
+
+    def update(self, excise_id):
+        excise = Excise.objects.filter(pk=excise_id)
+        excise.update(
+            power_first_car=self.cleaned_data['power_first_car'],
+            power_last_car=self.cleaned_data['power_last_car'],
+            bet=self.cleaned_data['bet'],
         )

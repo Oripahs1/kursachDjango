@@ -1,0 +1,49 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Наши цены</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'orders.css' %}">
+{% endblock head %}
+
+{% block content %}
+    <div style="text-align: center; margin-top: 15px">
+        <a href="{% url "price_new" %}">
+            <button style="width: 300px" class="btn btn-outline-dark">Новый диапазон</button>
+        </a>
+    </div>
+    <ul class="d-grid gap-2 col-8 mx-auto">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Цена покупки авто от</th>
+                <th scope="col">Цена авто до</th>
+                <th scope="col">Цена перевозки авто в Россию</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for el in prices %}
+                <tr style="vertical-align: middle">
+                    <th scope="row">{{ el.id }}</th>
+                    <td>{{ el.price_first_car }} р.</td>
+                    <td>{{ el.price_last_car }} р.</td>
+                    <td>{{ el.price_transportation }} р.</td>
+                    <td>
+
+                        <a href="{{ el.get_absolute_url_price }}">
+                            <button style="width: 100px"
+                                    class="btn btn-outline-dark">
+                                Открыть
+                            </button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </ul>
+{% endblock content %}

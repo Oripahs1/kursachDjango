@@ -57,15 +57,45 @@
                 <label for="{{ form.ptd.id_for_label }}" class="form-label">{{ form.ptd.label }}</label>
                 {{ form.ptd }}
             </div>
+            <div class="mb-3 form_disable_checkbox">
+                <label for="{{ form.contract.id_for_label }}" class="form-label">{{ form.contract.label }}</label>
+                {{ form.contract }}
+            </div>
             <div class="form_flex" style="display: none">
                 <div class="col-md-12 mb-1">
                     <label for="{{ form.id_order.id_for_label }}">{{ form.id_order.label }}</label>
                     {{ form.id_order }}
                 </div>
             </div>
-            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <input type="submit" class="btn btn-outline-dark position-relative" value="Обновить"/>
+
+            <div class="form_flex">
+                <div class="col-md-12 mb-3">
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                    {{ form.price }}
+                </div>
             </div>
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" name="update" class="btn btn-outline-dark position-relative" value="Обновить"/>
+            </div>
+
+             <div class="form_flex">
+                <div class="col-md-12 mb-3">
+                    <label for="{{ form.price_for_buhgalter.id_for_label }}">{{ form.price_for_buhgalter.label }}</label>
+                    {{ form.price_for_buhgalter }}
+                </div>
+            </div>
+
+            <div class="form_flex">
+                <div class="col-md-12 mb-3">
+                    <label for="{{ form.power.id_for_label }}">{{ form.power.label }}</label>
+                    {{ form.power }}
+                </div>
+            </div>
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" name="calculate_price" class="btn btn-outline-dark position-relative" value="Рассчитать цену"/>
+            </div>
+
         </form>
     </div>
 {% endblock content %}

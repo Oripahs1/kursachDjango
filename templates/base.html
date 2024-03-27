@@ -44,6 +44,18 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'buhgalter' %}">Бухгалтерия</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'duties' %}">Cтавка сбора</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'prices' %}">Цены на перевозку авто в японии</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'customs_dutys' %}">Таможенная пошлина</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'excises' %}">Акциз</a>
+                </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'logout' %}">Выход</a>

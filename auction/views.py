@@ -14,9 +14,9 @@ from django.shortcuts import render, redirect
 from django.shortcuts import render
 from openpyxl.reader.excel import load_workbook
 
-from .models import Car, PhotoCar, Worker, Order, Invoice
+from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
-    NewInvoiceForm
+    NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -125,6 +125,256 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+
+
+
+
+
+
+class CustomsDutysPageView(TemplateView):
+    template_name = 'customs_dutys.html'
+
+    def get(self, request, *args, **kwargs):
+        customs_dutys = CustomsDuty.objects.all()
+        return render(request, self.template_name, {'customs_dutys': customs_dutys})
+
+
+class CustomsDutyNewPageView(TemplateView):
+    template_name = 'customs_duty.html'
+
+    def get(self, request, *args, **kwargs):
+        print('NEW')
+        form = CustomsDutyForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = CustomsDutyForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        customs_dutys = CustomsDuty.objects.all()
+        return render(request, 'customs_dutys.html', {'customs_dutys': customs_dutys})
+
+
+class CustomsDutyPageView(TemplateView):
+    template_name = 'customs_duty.html'
+
+    def get(self, request, *args, **kwargs):
+        form = CustomsDutyForm()
+        # form.fields['name'].initial
+        print('Просим')
+        customs_duty = CustomsDuty.objects.get(id=kwargs['customs_duty_id'])
+        form.fields['type'].initial = customs_duty.type
+        form.fields['value_first'].initial = customs_duty.value_first
+        form.fields['value_last'].initial = customs_duty.value_last
+        form.fields['bet'].initial = customs_duty.bet
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = CustomsDutyForm(request.POST)
+            if form.is_valid():
+                print(kwargs['customs_duty_id'])
+
+                form.update(kwargs['customs_duty_id'])
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        customs_dutys = CustomsDuty.objects.all()
+        return render(request, 'customs_dutys.html', {'customs_dutys': customs_dutys})
+
+
+
+
+
+class ExcisesPageView(TemplateView):
+    template_name = 'excises.html'
+
+    def get(self, request, *args, **kwargs):
+        excises = Excise.objects.all()
+        return render(request, self.template_name, {'excises': excises})
+
+
+class ExciseNewPageView(TemplateView):
+    template_name = 'excise.html'
+
+    def get(self, request, *args, **kwargs):
+        print('NEW')
+        form = ExciseForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = ExciseForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        excises = Excise.objects.all()
+        return render(request, 'excises.html', {'excises': excises})
+
+
+class ExcisePageView(TemplateView):
+    template_name = 'excise.html'
+
+    def get(self, request, *args, **kwargs):
+        form = ExciseForm()
+        # form.fields['name'].initial
+        excise = Excise.objects.get(id=kwargs['excise_id'])
+        form.fields['power_first_car'].initial = excise.power_first_car
+        form.fields['power_last_car'].initial = excise.power_last_car
+        form.fields['bet'].initial = excise.bet
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = ExciseForm(request.POST)
+            if form.is_valid():
+                print(kwargs['excise_id'])
+
+                form.update(kwargs['excise_id'])
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        excises = Excise.objects.all()
+        return render(request, 'excises.html', {'excises': excises})
+
+
+
+
+
+
+class PricesPageView(TemplateView):
+    template_name = 'prices.html'
+
+    def get(self, request, *args, **kwargs):
+        prices = Price.objects.all()
+        return render(request, self.template_name, {'prices': prices})
+
+
+class PriceNewPageView(TemplateView):
+    template_name = 'price.html'
+
+    def get(self, request, *args, **kwargs):
+        print('NEW')
+        form = PriceForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = PriceForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        prices = Price.objects.all()
+        return render(request, 'prices.html', {'prices': prices})
+
+
+class PricePageView(TemplateView):
+    template_name = 'price.html'
+
+    def get(self, request, *args, **kwargs):
+        form = PriceForm()
+        # form.fields['name'].initial
+        price = Price.objects.get(id=kwargs['price_id'])
+        form.fields['price_first_car'].initial = price.price_first_car
+        if price.price_last_car is not None:
+            form.fields['price_last_car'].initial = price.price_last_car
+        # else:
+        #     form.fields['']
+        form.fields['price_transportation'].initial = price.price_transportation
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = PriceForm(request.POST)
+            if form.is_valid():
+                print(kwargs['price_id'])
+
+                form.update(kwargs['price_id'])
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        prices = Price.objects.all()
+        return render(request, 'prices.html', {'prices': prices})
+
+
+class DutiesPageView(TemplateView):
+    template_name = 'duties.html'
+
+    def get(self, request, *args, **kwargs):
+        duties = Duty.objects.all()
+        return render(request, self.template_name, {'duties': duties})
+
+
+class DutyNewPageView(TemplateView):
+    template_name = 'duty.html'
+
+    def get(self, request, *args, **kwargs):
+        form = DutyForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = DutyForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        duties = Duty.objects.all()
+        return render(request, 'duties.html', {'duties': duties})
+
+
+class DutyPageView(TemplateView):
+    template_name = 'duty.html'
+
+    def get(self, request, *args, **kwargs):
+        form = DutyForm()
+        # form.fields['name'].initial
+        duty = Duty.objects.get(id=kwargs['duty_id'])
+        form.fields['volume_first'].initial = duty.volume_first
+        form.fields['volume_last'].initial = duty.volume_last
+        form.fields['coefficient_less_3'].initial = duty.coefficient_less_3
+        form.fields['coefficient_more_3'].initial = duty.coefficient_more_3
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = DutyForm(request.POST)
+            if form.is_valid():
+                print(kwargs['duty_id'])
+
+                form.update(kwargs['duty_id'])
+                messages.info(request, "Добавлена новая пошлина")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, "Ошибка валидации формы")
+        duties = Duty.objects.all()
+        return render(request, 'duties.html', {'duties': duties})
+
+
 class WorkersPageView(TemplateView):
     template_name = "workers.html"
 
@@ -188,6 +438,8 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
         form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
         form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        if order.price is not None:
+            form.fields['price'].widget.attrs.update({'value': str(order.price) + ' р.'})
         form.fields['sbts'].widget.initial_text = ''
         form.fields['sbts'].widget.input_text = 'Заменить'
         form.fields['ptd'].widget.initial_text = ''
@@ -206,7 +458,7 @@ class OrderInOrdersPageView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
-        if request.method == 'POST':
+        if request.method == 'POST' and 'update' in request.POST:
             form = OrderInOrdersForm(request.POST, request.FILES)
             if form.is_valid():
 
@@ -235,8 +487,43 @@ class OrderInOrdersPageView(TemplateView):
                 messages.info(request, "Чета блять сломалось")
                 for field in form:
                     print("Field Error:", field.name, field.errors)
-        else:
-            form = OrderForm()
+
+        elif request.method == 'POST' and 'calculate_price' in request.POST:
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            print('считаем цену')
+            order = Order
+
+            if form.is_valid():
+                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
+                price = form.cleaned_data['price_for_buhgalter']
+                duties = Duty.objects.all()
+                prices = Price.objects.all()
+                volume = int(order.id_car.volume) / 1000
+                year = int(datetime.datetime.now().year) - int(order.id_car.year_car)
+                base_bet = 20000
+                coefficient_bet = 0
+                price_transportation = 0
+                for duty in duties:
+                    if duty.volume_first <= volume <= duty.volume_last and year > 3:
+                        coefficient_bet = duty.coefficient_more_3
+                    elif duty.volume_first <= volume <= duty.volume_last and year <= 3:
+                        coefficient_bet = duty.coefficient_less_3
+                #
+                for price_data in prices:
+                    if price_data.price_first_car <= int(price) < price_data.price_last_car:
+                        price_transportation = price_data.price_transportation
+                    elif price_data.price_last_car == 0 and price_transportation == 0:
+                        price_transportation = price_data.price_transportation
+
+                # Ставки утилизационного сбора 
+                final_price = int(price) + base_bet*coefficient_bet
+                # Цена доставки тачки из Японии
+                final_price = final_price + price_transportation
+                print(int(price), base_bet*coefficient_bet, price_transportation)
+                form.fields['price'].widget.attrs.update({'value': final_price})
+
+            return render(request, 'order_in_orders.html', {'form': form, 'order': order})
+
         orders = Order.objects.filter(date_end=None)
         return render(request, 'orders.html', {"orders": orders})
 
@@ -259,6 +546,7 @@ class OrderPageView(TemplateView):
         form = OrderForm()
         photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
         form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        form.fields['price'].initial = car.price + ' р.'
         return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
@@ -297,57 +585,6 @@ class CarPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         photo = PhotoCar.objects.filter(id_car=car)
-
-        # Достаем данные из excel
-        file_path = 'cars_price.xlsx'
-        workbook = load_workbook(filename=file_path)
-
-        models_list = workbook.worksheets[1]
-        mark_list = workbook.worksheets[0]
-
-        models = []
-        skip_first_row = False
-        for row in models_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
-            model = {
-                'id': row[0],
-                'mark': row[1],
-                'model': row[2],
-                'price': row[3],
-            }
-            models.append(model)
-        marks = []
-        for row in mark_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
-            mark = {
-                'id': row[0],
-                'mark': row[1]
-            }
-            marks.append(mark)
-        print(models)
-        print(marks)
-        mark = marks[0]
-        print(marks[0]['mark'])
-        # Достаем данные из excel
-
-        # Узнаем цену машины
-        car_for_test = Car.objects.all()
-        for car_test in car_for_test:
-            car_title = car_test.title.split()
-            is_car = False
-            price = 0
-            for car_for_test in models:
-
-                # if str(marks[int(car_for_test['mark'])-1]['mark']) == 'Acura':
-                #     print(car_for_test, marks[int(car_for_test['mark'])-1]['mark'], 'true', int(car_for_test['mark']))
-                # print(marks[int(car_for_test['mark'])-1]['mark'], car_title[0].lower())
-                if (str(car_for_test['model']).lower() == car_title[1].lower()
-                        and
-                        str(marks[int(car_for_test['mark']) - 1]['mark']).lower() == car_title[0].lower()):
-                    is_car = True
-                    price = car_for_test['price']
-            if is_car is False:
-                price = 'Нет информации о цене'
-
-            print(car_test.title, price)
 
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
@@ -419,7 +656,54 @@ class Parser(object):
 
     def parse_title(self):
         name = self.html_page.find('div', 'page_title').text
-        return name
+        # Достаем данные из excel
+        file_path = 'cars_price.xlsx'
+        workbook = load_workbook(filename=file_path)
+
+        models_list = workbook.worksheets[1]
+        mark_list = workbook.worksheets[0]
+
+        models = []
+        skip_first_row = False
+        for row in models_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            model = {
+                'id': row[0],
+                'mark': row[1],
+                'model': row[2],
+                'price': row[3],
+            }
+            models.append(model)
+        marks = []
+        for row in mark_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            mark = {
+                'id': row[0],
+                'mark': row[1]
+            }
+            marks.append(mark)
+
+        # Достаем данные из excel
+
+        # Узнаем цену машины
+
+        car_title = name.split()
+        is_car = False
+        price = 0
+        for car_for_test in models:
+
+            # if str(marks[int(car_for_test['mark'])-1]['mark']) == 'Acura':
+            #     print(car_for_test, marks[int(car_for_test['mark'])-1]['mark'], 'true', int(car_for_test['mark']))
+            # print(marks[int(car_for_test['mark'])-1]['mark'], car_title[0].lower())
+            if (str(car_for_test['model']).lower() == car_title[1].lower()
+                    and
+                    str(marks[int(car_for_test['mark']) - 1]['mark']).lower() == car_title[0].lower()):
+                is_car = True
+                price = car_for_test['price']
+        if is_car is False:
+            price = 'Нет информации о цене'
+
+        print(name, price, '______________________________________________________')
+        price_name = {'name': name, 'price': price}
+        return price_name
 
     def parse_auction_data(self):
         auction_data = self.html_page.find('div', 'col_left').text
@@ -574,11 +858,15 @@ class Car_data(object):
 
     auc_list = ''
 
+    price = ''
+
     def __init__(self, url):
         parser = Parser(url)
         self.auc_link = url
         # для Car_of_page
-        self.title = parser.parse_title()
+        price_name = parser.parse_title()
+        self.title = price_name['name']
+        self.price = price_name['price']
         self.auction_data = parser.parse_auction_data()
         self.car_options = parser.parse_car_options()
         self.content = parser.parse_content()
@@ -636,6 +924,7 @@ class Car_data(object):
         print('Удален')
 
     def save_me_to_bd(self):
+        # Место для формирования цены
         new_car_new = Car.objects.create(
             auc_link=self.auc_link,
             title=self.title,
@@ -664,7 +953,8 @@ class Car_data(object):
             deadline_for_the_price_offer=self.deadline_for_the_price_offer,
             day_of_the_event=self.day_of_the_event,
             number_of_sessions=self.number_of_sessions,
-            auc_list=self.auc_list
+            auc_list=self.auc_list,
+            price=self.price
         )
         for el in range(len(self.image)):
             PhotoCar.objects.create(id_car=new_car_new, photo=self.image[el])

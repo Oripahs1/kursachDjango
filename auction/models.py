@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+
 class PhotoCar(models.Model):
     id_photo = models.AutoField(primary_key=True)
     id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
@@ -49,6 +50,54 @@ class Trans(models.Model):
     date_form = models.DateField()
     date_shipment = models.DateField()
     date_receive = models.DateField()
+
+
+class Duty(models.Model):
+
+    volume_first = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    volume_last = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    coefficient_less_3 = models.DecimalField(max_digits=5, decimal_places=2)
+    coefficient_more_3 = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def get_absolute_url_duty(self):
+        return reverse('duty', kwargs={'duty_id': self.pk})
+
+
+class Price(models.Model):
+    price_first_car = models.IntegerField(null=True, blank=True)
+    price_last_car = models.IntegerField(null=True, blank=True)
+    price_transportation = models.IntegerField(null=True, blank=True)
+
+    def get_absolute_url_price(self):
+        return reverse('price', kwargs={'price_id': self.pk})
+
+
+class Excise(models.Model):
+    power_first_car = models.IntegerField(null=True, blank=True)
+    power_last_car = models.IntegerField(null=True, blank=True)
+    bet = models.IntegerField(null=True, blank=True)
+
+    def get_absolute_url_excise(self):
+        return reverse('excise', kwargs={'excise_id': self.pk})
+
+
+class CustomsDuty(models.Model):
+    from_0 = 'От 0 до 3 лет'
+    from_3 = 'От 3 до 5 лет'
+    from_5 = 'От 5 лет'
+    TYPE_CHOICE = [
+        (from_0, 'От 0 до 3 лет'),
+        (from_3, 'От 3 до 5 лет'),
+        (from_5, 'От 5 лет'),
+    ]
+    #     job_title = models.TextField(choices=JOB_CHOICE)
+    type = models.TextField(choices=TYPE_CHOICE)
+    value_first = models.IntegerField(null=True, blank=True)
+    value_last = models.IntegerField(null=True, blank=True)
+    bet = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def get_absolute_url_customs_duty(self):
+        return reverse('customs_duty', kwargs={'customs_duty_id': self.pk})
 
 
 class Order(models.Model):
@@ -127,6 +176,8 @@ class Car(models.Model):
 
     auc_list = models.TextField(null=True)
 
+    price = models.TextField(null=True)
+
     def get_absolute_url_car(self):
         return reverse('car', kwargs={'car_id': self.pk})
 
@@ -180,6 +231,8 @@ class Car(models.Model):
                     poles.append(['День проведения', field.value_to_string(self)])
                 case 'number_of_sessions':
                     poles.append(['Количество проведений', field.value_to_string(self)])
+                case 'price':
+                    poles.append(['Предполагаемая цена', field.value_to_string(self) + ' р.'])
         return poles
 
     def __str__(self):
