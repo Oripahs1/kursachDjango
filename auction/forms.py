@@ -137,6 +137,7 @@ class TextareaWithValueHandling(forms.Textarea):
     """
     template_name = 'form/widget/textarea_with_value_handling.html'
 
+
 class OrderInOrdersForm(forms.Form):
     id_order = forms.CharField(label='Заказ', widget=forms.TextInput(attrs={'class': 'form-control'}))
     first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(
@@ -150,12 +151,13 @@ class OrderInOrdersForm(forms.Form):
         attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     date_end = forms.CharField(label='Дата закрытия заказа', widget=forms.TextInput(
         attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}), required=False)
-    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}), required=False)
-    sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}),
+                              required=False)
+    sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+                           required=False)
     ptd = forms.FileField(label='ПТД', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
 
-    def save(self,  commit=True):
-        print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    def save(self, commit=True):
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
         if self.cleaned_data['date_end'] != '':
             order.update(date_end=self.cleaned_data['date_end'])
@@ -173,11 +175,14 @@ class InvoiceForm(forms.Form):
                                     widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice, widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
@@ -200,11 +205,14 @@ class InvoiceForm(forms.Form):
 class NewInvoiceForm(forms.Form):
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 

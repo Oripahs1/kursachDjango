@@ -9,8 +9,9 @@
 {% endblock head %}
 
 {% block content %}
-    <div class="container_width">
-        <div class="ecommerce-gallery" data-mdb-zoom-effect="true" data-mdb-auto-height="true">
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <h1>{{ car.title }}</h1>
+        <div class="ecommerce-gallery col-6 mx-auto" data-mdb-zoom-effect="true" data-mdb-auto-height="true">
             <div class="row py-3 shadow-5">
                 {% for img in photo %}
 
@@ -44,7 +45,7 @@
 
                 </table>
             </div>
-            <img src="{{ car.auc_list }}" />
+            <img style="max-width: 100%" src="{{ car.auc_list }}" />
             <a href="{{ car.get_absolute_url_order }}">
                 <button type="button" class="btn btn-primary" style="margin: auto; display: block">Забронировать</button>
             </a>

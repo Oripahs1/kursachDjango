@@ -5,15 +5,20 @@
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
 import datetime
+import os
 
 from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
+from openpyxl.reader.excel import load_workbook
+
 from .models import Car, PhotoCar, Worker, Order, Invoice
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
 from django.contrib import messages
+from django.conf import settings
+import pandas as pd
 
 
 class HomePageView(TemplateView):
@@ -227,7 +232,7 @@ class OrderPageView(TemplateView):
         else:
             form = OrderForm()
 
-        orders = Order.objects.all()
+        orders = Order.objects.filter(date_end=None)
         print(orders)
         return render(request, 'orders.html', {'orders': orders})
 
@@ -250,6 +255,59 @@ class CarPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         photo = PhotoCar.objects.filter(id_car=car)
+
+        # Достаем данные из excel
+        file_path = 'cars_price.xlsx'
+        workbook = load_workbook(filename=file_path)
+
+        models_list = workbook.worksheets[1]
+        mark_list = workbook.worksheets[0]
+
+        models = []
+        skip_first_row = False
+        for row in models_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            model = {
+                'id': row[0],
+                'mark': row[1],
+                'model': row[2],
+                'price': row[3],
+            }
+            models.append(model)
+        marks = []
+        for row in mark_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            mark = {
+                'id': row[0],
+                'mark': row[1]
+            }
+            marks.append(mark)
+        print(models)
+        print(marks)
+        mark = marks[0]
+        print(marks[0]['mark'])
+        # Достаем данные из excel
+
+        # Узнаем цену машины
+        car_for_test = Car.objects.all()
+        for car_test in car_for_test:
+            car_title = car_test.title.split()
+            is_car = False
+            price = 0
+            for car_for_test in models:
+
+                # if str(marks[int(car_for_test['mark'])-1]['mark']) == 'Acura':
+                #     print(car_for_test, marks[int(car_for_test['mark'])-1]['mark'], 'true', int(car_for_test['mark']))
+                # print(marks[int(car_for_test['mark'])-1]['mark'], car_title[0].lower())
+                if (str(car_for_test['model']).lower() == car_title[1].lower()
+                        and
+                        str(marks[int(car_for_test['mark'])-1]['mark']).lower() == car_title[0].lower()):
+                    is_car = True
+                    price = car_for_test['price']
+            if is_car is False:
+                price ='Нет информации о цене'
+
+            print(car_test.title, price)
+
+
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
 
