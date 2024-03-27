@@ -112,6 +112,7 @@ class RegistrationPageView(TemplateView):
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = RegistrationForm(request.POST)
+
             if form.is_valid():
                 # form.username_clean()
                 if form.username_clean() == '#':
