@@ -5,8 +5,8 @@ from django.core.exceptions import ValidationError
 from django.forms.fields import EmailField
 from django.forms.forms import Form
 from django.contrib import messages
-from .models import Worker
-from .models import Invoice
+from .models import Worker, Order, Customer, Car, Invoice
+import datetime
 
 
 class ParserForm(forms.Form):
@@ -18,8 +18,9 @@ class LogoutForm(forms.Form):
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=30)
+    username = forms.CharField(max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
     password = forms.CharField(min_length=3, max_length=65, widget=forms.PasswordInput)
+    password.widget.attrs.update({'class': 'form-control'})
 
     def login_clean(self):
         username = self.cleaned_data['username']
@@ -88,32 +89,85 @@ class RegistrationForm(forms.Form):
         )
 
 
-class UpdateWorker(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150, )
-    full_name = forms.CharField(label='ФИО')
-    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
-    passport = forms.CharField(label='Серия и номер паспорта')
-    phone_num = forms.CharField(label='Номер телефона')
-    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+class OrderForm(forms.Form):
+    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_of_birth = forms.DateField(label='Дата рождения', widget=forms.DateInput(
+        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}))
+    place_of_birth = forms.CharField(label='Место рождения', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_series = forms.CharField(label='Серия паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_number = forms.CharField(label='Номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_department_code = forms.CharField(label='Код подразделения',
+                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_department_name = forms.CharField(label='Паспорт выдан',
+                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+    telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    worker = forms.ModelChoiceField(label='Сотрудник', queryset=Worker.objects,
+                                    widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+
+    def save(self, commit=True):
+        customer = Customer.objects.create(
+            first_name_client=self.cleaned_data['first_name_client'],
+            last_name_client=self.cleaned_data['last_name_client'],
+            patronymic_client=self.cleaned_data['patronymic_client'],
+            date_of_birth=self.cleaned_data['date_of_birth'],
+            place_of_birth=self.cleaned_data['place_of_birth'],
+            passport_series=self.cleaned_data['passport_series'],
+            passport_number=self.cleaned_data['passport_number'],
+            passport_department_code=self.cleaned_data['passport_department_code'],
+            passport_department_name=self.cleaned_data['passport_department_name'],
+            telephone=self.cleaned_data['telephone']
+        )
+
+        car = Car.objects.get(pk=self.cleaned_data['id_car'])
+        Order.objects.create(
+            id_customer=customer,
+            id_worker=self.cleaned_data['worker'],
+            id_car=car,
+            date_start=datetime.date.today(),
+        )
 
 
-class WorkerForm(forms.Form):
-    username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
-                               widget=forms.TextInput(attrs={'class': 'form-control'}))
-    full_name = forms.CharField(label='ФИО')
-    job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE)
-    passport = forms.CharField(label='Серия и номер паспорта')
-    phone_num = forms.CharField(label='Номер телефона')
-    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+class TextareaWithValueHandling(forms.Textarea):
+    """
+    Ugly hack to get a default value preset within a textarea. (not supported by django)
+    This template renders widget.attrs.value within the textarea body if there is no real value
+    """
+    template_name = 'form/widget/textarea_with_value_handling.html'
 
-    def input_for_form(self, obj):
-        print('Вроде заносим')
-        print(obj.username)
-        # print(self.cleaned_data)
-        print(self.cleaned_data['username'])
-        self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
-                                        widget=forms.TextInput(attrs={'class': 'form-control', 'value': obj.username}))
+
+class OrderInOrdersForm(forms.Form):
+    id_order = forms.CharField(label='Заказ', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_start = forms.DateField(label='Дата открытия заказа', widget=forms.DateInput(
+        attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    date_end = forms.CharField(label='Дата закрытия заказа', widget=forms.TextInput(
+        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}), required=False)
+    comment = forms.CharField(label='Комментарий к заказу', widget=forms.Textarea(attrs={'class': 'form-control'}),
+                              required=False)
+    sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+                           required=False)
+    ptd = forms.FileField(label='ПТД', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+
+    def save(self, commit=True):
+        order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
+        if self.cleaned_data['date_end'] != '':
+            order.update(date_end=self.cleaned_data['date_end'])
+
+        order.update(
+            comment=self.cleaned_data['comment']
+        )
+        customer = order[0].id_customer
+        customer.telephone = self.cleaned_data['telephone']
+        customer.save()
 
 
 class InvoiceForm(forms.Form):
@@ -121,11 +175,14 @@ class InvoiceForm(forms.Form):
                                     widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice, widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
@@ -148,11 +205,14 @@ class InvoiceForm(forms.Form):
 class NewInvoiceForm(forms.Form):
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_form = forms.CharField(label='Дата формирования', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
-    date_pay = forms.CharField(label='Дата оплаты', widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_form = forms.CharField(label='Дата формирования',
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+    date_pay = forms.CharField(label='Дата оплаты',
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,widget=forms.Select(attrs={'class': 'custom-select'}))
+    type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     scan = forms.CharField(label='Скан счета на оплату', widget=forms.TextInput(attrs={'class': 'form-control'}))
     assigning = forms.CharField(label='Назначение', widget=forms.TextInput(attrs={'class': 'form-control'}))
 

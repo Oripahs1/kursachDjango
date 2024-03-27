@@ -1,0 +1,45 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Заказы</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'orders.css' %}">
+{% endblock head %}
+
+{% block content %}
+    <ul class="d-grid gap-2 col-8 mx-auto">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">ФИО клиента</th>
+                <th scope="col">Название машины</th>
+                <th scope="col">Номер телефона клиента</th>
+                <th scope="col">Дата</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for el in orders %}
+                <tr style="vertical-align: middle">
+                    <th scope="row">{{ el.id_order }}</th>
+                    <td>{{ el.id_customer.first_name_client }} {{ el.id_customer.last_name_client }} {{ el.id_customer.patronymic_client }}</td>
+                    <td>{{ el.id_car.title }}</td>
+                    <td>{{ el.id_customer.telephone }}</td>
+                    <td>{{ el.date_start }}</td>
+                    <td>
+                        <a href="{{ el.get_absolute_url_order }}">
+                            <button style="width: 100px"
+                                    class="btn btn-outline-dark">
+                                Открыть
+                            </button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </ul>
+{% endblock content %}

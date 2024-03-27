@@ -5,15 +5,20 @@
 # Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
 # Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
 import datetime
+import os
 
 from bs4 import BeautifulSoup
 import requests
 import django.http
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from .models import Car, PhotoCar, Worker, Invoice
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, WorkerForm, InvoiceForm, NewInvoiceForm
+from openpyxl.reader.excel import load_workbook
+
+from .models import Car, PhotoCar, Worker, Order, Invoice
+from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
 from django.contrib import messages
+from django.conf import settings
+import pandas as pd
 
 
 class HomePageView(TemplateView):
@@ -39,15 +44,15 @@ class WorkersCardPageView(TemplateView):
         worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
         worker_data = Worker.objects.all()
         form = RegistrationForm()
-        form.fields['username'].widget.attrs.update({'value': worker.username, 'class': 'form-control'})
-        form.fields['full_name'].widget.attrs.update({'value': worker.full_name, 'class': 'form-control'})
+        form.fields['username'].widget.attrs.update({'value': worker.username})
+        form.fields['full_name'].widget.attrs.update({'value': worker.full_name})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['job_title'].widget.attrs.update({'value': '2', 'class': 'custom-select'})
+        form.fields['job_title'].widget.attrs.update({'value': worker.job_title})
         # Вот тут хуй знает как сделать не нашел
-        form.fields['passport'].widget.attrs.update({'value': worker.passport, 'class': 'form-control'})
-        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number, 'class': 'form-control'})
-        form.fields['password1'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
-        form.fields['password2'].widget.attrs.update({'value': worker.password, 'class': 'form-control'})
+        form.fields['passport'].widget.attrs.update({'value': worker.passport})
+        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number})
+        form.fields['password1'].widget.attrs.update({'value': worker.password})
+        form.fields['password2'].widget.attrs.update({'value': worker.password})
 
         return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
 
@@ -125,6 +130,113 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+class OrderInOrdersPageView(TemplateView):
+    template_name = 'order_in_orders.html'
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.get(id_order=kwargs['order_id'])
+        print(order.ptd == '')
+        print(order.sbts == '')
+
+        form = OrderInOrdersForm()
+
+        form.fields['id_order'].widget.attrs.update({'value': order.id_order})
+        form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
+        form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
+        form.fields['patronymic_client'].widget.attrs.update({'value': order.id_customer.patronymic_client})
+        form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
+        form.fields['date_start'].widget.attrs.update({'value': order.date_start})
+        form.fields['sbts'].widget.initial_text = ''
+        form.fields['sbts'].widget.input_text = 'Заменить'
+        form.fields['ptd'].widget.initial_text = ''
+        form.fields['ptd'].widget.input_text = 'Заменить'
+        form.fields['ptd'].widget.clear_checkbox_label = ''
+        form.fields['sbts'].widget.clear_checkbox_label = ''
+        if order.date_end is not None:
+            form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
+        if order.comment is not None:
+            form.fields['comment'].initial = order.comment
+        if order.sbts is not None:
+            form.fields['sbts'].initial = order.sbts
+        if order.ptd is not None:
+            form.fields['ptd'].initial = order.ptd
+        return render(request, self.template_name, {'order': order, 'form': form})
+
+    def post(self, request, *args, **kwargs):
+        print(request.FILES)
+        if request.method == 'POST':
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+
+                order = Order.objects.filter(id_order=form.cleaned_data['id_order'])
+                order = order[0]
+                # is_initial
+                print(form.initial)
+                print(form.cleaned_data['date_end'])
+                # print(form.fields['ptd'].initial)
+
+                if order.ptd == '':
+                    order.ptd = request.FILES.get('ptd')
+                else:
+                    order.ptd = order.ptd
+
+                if order.sbts == '':
+                    order.sbts = request.FILES.get('sbts')
+                else:
+                    order.sbts = order.sbts
+
+                order.save()
+
+                messages.info(request, "Заказ изменен")
+                form.save()
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+        orders = Order.objects.filter(date_end=None)
+        return render(request, 'orders.html', {"orders": orders})
+
+
+class OrdersPageView(TemplateView):
+    template_name = "orders.html"
+
+    def get(self, request, *args, **kwargs):
+        print('Пришел запрос')
+        orders = Order.objects.filter(date_end=None)
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
+class OrderPageView(TemplateView):
+    template_name = "order.html"
+
+    def get(self, request, *args, **kwargs):
+        car = Car.objects.get(id_car=kwargs.get('car_id'))
+        form = OrderForm()
+        photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
+        form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.info(request, "Пользователь зарегистрирован")
+            else:
+                messages.info(request, "Чета блять сломалось")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+        else:
+            form = OrderForm()
+
+        orders = Order.objects.filter(date_end=None)
+        print(orders)
+        return render(request, 'orders.html', {'orders': orders})
+
+
 class CatalogPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
@@ -143,6 +255,59 @@ class CarPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         photo = PhotoCar.objects.filter(id_car=car)
+
+        # Достаем данные из excel
+        file_path = 'cars_price.xlsx'
+        workbook = load_workbook(filename=file_path)
+
+        models_list = workbook.worksheets[1]
+        mark_list = workbook.worksheets[0]
+
+        models = []
+        skip_first_row = False
+        for row in models_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            model = {
+                'id': row[0],
+                'mark': row[1],
+                'model': row[2],
+                'price': row[3],
+            }
+            models.append(model)
+        marks = []
+        for row in mark_list.iter_rows(values_only=True, min_row=2 if skip_first_row else 1):
+            mark = {
+                'id': row[0],
+                'mark': row[1]
+            }
+            marks.append(mark)
+        print(models)
+        print(marks)
+        mark = marks[0]
+        print(marks[0]['mark'])
+        # Достаем данные из excel
+
+        # Узнаем цену машины
+        car_for_test = Car.objects.all()
+        for car_test in car_for_test:
+            car_title = car_test.title.split()
+            is_car = False
+            price = 0
+            for car_for_test in models:
+
+                # if str(marks[int(car_for_test['mark'])-1]['mark']) == 'Acura':
+                #     print(car_for_test, marks[int(car_for_test['mark'])-1]['mark'], 'true', int(car_for_test['mark']))
+                # print(marks[int(car_for_test['mark'])-1]['mark'], car_title[0].lower())
+                if (str(car_for_test['model']).lower() == car_title[1].lower()
+                        and
+                        str(marks[int(car_for_test['mark'])-1]['mark']).lower() == car_title[0].lower()):
+                    is_car = True
+                    price = car_for_test['price']
+            if is_car is False:
+                price ='Нет информации о цене'
+
+            print(car_test.title, price)
+
+
         return render(request, 'car.html', {'car': car, 'photo': photo})
 
 

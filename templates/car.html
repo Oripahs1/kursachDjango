@@ -3,51 +3,54 @@
 {% extends 'base.html' %}
 {% load static %}
 
-    {% block head %}
-        <title>{{ car.title }}</title>
-        <link rel="stylesheet" type="text/css" href="{% static 'car.css' %}">
-    {% endblock head %}
+{% block head %}
+    <title>{{ car.title }}</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'car.css' %}">
+{% endblock head %}
 
-    {% block content %}
-        <div class="container_width">
-            <div class="ecommerce-gallery" data-mdb-zoom-effect="true" data-mdb-auto-height="true">
-                <div class="row py-3 shadow-5">
-                    {% for img in photo %}
+{% block content %}
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <h1>{{ car.title }}</h1>
+        <div class="ecommerce-gallery col-6 mx-auto" data-mdb-zoom-effect="true" data-mdb-auto-height="true">
+            <div class="row py-3 shadow-5">
+                {% for img in photo %}
 
-                        {% if forloop.first %}
-                            <div class="col-12 mb-1">
-                                <div class="lightbox">
-                                    <img class="ecommerce-gallery-main-img active w-100" src="{{ img.photo }}"/>
-                                </div>
+                    {% if forloop.first %}
+                        <div class="col-12 mb-1">
+                            <div class="lightbox">
+                                <img class="ecommerce-gallery-main-img active w-100" src="{{ img.photo }}"/>
                             </div>
-                        {% else %}
-                             <div class="col-3 mt-1">
-                                <img class="active w-100" src="{{ img.photo }}"/>
-                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-3 mt-1">
+                            <img class="active w-100" src="{{ img.photo }}"/>
+                        </div>
+                    {% endif %}
+
+                {% endfor %}
+            </div>
+            <div class="table">
+                <table class="table table-hover table-striped">
+                    {% for name, value in car.get_fields %}
+
+                        {% if value %}
+                            <tr>
+                                <td>{{ name }}</td>
+                                <td>{{ value }}</td>
+                            </tr>
                         {% endif %}
 
                     {% endfor %}
-                </div>
-                <div class="table">
-                    <table class="table table-hover table-striped">
-                        {% for name, value in car.get_fields %}
-
-                            {% if value %}
-                                <tr>
-                                    <td>{{ name }}</td>
-                                    <td>{{ value }}</td>
-                                </tr>
-                            {% endif %}
-
-                        {% endfor %}
 
 
-                    </table>
-                </div>
-                <img src="{{ car.auc_list }}">
-                <button type="button" class="btn btn-primary" style="margin: auto; display: block">Заказать</button>
+                </table>
             </div>
-
+            <img style="max-width: 100%" src="{{ car.auc_list }}" />
+            <a href="{{ car.get_absolute_url_order }}">
+                <button type="button" class="btn btn-primary" style="margin: auto; display: block">Забронировать</button>
+            </a>
         </div>
 
-    {% endblock content %}
+    </div>
+
+{% endblock content %}
