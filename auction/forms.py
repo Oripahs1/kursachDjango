@@ -6,7 +6,9 @@ from django.forms.fields import EmailField
 from django.forms.forms import Form
 from django.contrib import messages
 from .models import Worker, Order, Customer, Car, Invoice
+from django.db import IntegrityError
 import datetime
+from django.contrib.auth import authenticate
 
 
 class ParserForm(forms.Form):
@@ -14,67 +16,182 @@ class ParserForm(forms.Form):
 
 
 class LogoutForm(forms.Form):
-    url_parser_field = forms.CharField(label='Cars url')
+    pass
 
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(min_length=3, max_length=65, widget=forms.PasswordInput)
+    password = forms.CharField(min_length=1, max_length=65, widget=forms.PasswordInput)
     password.widget.attrs.update({'class': 'form-control'})
 
-    def login_clean(self):
-        username = self.cleaned_data['username']
-        password = self.cleaned_data['password']
-        if Worker.objects.filter(username=username, password=password).exists():
-            return username
-        else:
-            return '#'
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     username = cleaned_data.get('username')
+    #     password = cleaned_data.get('password')
+    #     user = authenticate(username=username, password=password)
+    #     if user is None:
+    #         raise ValidationError("Неправильное имя пользователя или пароль")
+    #     return cleaned_data
 
 
-class RegistrationForm(forms.Form):
+# class RegistrationForm(forms.ModelForm):
+# username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+#                            widget=forms.TextInput(attrs={'class': 'form-control'}))
+# full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
+# job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE,
+#                               widget=forms.Select(attrs={'class': 'custom-select'}))
+# passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+# phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
+# password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+# password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
+#
+# # password1.widget.attrs.update({'class': 'form-control'})
+# # password2.widget.attrs.update({'class': 'form-control'})
+#
+# class Meta:
+#     model = Worker
+#     exclude = ['username', 'password', 'full_name', 'job_title', 'phone_number', 'passport']
+#
+#     # def __init__(self):
+#     #     self.username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
+#     #                                widget=forms.TextInput(attrs={'class': 'form-control'}))
+#     #     self.phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
+#
+# def username_clean(self):
+#     username = self.cleaned_data['username']
+#     if Worker.objects.filter(username=username).exists():
+#         return None
+#     return username
+#
+# def passport_clean(self):
+#     passport = self.cleaned_data['passport']
+#     if Worker.objects.filter(passport=passport).exists():
+#         return None
+#     return passport
+#
+# def clean_password2(self):
+#     password1 = self.cleaned_data['password']
+#     password2 = self.cleaned_data['password2']
+#     if password1 and password2 and password1 != password2:
+#         return None
+#     return password1
+
+# def save(self, commit=True):
+#     user = super().save(commit=False)
+#     user.username = self.cleaned_data['username']
+#     user.set_password(self.cleaned_data['password'])
+#     if commit:
+#         try:
+#             user.save()
+#             # Создание объекта Worker и сохранение его в базе данных
+#             worker, created = Worker.objects.get_or_create(
+#                 username=user.username,
+#                 full_name=self.cleaned_data['full_name'],
+#                 job_title=self.cleaned_data['job_title'],
+#                 phone_number=self.cleaned_data['phone_number'],
+#                 defaults={'passport': self.cleaned_data['passport']}
+#                 # Устанавливаем номер паспорта только при создании
+#             )
+#             if not created:
+#                 # Если работник уже существует, обновляем его остальные поля
+#                 worker.full_name = self.cleaned_data['full_name']
+#                 worker.job_title = self.cleaned_data['job_title']
+#                 worker.phone_number = self.cleaned_data['phone_number']
+#                 worker.save()
+#             return user  # Возвращаем объект пользователя
+#         except IntegrityError:
+#             # Если произошла ошибка, например, номер паспорта неуникален
+#             user.delete()  # Удаляем созданного пользователя
+#             raise  # Переопределяем ошибку
+#     else:
+#         return None
+
+# Worker.objects.create(
+#     username=self.cleaned_data['username'].strip(),
+#     full_name=self.cleaned_data['full_name'],
+#     job_title=self.cleaned_data['job_title'],
+#     passport=self.cleaned_data['passport'],
+#     phone_number=self.cleaned_data['phone_num'],
+#     password=self.cleaned_data['password1'],
+# )
+
+class RegistrationForm(forms.ModelForm):
     username = forms.CharField(label='Имя пользователя', min_length=5, max_length=150,
                                widget=forms.TextInput(attrs={'class': 'form-control'}))
     full_name = forms.CharField(label='ФИО', widget=forms.TextInput(attrs={'class': 'form-control'}))
     job_title = forms.ChoiceField(label='Должность', choices=Worker.JOB_CHOICE,
                                   widget=forms.Select(attrs={'class': 'custom-select'}))
-    passport = forms.CharField(label='Серия и номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    phone_num = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password1 = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+    passport = forms.CharField(label='Серия и номер паспорта',
+                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+    phone_number = forms.CharField(label='Номер телефона', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Подтвердите пароль', widget=forms.PasswordInput)
-    password1.widget.attrs.update({'class': 'form-control'})
-    password2.widget.attrs.update({'class': 'form-control'})
+    is_active = forms.BooleanField(initial=True, widget=forms.HiddenInput())  # Установим is_active в True по умолчанию
+    is_staff = forms.BooleanField(initial=True, widget=forms.HiddenInput())  # Установим is_staff в True по умолчанию
 
-    def username_clean(self):
-        username = self.cleaned_data['username']
-        new = Worker.objects.filter(username=username)
-        if Worker.objects.filter(username=username).exists():
-            return '#'
-        return username
+    class Meta:
+        model = Worker
+        exclude = ['username', 'password']
 
     def passport_clean(self):
-        passport = self.cleaned_data['passport']
-        new = Worker.objects.filter(passport=passport)
+        passport = self.cleaned_data.get('passport')
         if Worker.objects.filter(passport=passport).exists():
-            return '#'
+            raise ValidationError("Пользователь с таким паспортом уже существует.")
         return passport
 
-    def clean_password2(self):
-        password1 = self.cleaned_data['password1']
-        password2 = self.cleaned_data['password2']
+    def username_clean(self):
+        username = self.cleaned_data.get('username')
+        if Worker.objects.filter(username=username).exists():
+            raise ValidationError("Пользователь с таким именем уже существует.")
+        return username
 
-        if password1 and password2 and password1 != password2 or password1 == '' or password2 == '':
-            raise ValidationError("Password don't match")
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password")
+        password2 = self.cleaned_data.get("password2")
+        if password1 != password2:
+            raise ValidationError("Пароли не совпадают.")
         return password2
 
     def save(self, commit=True):
-        Worker.objects.create(
-            username=self.cleaned_data['username'].strip(),
-            full_name=self.cleaned_data['full_name'],
-            job_title=self.cleaned_data['job_title'],
-            passport=self.cleaned_data['passport'],
-            phone_number=self.cleaned_data['phone_num'],
-            password=self.cleaned_data['password1'],
-        )
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.is_active = True  # Установим is_active в True
+            user.is_staff = True  # Установим is_staff в True
+            if user.pk is None:  # Если пользователь новый
+                existing_user = Worker.objects.filter(username=user.username).exists()
+                if existing_user:
+                    raise IntegrityError("User with this username already exists.")
+                user.save()
+
+            # Если пользователь уже существует, обновляем его поля
+            else:
+                # Устанавливаем username для обновления
+                user.username = self.cleaned_data['username']
+                user.save()
+
+            # Создаем объект Worker и сохраняем его в базе данных
+            worker, created = Worker.objects.get_or_create(
+                username=user.username,  # Сохраняем username при создании нового работника
+                defaults={
+                    'full_name': self.cleaned_data['full_name'],
+                    'job_title': self.cleaned_data['job_title'],
+                    'phone_number': self.cleaned_data['phone_number'],
+                    'passport': self.cleaned_data['passport'],
+                }
+            )
+
+            if not created:
+                # Если работник уже существует, обновляем его остальные поля
+                worker.full_name = self.cleaned_data['full_name']
+                worker.job_title = self.cleaned_data['job_title']
+                worker.phone_number = self.cleaned_data['phone_number']
+                worker.passport = self.cleaned_data['passport']
+                worker.save()
+
+            return user  # Возвращаем объект пользователя
+        else:
+            return None
 
     def update(self, commit=True):
         worker_obl = Worker.objects.filter(username=self.cleaned_data['username'])

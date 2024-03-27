@@ -44,7 +44,15 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'buhgalter' %}">Бухгалтерия</a>
                 </li>
-
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'logout' %}">Выход</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'login' %}">Вход</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </nav>

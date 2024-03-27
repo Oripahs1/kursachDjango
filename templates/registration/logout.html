@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +7,28 @@
     <title>Title</title>
 </head>
 <body>
-
+{% block content %}
+    <form action="{% url 'logout' %}" method="post" style="text-align: center">
+        {% csrf_token %}
+        <input type="submit" name="import" value="Выйти" class="btn btn-outline-dark">
+        <style>
+            button {
+                margin-top: 15px;
+            }
+        </style>
+    </form>
+    {#    {% if request.user.is_authenticated %}#}
+    {#        <form class="d-flex" action="{% url 'logout' %}" method="POST">#}
+    {#        {% csrf_token %}#}
+    {#        <p>Hi {user.username}</p>#}
+    {#        <input type="submit" value="Выход" class="btn btn-outline-dark">#}
+    {#        </form>#}
+    {#    {% else %}#}
+    {#    <form class="d-flex" action="{% url 'logout' %}" method="POST">#}
+    {#        {% csrf_token %}#}
+    {#        <p>Hi {user.username}</p>#}
+    {#        <input type="submit" value="Выход" class="btn btn-outline-dark">#}
+    {#    </form>#}
+{% endblock content %}
 </body>
 </html>
