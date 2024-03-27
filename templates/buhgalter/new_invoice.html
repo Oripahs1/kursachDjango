@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -9,7 +8,7 @@
 
 {% block content %}
     {% include 'messages.html' %}
-     <div class="d-grid gap-2 col-6 mx-auto">
+    <div class="d-grid gap-2 col-6 mx-auto">
 
         <form method="POST">
             {% csrf_token %}
@@ -70,9 +69,8 @@
                 </div>
             </div>
 
-
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <input type="submit" class="btn btn-dark position-relative" value="Сохранить счет на оплату"/>
+                <input type="submit" class="btn btn-outline-dark position-relative" value="Сохранить счет на оплату"/>
             </div>
         </form>
     </div>

@@ -81,10 +81,6 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
-# AUTHENTICATION_BACKENDS = [
-#     'django.contrib.auth.backends.ModelBackend',
-#     'users.authentication.EmailAuthBackend',
-# ]
 
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
@@ -103,7 +99,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_DIRS = [
     "static/css",
     "static/js"
@@ -114,12 +109,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'auction.Worker'
-# CSRF_COOKIE_SECURE = False
-# CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = [
     'https://appname.herokuapp.com'
 ]
-# AUTHENTICATION_BACKENDS = [
-#     'django.contrib.auth.backends.ModelBackend',  # По умолчанию используется модель пользователя
-#     # Добавьте здесь другие бэкэнды аутентификации, если необходимо
-# ]
+
+LOGIN_URL = "login/"

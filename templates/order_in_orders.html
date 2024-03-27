@@ -9,6 +9,7 @@
 {% endblock head %}
 
 {% block content %}
+    {% include 'messages.html' %}
     <div class="d-grid gap-2 col-6 mx-auto">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
@@ -65,6 +66,11 @@
             </div>
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
                 <input type="submit" class="btn btn-outline-dark position-relative" value="Обновить"/>
+            </div>
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <a href="{% url 'fill_pdf' document_name='dogovor.pdf' %}">
+                    <input type="button" class="btn btn-outline-dark position-relative" value="Открыть договор"/>
+                </a>
             </div>
         </form>
     </div>

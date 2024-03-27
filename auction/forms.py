@@ -1,14 +1,7 @@
 from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from django.core.exceptions import ValidationError
-from django.forms.fields import EmailField
-from django.forms.forms import Form
-from django.contrib import messages
 from .models import Worker, Order, Customer, Car, Invoice
 from django.db import IntegrityError
 import datetime
-from django.contrib.auth import authenticate
 
 
 class ParserForm(forms.Form):
@@ -136,20 +129,23 @@ class RegistrationForm(forms.ModelForm):
     def passport_clean(self):
         passport = self.cleaned_data.get('passport')
         if Worker.objects.filter(passport=passport).exists():
-            raise ValidationError("Пользователь с таким паспортом уже существует.")
+            return None
+            # raise ValidationError("Пользователь с таким паспортом уже существует.")
         return passport
 
     def username_clean(self):
         username = self.cleaned_data.get('username')
         if Worker.objects.filter(username=username).exists():
-            raise ValidationError("Пользователь с таким именем уже существует.")
+            return None
+            # raise ValidationError("Пользователь с таким именем уже существует.")
         return username
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password")
         password2 = self.cleaned_data.get("password2")
         if password1 != password2:
-            raise ValidationError("Пароли не совпадают.")
+            return None
+            # raise ValidationError("Пароли не совпадают.")
         return password2
 
     def save(self, commit=True):
@@ -221,8 +217,11 @@ class OrderForm(forms.Form):
                                                widget=forms.TextInput(attrs={'class': 'form-control'}))
     telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    worker = forms.ModelChoiceField(label='Сотрудник', queryset=Worker.objects,
-                                    widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    # worker = forms.ModelChoiceField(label='Сотрудник',
+    #                                 queryset=Worker.objects.filter(is_superuser=False, job_title='Менеджер'),
+    #                                 widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    worker = forms.CharField(label='Сотрудник',
+                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
 
     def save(self, commit=True):
         customer = Customer.objects.create(
@@ -241,9 +240,10 @@ class OrderForm(forms.Form):
         car = Car.objects.get(pk=self.cleaned_data['id_car'])
         Order.objects.create(
             id_customer=customer,
-            id_worker=self.cleaned_data['worker'],
+            id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,
             date_start=datetime.date.today(),
+            # order_status=Order.STATUS_1
         )
 
 
@@ -274,6 +274,10 @@ class OrderInOrdersForm(forms.Form):
                            required=False)
     ptd = forms.FileField(label='ПТД', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
 
+    # order_status = forms.ModelChoiceField(label='Статус заказа',
+    #                                 queryset=Order.objects.get(),
+    #                                 widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+
     def save(self, commit=True):
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])
         if self.cleaned_data['date_end'] != '':
@@ -293,9 +297,9 @@ class InvoiceForm(forms.Form):
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
     date_form = forms.CharField(label='Дата формирования',
-                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD'}))
     date_pay = forms.CharField(label='Дата оплаты',
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
     type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,
@@ -323,9 +327,9 @@ class NewInvoiceForm(forms.Form):
     payer = forms.CharField(label='Плательщик', widget=forms.TextInput(attrs={'class': 'form-control'}))
     seller = forms.CharField(label='Получатель', widget=forms.TextInput(attrs={'class': 'form-control'}))
     date_form = forms.CharField(label='Дата формирования',
-                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+                                widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD'}))
     date_pay = forms.CharField(label='Дата оплаты',
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD-MM-YYYY'}))
+                               widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD'}))
     sum = forms.IntegerField(label='Сумма', widget=forms.TextInput(attrs={'class': 'form-control'}))
     check_document = forms.CharField(label='Скан чека', widget=forms.TextInput(attrs={'class': 'form-control'}))
     type = forms.ChoiceField(label='Тип счета на оплату', choices=Invoice.type_choice,

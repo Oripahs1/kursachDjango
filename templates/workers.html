@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'workers.css' %}">
 </head>
 {% block content %}
-    <body>
+    {% include 'messages.html' %}
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "registration" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Новый сотрудник</button>
@@ -52,6 +52,4 @@
             </tbody>
         </table>
     </ul>
-    </body>
 {% endblock content %}
-</html>

@@ -1,8 +1,9 @@
 from django.db import models
 from django.urls import reverse
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+
 
 class PhotoCar(models.Model):
     id_photo = models.AutoField(primary_key=True)
@@ -52,6 +53,29 @@ class Trans(models.Model):
 
 
 class Order(models.Model):
+    # STATUS_1 = 'Не предоплачен'
+    # STATUS_2 = 'Предоплачен'
+    # STATUS_3 = 'Выкуплен'
+    # STATUS_4 = 'Не оплачен'
+    # STATUS_5 = 'Оплачен'
+    # STATUS_6 = 'В пути до РФ'
+    # STATUS_7 = 'В РФ'
+    # STATUS_8 = 'Ожидает отправки'
+    # STATUS_9 = 'В пути по РФ'
+    # STATUS_10 = 'Выполнен'
+    # ORDER_STATUS = [
+    #     (STATUS_1, 'Не предоплачен'),
+    #     (STATUS_2, 'Предоплачен'),
+    #     (STATUS_3, 'Выкуплен'),
+    #     (STATUS_4, 'Не оплачен'),
+    #     (STATUS_5, 'Оплачен'),
+    #     (STATUS_6, 'В пути до РФ'),
+    #     (STATUS_7, 'В РФ'),
+    #     (STATUS_8, 'Ожидает отправки'),
+    #     (STATUS_9, 'В пути по РФ'),
+    #     (STATUS_10, 'Выполнен'),
+    # ]
+    #неоплачен, оплачен
     id_order = models.AutoField(primary_key=True)
     # клиент
     id_customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
@@ -64,6 +88,7 @@ class Order(models.Model):
     sbts = models.FileField(null=True, upload_to='sbts/', blank=True)
     ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+    # order_status = models.TextField(choices=ORDER_STATUS)
 
     def get_absolute_url_order(self):
         return reverse('order_in_orders', kwargs={'order_id': self.pk})
@@ -186,57 +211,8 @@ class Car(models.Model):
         return str(self.title)
 
 
-# class Worker(models.Model):
-#     MANAGER = 'Клиент-менеджер'
-#     LOGIST = 'Логист'
-#     HR = 'HR'
-#     ACCOUNTANT = 'Бухгалтер'
-#     OPERATIVNIK = 'Оперативник'
-#     JOB_CHOICE = [
-#         (MANAGER, 'Менеджер'),
-#         (LOGIST, 'Логист'),
-#         (HR, 'HR'),
-#         (ACCOUNTANT, 'Бухгалтер'),
-#         (OPERATIVNIK, 'Оперативник')
-#     ]
-#     id_worker = models.AutoField(primary_key=True)
-#     username = models.TextField(unique=True)
-#     full_name = models.TextField()
-#     job_title = models.TextField(choices=JOB_CHOICE)
-#     phone_number = models.TextField()
-#     passport = models.TextField(unique=True)
-#     password = models.TextField()
-#
-#     def __str__(self):
-#         return str(self.full_name)
-#
-#     def get_absolute_url_worker(self):
-#         return reverse('workers_card', kwargs={'worker_id': self.pk})
-
-
-# class Worker2(AbstractUser):
-#     MANAGER = 'Клиент-менеджер'
-#     LOGIST = 'Логист'
-#     HR = 'HR'
-#     ACCOUNTANT = 'Бухгалтер'
-#     OPERATIVNIK = 'Оперативник'
-#     JOB_CHOICE = [
-#         (MANAGER, 'Менеджер'),
-#         (LOGIST, 'Логист'),
-#         (HR, 'HR'),
-#         (ACCOUNTANT, 'Бухгалтер'),
-#         (OPERATIVNIK, 'Оперативник')
-#     ]
-#     id_worker2 = models.AutoField(primary_key=True)
-#     username = models.TextField(unique=True)
-#     full_name = models.TextField()
-#     job_title = models.TextField(choices=JOB_CHOICE)
-#     phone_number = models.TextField()
-#     passport = models.TextField(unique=True)
-#     password = models.TextField()
-
 class Worker(AbstractUser):
-    MANAGER = 'Клиент-менеджер'
+    MANAGER = 'Менеджер'
     LOGIST = 'Логист'
     HR = 'HR'
     ACCOUNTANT = 'Бухгалтер'
@@ -270,44 +246,10 @@ class Worker(AbstractUser):
         # Simplest possible answer: Yes, always
         return True
 
+
 @receiver(pre_save, sender=Worker)
 def set_worker_id(sender, instance, **kwargs):
     if not instance.id:
         # Получаем максимальное значение worker_id, если оно есть, иначе устанавливаем 0
         max_id = Worker.objects.aggregate(models.Max('id'))['id__max'] or 0
         instance.id = max_id + 1
-
-
-# class MyUserManager(BaseUserManager):
-#     def create_user(self, username, password, passport):
-#         """
-#         Creates and saves a User with the given email, date of
-#         birth and password.
-#         """
-#         if not username:
-#             raise ValueError('Users must have an email address')
-#
-#         user = self.model(
-#
-#             username=self.username,
-#             password=self.password,
-#             passport=self.passport,
-#         )
-#
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-
-    # def create_superuser(self, email, date_of_birth, password=None):
-    #     """
-    #     Creates and saves a superuser with the given email, date of
-    #     birth and password.
-    #     """
-    #     user = self.create_user(
-    #         email,
-    #         password=password,
-    #         date_of_birth=date_of_birth,
-    #     )
-    #     user.is_admin = True
-    #     user.save(using=self._db)
-    #     return user

@@ -7,23 +7,22 @@
     {% load static %}
 </head>
 {% block content %}
-    <body>
+    {% include 'messages.html' %}
     <div class="parser" style="text-align: center;">
 
         <form action="{% url 'parser' %}" method="post">
             {% csrf_token %}
-            <input type="submit" name="import" value="Импортировать новые машины с аукционов" class="btn btn-success">
-{#            <button class="btn btn-success" type="submit">#}
-{#                Go#}
-{#            </button>#}
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" name="import" value="Импортировать новые машины с аукционов"
+                       class="btn btn-outline-dark position-relative"/>
+            </div>
 
             <style>
-                button{
+                button {
                     margin-top: 15px;
                 }
             </style>
         </form>
     </div>
-    </body>
 {% endblock content %}
 </html>

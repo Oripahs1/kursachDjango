@@ -1,36 +1,31 @@
-# В парсер добавлены методы гет(для нормального вывода формы) и пост(для парсинга)
-# Файл parser.py можно удалить, парсер будет находиться тут или в отдельном приложении, что, наверное, грамотнее
-# После парсинга данные выходят в очень некрасивом виде, можно попробовать выводить их словарем
-# После парсинга сделал так, чтобы данные выводились на стричку car
-# Вывод сделал коряво - car не внесена в url и не имеет своего класса. В будущем надо исправить
-# Для норм вывода надо сделать метод гет в классе CarPageView и, наверное, сделать модель
 import datetime
 
+import django.http
+import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
-import django.http
+
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
-from django.shortcuts import render
 from openpyxl.reader.excel import load_workbook
 
 from .models import Car, PhotoCar, Worker, Order, Invoice
-from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
-    NewInvoiceForm
+from .forms import ParserForm, RegistrationForm, LoginForm, OrderForm, OrderInOrdersForm, InvoiceForm, NewInvoiceForm
+
 from django.contrib import messages
-from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from .admin import UserAdmin
-from django.contrib.auth.admin import UserAdmin, UserCreationForm, UserChangeForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.urls import reverse
+
+from django.http import HttpResponse
+from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
 
-# from django.conf import settings
-# from django.contrib.auth.backends import BaseBackend
-# from django.contrib.auth.hashers import check_password
-# from django.contrib.auth.models import User
-
-
-class HomePageView(TemplateView):
+class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = "home.html"
 
     def get(self, request, *args, **kwargs):
@@ -55,33 +50,19 @@ class LoginPageView(TemplateView):
             print(user)
             if user is not None:
                 login(request, user)
-                messages.info(request, "Вход выполнен")
+                # messages.success(request, "Вход выполнен")
                 return redirect('home')
-            messages.info(request, "Неправильное имя пользователя или пароль")
+            messages.warning(request, "Неправильное имя пользователя или пароль")
         else:
             for field in form:
                 print("Field Error:", field.name, field.errors)
-            messages.info(request, "Ошибка валидации формы")
+            messages.error(request, "Некорректная форма")
         return render(request, 'registration/login.html', {'form': form})
 
 
 def logout_view(request):
     logout(request)
     return redirect('home')
-
-
-# class LogoutPageView(TemplateView):
-#     template_name = "registration/logout.html"
-#
-#     def get(self, request, *args, **kwargs):
-#         if request.method == 'GET':
-#             form = LogoutForm()
-#             return render(request, self.template_name, {'form': form})
-#
-#     def post(self, request, *args, **kwargs):
-#         if request.method == 'GET':
-#             logout(request)
-#             return render(request, self.template_name, {'form': form})
 
 
 class RegistrationPageView(TemplateView):
@@ -101,25 +82,23 @@ class RegistrationPageView(TemplateView):
             form = RegistrationForm(request.POST)
             if form.is_valid():
                 if form.username_clean() is None:
-                    messages.error(request, "Данное имя пользователя уже используется")
+                    messages.warning(request, "Данное имя пользователя уже используется")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.passport_clean() is None:
-                    messages.error(request, "Пользователь с таким паспортом уже существует")
+                    messages.warning(request, "Пользователь с таким паспортом уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.clean_password2() is None:
-                    messages.error(request, "Пароли не совпадают")
+                    messages.warning(request, "Пароли не совпадают")
                     return render(request, 'registration/registration.html', {'form': form})
                 if form.save() == None:
-                    messages.error(request,
-                                   "Этот номер паспорта уже используется. Пожалуйста, выберите другой номер паспорта.")
+                    messages.warning(request,
+                                     "Этот номер паспорта уже используется. Пожалуйста, выберите другой номер паспорта.")
                     return render(request, 'registration/registration.html', {'form': form})
                 else:
                     form.save()
-                    messages.info(request, "Пользователь зарегистрирован")
+                    messages.success(request, "Пользователь зарегистрирован")
             else:
-                for field in form:
-                    print("Field Error:", field.name, field.errors)
-                messages.error(request, "Инвалидная форма")
+                messages.error(request, "Некорректная форма")
         else:
             form = RegistrationForm()
         return render(request, 'registration/registration.html', {'form': form})
@@ -157,16 +136,23 @@ class WorkersCardPageView(TemplateView):
             form = RegistrationForm(request.POST)
             if form.is_valid():
                 # form.username_clean()
-                if form.clean_password2() == '#':
+                if form.clean_password2() is None:
                     # message = messages.info(request, 'Your password has been changed successfully!')
-                    messages.info(request, "Пароли не совпадают")
+                    messages.warning(request, "Пароли не совпадают")
                     return render(request, 'registration/registration.html', {'form': form})
-                if form.passport_clean() == '#':
+                if form.passport_clean() is None:
                     # message = messages.info(request, 'Your password has been changed successfully!')
-                    messages.info(request, "Пользователь с таким паспортом уже существует")
+                    messages.warning(request, "Пользователь с таким паспортом уже существует")
+                    return render(request, 'registration/registration.html', {'form': form})
+                if form.username_clean() is None:
+                    # message = messages.info(request, 'Your password has been changed successfully!')
+                    messages.warning(request, "Пользователь с таким именем уже существует")
                     return render(request, 'registration/registration.html', {'form': form})
                 form.update()
-                messages.info(request, "Данные обновалены")
+                messages.success(request, "Данные обновлены")
+            else:
+                messages.error(request, "Некорректная форма")
+
         else:
             form = RegistrationForm()
         return render(request, 'registration/registration.html', {'form': RegistrationForm()})
@@ -177,9 +163,6 @@ class OrderInOrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
-        print(order.ptd == '')
-        print(order.sbts == '')
-
         form = OrderInOrdersForm()
 
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
@@ -229,15 +212,14 @@ class OrderInOrdersPageView(TemplateView):
 
                 order.save()
 
-                messages.info(request, "Заказ изменен")
+                messages.success(request, "Заказ изменен")
                 form.save()
             else:
-                messages.info(request, "Чета блять сломалось")
-                for field in form:
-                    print("Field Error:", field.name, field.errors)
+                messages.error(request, "Некорректная форма")
         else:
             form = OrderForm()
-        orders = Order.objects.filter(date_end=None)
+        user_id = request.user.id
+        orders = Order.objects.filter(date_end=None, id_worker=user_id)
         return render(request, 'orders.html', {"orders": orders})
 
 
@@ -245,9 +227,8 @@ class OrdersPageView(TemplateView):
     template_name = "orders.html"
 
     def get(self, request, *args, **kwargs):
-        print('Пришел запрос')
-        orders = Order.objects.filter(date_end=None)
-        print(orders)
+        user_id = request.user.id
+        orders = Order.objects.filter(date_end=None, id_worker=user_id)
         return render(request, 'orders.html', {'orders': orders})
 
 
@@ -259,6 +240,8 @@ class OrderPageView(TemplateView):
         form = OrderForm()
         photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
         form.fields['id_car'].widget.attrs.update({'value': car.id_car})
+        user_name = Worker.objects.filter(id=request.user.id)[0]
+        form.fields['worker'].widget.attrs.update({'value': user_name})
         return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
@@ -266,16 +249,15 @@ class OrderPageView(TemplateView):
             form = OrderForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Пользователь зарегистрирован")
+                messages.success(request, "Заказ создан")
+                return django.http.HttpResponseRedirect(reverse('orders'))
             else:
-                messages.info(request, "Чета блять сломалось")
-                for field in form:
-                    print("Field Error:", field.name, field.errors)
+                messages.error(request, "Некорректная форма")
+                return render(request, 'order.html', {'form': form})
         else:
             form = OrderForm()
-
-        orders = Order.objects.filter(date_end=None)
-        print(orders)
+        user_id = request.user.id
+        orders = Order.objects.filter(date_end=None, id_worker=user_id)
         return render(request, 'orders.html', {'orders': orders})
 
 
@@ -322,10 +304,6 @@ class CarPageView(TemplateView):
                 'mark': row[1]
             }
             marks.append(mark)
-        print(models)
-        print(marks)
-        mark = marks[0]
-        print(marks[0]['mark'])
         # Достаем данные из excel
 
         # Узнаем цену машины
@@ -384,6 +362,7 @@ class ParserPageView(TemplateView):
                 k += 1
                 print(k)
                 self.link_obr(url + link)
+            messages.success(request, "База данных обновлена")
 
         return render(request, 'parser.html', {'response': 'success'})
 
@@ -711,7 +690,9 @@ class BuhgalterInvoicePageView(TemplateView):
             print(form.errors)
             if form.is_valid():
                 form.update()
-                messages.info(request, "Данные обновлены")
+                messages.success(request, "Данные обновлены")
+            else:
+                messages.error(request, "Некорректная форма")
         else:
             form = InvoiceForm()
         return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
@@ -734,10 +715,51 @@ class BuhgalterNewInvoicePageView(TemplateView):
             print(form.errors)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Счет на оплату сохранен")
+                messages.success(request, "Счет на оплату сохранен")
                 return render(request, 'buhgalter/new_invoice.html', {'form': form})
+            else:
+                messages.error(request, "Некорректная форма")
             # form.save()
             # messages.info(request, "Счет на оплату сохранен")
         else:
             form = NewInvoiceForm()
         return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
+
+
+from PyPDF2 import PdfReader, PdfWriter
+from django.http import HttpResponse
+import io
+
+def fill_pdf(request, document_name, order):
+    # Получаем данные заказа из базы данных
+    order_id = order.id_order
+
+    # Открываем готовый PDF-файл
+    with open(f'C:\\Users\\oripahs\\kursachDjango\\pdf\\{document_name}', 'rb') as template_file:
+        template_reader = PdfReader(template_file)
+        # Создаем объект для записи в новый PDF-файл
+        output_pdf = PdfWriter()
+
+        # Заполняем каждую страницу шаблона данными
+        for page_number in range(len(template_reader.pages)):
+            page = template_reader.pages[page_number]
+            # Заменяем текст на странице
+            filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
+            # Создаем новую страницу с заполненным текстом
+            output_page = page
+            output_page.merge_page(page)
+            # Добавляем заполненную страницу в PDF-файл
+            output_pdf.add_page(output_page)
+
+        # Создаем HTTP-ответ с содержимым PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="filled_template.pdf"'
+
+        # Сохраняем заполненный PDF в буфер
+        output_buffer = io.BytesIO()
+        output_pdf.write(output_buffer)
+        # Возвращаем указатель на начало буфера
+        output_buffer.seek(0)
+        response.write(output_buffer.getvalue())
+
+    return response
