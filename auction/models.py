@@ -268,13 +268,11 @@ class Car(models.Model):
 class Worker(AbstractUser):
     MANAGER = 'Менеджер'
     LOGIST = 'Логист'
-    HR = 'HR'
     ACCOUNTANT = 'Бухгалтер'
     OPERATIVNIK = 'Оперативник'
     JOB_CHOICE = [
         (MANAGER, 'Менеджер'),
         (LOGIST, 'Логист'),
-        (HR, 'HR'),
         (ACCOUNTANT, 'Бухгалтер'),
         (OPERATIVNIK, 'Оперативник')
     ]
