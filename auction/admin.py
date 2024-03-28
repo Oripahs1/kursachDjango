@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django import forms
-from .models import Car, PhotoCar, Worker, Invoice, Order, Customer
+from .models import Car, PhotoCar, Worker, Invoice, Order, Customer, Duty, Price, CustomsDuty, Excise
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
 
@@ -9,6 +9,14 @@ admin.site.register(PhotoCar)
 admin.site.register(Invoice)
 admin.site.register(Order)
 admin.site.register(Customer)
+
+admin.site.register(Duty)
+admin.site.register(Price)
+admin.site.register(CustomsDuty)
+admin.site.register(Excise)
+
+# Register your models here.
+
 
 class UserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)

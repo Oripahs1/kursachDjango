@@ -1,0 +1,41 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Пошлина</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'order.css' %}">
+{% endblock head %}
+
+{% block content %}
+
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form_flex" style="padding-top: 20px">
+
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
+                    {{ form.type }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.value_first.id_for_label }}">{{ form.value_first.label }}</label>
+                    {{ form.value_first }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.value_last.id_for_label }}">{{ form.value_last.label }}</label>
+                    {{ form.value_last }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="{{ form.bet.id_for_label }}">{{ form.bet.label }}</label>
+                    {{ form.bet }}
+                </div>
+            </div>
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" name="calculate_price" class="btn btn-outline-dark position-relative" value="Сохранить"/>
+            </div>
+        </form>
+    </div>
+
+{% endblock content %}

@@ -14,7 +14,7 @@
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <img src="{{ photo }}">
+                    <img style="max-width: 100%" src="{{ photo }}">
                 </div>
                 <div class="col">
                     <table class="table">
@@ -42,6 +42,10 @@
                         <tr>
                             <th scope="row">Оценка</th>
                             <td>{{ car.estimation }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Предварительная цена</th>
+                            <td>{{ car.price }} р.</td>
                         </tr>
                         </tbody>
                     </table>
@@ -114,6 +118,14 @@
                     <label for="{{ form.worker.id_for_label }}">{{ form.worker.label }}</label>
                     <div class="input-group">
                         {{ form.worker }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                    <div class="input-group">
+                        {{ form.price }}
                     </div>
                 </div>
             </div>
