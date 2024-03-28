@@ -37,7 +37,7 @@ urlpatterns = [
     path('excises/', views.ExcisesPageView.as_view(), name='excises'),
     path('excises_new/', views.ExciseNewPageView.as_view(), name='excise_new'),
     path('excises/<int:excise_id>', views.ExcisePageView.as_view(), name='excise'),
-    path('pdf_order/', views.edit_pdf, name='edit_pdf'),
+    # path('pdf_order/', views.edit_pdf, name='edit_pdf'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))

@@ -1,7 +1,7 @@
 import datetime
 
 import django.http
-import reportlab.lib.pagesizes
+# import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
 
@@ -17,12 +17,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse
-
-from django.http import HttpResponse
-from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
-import io
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
+#
+# from django.http import HttpResponse
+# from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
+# import io
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
@@ -353,7 +353,7 @@ class WorkersCardPageView(TemplateView):
     template_name = "worker_card.html"
 
     def get(self, request, *args, **kwargs):
-        worker = Worker.objects.get(id_worker=kwargs.get('worker_id'))
+        worker = Worker.objects.get(id=kwargs.get('worker_id'))
         worker_data = Worker.objects.all()
         form = RegistrationForm()
         form.fields['username'].widget.attrs.update({'value': worker.username})
@@ -362,8 +362,8 @@ class WorkersCardPageView(TemplateView):
         form.fields['job_title'].widget.attrs.update({'value': worker.job_title})
         # Вот тут хуй знает как сделать не нашел
         form.fields['passport'].widget.attrs.update({'value': worker.passport})
-        form.fields['phone_num'].widget.attrs.update({'value': worker.phone_number})
-        form.fields['password1'].widget.attrs.update({'value': worker.password})
+        form.fields['phone_number'].widget.attrs.update({'value': worker.phone_number})
+        form.fields['password'].widget.attrs.update({'value': worker.password})
         form.fields['password2'].widget.attrs.update({'value': worker.password})
 
         return render(request, 'worker_card.html', {'worker': worker, 'worker_data': worker_data, 'form': form})
@@ -557,7 +557,7 @@ class OrderPageView(TemplateView):
         form.fields['id_car'].widget.attrs.update({'value': car.id_car})
         user_name = Worker.objects.filter(id=request.user.id)[0]
         form.fields['worker'].widget.attrs.update({'value': user_name})
-        form.fields['price'].initial = car.price + ' р.'
+        form.fields['price'].initial = str(car.price) + ' р.'
         return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
@@ -1094,8 +1094,8 @@ class BuhgalterNewInvoicePageView(TemplateView):
         return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
 
 
-from PyPDF2 import PdfReader, PdfWriter
-from django.http import HttpResponse
+# from PyPDF2 import PdfReader, PdfWriter
+# from django.http import HttpResponse
 import io
 
 
@@ -1142,30 +1142,30 @@ import io
 #
 #     return response
 
-def edit_pdf(request):
-    # Открываем существующий PDF-файл
-    with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\dogovor.pdf', 'rb') as file:
-        pdf_reader = PdfReader(file)
-        pdf_writer = PdfWriter()
-
-        # Копируем все страницы в новый PDF-файл
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            pdf_writer.add_page(page)
-
-        # Редактируем данные на страницах по вашему усмотрению
-        # Например, добавляем текст на первую страницу
-        first_page = pdf_writer.pages[0]
-        with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\act.pdf', 'rb') as act_file:
-            act_page = PdfReader(act_file).pages[0]
-            first_page.merge_page(act_page)
-
-        # Сохраняем изменения в новый PDF-файл
-        with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'wb') as output_file:
-            pdf_writer.write(output_file)
-
-    # Возвращаем отредактированный PDF-файл в ответе
-    with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'rb') as edited_file:
-        response = HttpResponse(edited_file.read(), content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename="edited_file.pdf"'
-        return response
+# def edit_pdf(request):
+#     # Открываем существующий PDF-файл
+#     with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\dogovor.pdf', 'rb') as file:
+#         pdf_reader = PdfReader(file)
+#         pdf_writer = PdfWriter()
+#
+#         # Копируем все страницы в новый PDF-файл
+#         for page_num in range(len(pdf_reader.pages)):
+#             page = pdf_reader.pages[page_num]
+#             pdf_writer.add_page(page)
+#
+#         # Редактируем данные на страницах по вашему усмотрению
+#         # Например, добавляем текст на первую страницу
+#         first_page = pdf_writer.pages[0]
+#         with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\act.pdf', 'rb') as act_file:
+#             act_page = PdfReader(act_file).pages[0]
+#             first_page.merge_page(act_page)
+#
+#         # Сохраняем изменения в новый PDF-файл
+#         with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'wb') as output_file:
+#             pdf_writer.write(output_file)
+#
+#     # Возвращаем отредактированный PDF-файл в ответе
+#     with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'rb') as edited_file:
+#         response = HttpResponse(edited_file.read(), content_type='application/pdf')
+#         response['Content-Disposition'] = 'inline; filename="edited_file.pdf"'
+#         return response

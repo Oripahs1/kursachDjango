@@ -69,16 +69,16 @@
                 </div>
             </div>
 
+
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input type="submit" name="update" class="btn btn-outline-dark position-relative" value="Обновить"/>
+            </div>
             <div class="form_flex">
                 <div class="col-md-12 mb-3">
                     <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
                     {{ form.price }}
                 </div>
             </div>
-            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <input type="submit" name="update" class="btn btn-outline-dark position-relative" value="Обновить"/>
-            </div>
-
              <div class="form_flex">
                 <div class="col-md-12 mb-3">
                     <label for="{{ form.price_for_buhgalter.id_for_label }}">{{ form.price_for_buhgalter.label }}</label>
@@ -95,13 +95,12 @@
 
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
                 <input type="submit" name="calculate_price" class="btn btn-outline-dark position-relative" value="Рассчитать цену"/>
-                <input type="submit" class="btn btn-outline-dark position-relative" value="Обновить"/>
             </div>
-            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <a href="{% url 'edit_pdf' %}">
-                    <input type="button" class="btn btn-outline-dark position-relative" value="Открыть договор"/>
-                </a>
-            </div>
+{#            <div class="bd-example bd-example-position-examples d-flex justify-content-around">#}
+{#                <a href="{% url 'edit_pdf' %}">#}
+{#                    <input type="button" class="btn btn-outline-dark position-relative" value="Открыть договор"/>#}
+{#                </a>#}
+{#            </div>#}
 
         </form>
     </div>
