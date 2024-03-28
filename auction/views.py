@@ -125,12 +125,6 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
-
-
-
-
-
-
 class CustomsDutysPageView(TemplateView):
     template_name = 'customs_dutys.html'
 
@@ -191,9 +185,6 @@ class CustomsDutyPageView(TemplateView):
         return render(request, 'customs_dutys.html', {'customs_dutys': customs_dutys})
 
 
-
-
-
 class ExcisesPageView(TemplateView):
     template_name = 'excises.html'
 
@@ -250,10 +241,6 @@ class ExcisePageView(TemplateView):
                 messages.info(request, "Ошибка валидации формы")
         excises = Excise.objects.all()
         return render(request, 'excises.html', {'excises': excises})
-
-
-
-
 
 
 class PricesPageView(TemplateView):
@@ -496,12 +483,17 @@ class OrderInOrdersPageView(TemplateView):
             if form.is_valid():
                 order = Order.objects.get(id_order=form.cleaned_data['id_order'])
                 price = form.cleaned_data['price_for_buhgalter']
+                power = int(form.cleaned_data['power'])
                 duties = Duty.objects.all()
                 prices = Price.objects.all()
+                excises = Excise.objects.all()
+                customs_dutys = CustomsDuty.objects.all()
                 volume = int(order.id_car.volume) / 1000
                 year = int(datetime.datetime.now().year) - int(order.id_car.year_car)
                 base_bet = 20000
                 coefficient_bet = 0
+                coefficient_excise = 0
+                coefficient_customs_duty = 0
                 price_transportation = 0
                 for duty in duties:
                     if duty.volume_first <= volume <= duty.volume_last and year > 3:
@@ -514,12 +506,46 @@ class OrderInOrdersPageView(TemplateView):
                         price_transportation = price_data.price_transportation
                     elif price_data.price_last_car == 0 and price_transportation == 0:
                         price_transportation = price_data.price_transportation
+                volume_or_price = 0
+                if year < 3:
+                    customs_dutys = CustomsDuty.objects.filter(type=CustomsDuty.TYPE_CHOICE[0][1])
+                    volume_or_price = price
+                elif 3 <= year < 5:
+                    customs_dutys = CustomsDuty.objects.filter(type=CustomsDuty.TYPE_CHOICE[1][1])
+                    volume_or_price = volume * 1000
+                else:
+                    customs_dutys = CustomsDuty.objects.filter(type=CustomsDuty.TYPE_CHOICE[2][1])
+                    volume_or_price = volume * 1000
 
-                # Ставки утилизационного сбора 
-                final_price = int(price) + base_bet*coefficient_bet
+                for customs_duty in customs_dutys:
+                    if customs_duty.value_first <= int(volume_or_price) <= customs_duty.value_last:
+                        coefficient_customs_duty = int(volume) * 1000 * customs_duty.bet
+                        print(volume*1000, year, customs_duty.bet)
+                    elif customs_duty.value_last == 0 and coefficient_customs_duty == 0:
+                        coefficient_customs_duty = int(volume) * 1000 * customs_duty.bet
+
+                for excise in excises:
+                    if excise.power_first_car <= power <= excise.power_last_car:
+                        coefficient_excise = power * excise.bet
+                        print(coefficient_excise)
+                    elif coefficient_excise == 0 and excise.power_last_car == 0:
+                        coefficient_excise = power * excise.bet
+
+                # Ставки утилизационного сбора
+                final_price = int(price) + base_bet * coefficient_bet
                 # Цена доставки тачки из Японии
                 final_price = final_price + price_transportation
-                print(int(price), base_bet*coefficient_bet, price_transportation)
+                # Таможенная пошлина customs_dutys
+                final_price = final_price + coefficient_customs_duty
+                # Акциз excises
+                final_price = final_price + coefficient_excise
+                # НДС (стоимость авто+таможенная пошлина+акциз)*20%
+                nds = (int(price) + int(coefficient_customs_duty) + int(coefficient_excise))*0.2
+                final_price = final_price + int(nds)
+                print(power)
+                print(int(price), base_bet * coefficient_bet, price_transportation, coefficient_excise,
+                      coefficient_customs_duty, nds)
+                print(final_price)
                 form.fields['price'].widget.attrs.update({'value': final_price})
 
             return render(request, 'order_in_orders.html', {'form': form, 'order': order})

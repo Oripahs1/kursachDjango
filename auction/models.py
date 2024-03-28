@@ -81,10 +81,15 @@ class Excise(models.Model):
         return reverse('excise', kwargs={'excise_id': self.pk})
 
 
+class TransportCompany(models.Model):
+    name = models.CharField(null=True, blank=True)
+
+
+
 class CustomsDuty(models.Model):
-    from_0 = 'От 0 до 3 лет'
-    from_3 = 'От 3 до 5 лет'
-    from_5 = 'От 5 лет'
+    from_0 = 'from_0'
+    from_3 = 'from_3'
+    from_5 = 'from_5'
     TYPE_CHOICE = [
         (from_0, 'От 0 до 3 лет'),
         (from_3, 'От 3 до 5 лет'),
