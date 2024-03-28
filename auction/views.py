@@ -185,7 +185,7 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['sbts'].initial = order.sbts
         if order.ptd is not None:
             form.fields['ptd'].initial = order.ptd
-        return render(request, self.template_name, {'order': order, 'form': form})
+        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
@@ -730,36 +730,74 @@ from PyPDF2 import PdfReader, PdfWriter
 from django.http import HttpResponse
 import io
 
-def fill_pdf(request, document_name, order):
-    # Получаем данные заказа из базы данных
-    order_id = order.id_order
 
-    # Открываем готовый PDF-файл
-    with open(f'C:\\Users\\oripahs\\kursachDjango\\pdf\\{document_name}', 'rb') as template_file:
-        template_reader = PdfReader(template_file)
-        # Создаем объект для записи в новый PDF-файл
-        output_pdf = PdfWriter()
+# def fill_pdf(request, document_name, order_id):
+#     # Получаем данные заказа из базы данных
+#     # order_id = order.id_order
+#     print('order_id = ', order_id)
+#
+#     # Открываем готовый PDF-файл
+#     with open(f'C:\\Users\\oripahs\\kursachDjango\\pdf\\{document_name}', 'rb') as template_file:
+#         template_reader = PdfReader(template_file)
+#         # Создаем объект для записи в новый PDF-файл
+#         output_pdf = PdfWriter()
+#
+#         # Заполняем каждую страницу шаблона данными
+#         for page_number in range(len(template_reader.pages)):
+#             # page = template_reader.pages[page_number]
+#             # # Заменяем текст на странице
+#             # filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
+#             # # Создаем новую страницу с заполненным текстом
+#             # output_page = page
+#             # output_page.merge_page(page)
+#             # # Добавляем заполненную страницу в PDF-файл
+#             # output_pdf.add_page(output_page)
+#             page = template_reader.pages[page_number]
+#             # Заменяем текст на странице
+#             filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
+#             # Создаем новую страницу с заполненным текстом
+#             output_page = template_reader.pages[page_number]
+#             output_page['/Contents'] = filled_page_text.encode('utf-8')  # Заменяем содержимое страницы на заполненный текст
+#             # Добавляем заполненную страницу в PDF-файл
+#             output_pdf.add_page(output_page)
+#
+#         # Создаем HTTP-ответ с содержимым PDF
+#         response = HttpResponse(content_type='application/pdf')
+#         response['Content-Disposition'] = 'attachment; filename="filled_template.pdf"'
+#
+#         # Сохраняем заполненный PDF в буфер
+#         output_buffer = io.BytesIO()
+#         output_pdf.write(output_buffer)
+#         # Возвращаем указатель на начало буфера
+#         output_buffer.seek(0)
+#         response.write(output_buffer.getvalue())
+#
+#     return response
 
-        # Заполняем каждую страницу шаблона данными
-        for page_number in range(len(template_reader.pages)):
-            page = template_reader.pages[page_number]
-            # Заменяем текст на странице
-            filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
-            # Создаем новую страницу с заполненным текстом
-            output_page = page
-            output_page.merge_page(page)
-            # Добавляем заполненную страницу в PDF-файл
-            output_pdf.add_page(output_page)
+def edit_pdf(request):
+    # Открываем существующий PDF-файл
+    with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\dogovor.pdf', 'rb') as file:
+        pdf_reader = PdfReader(file)
+        pdf_writer = PdfWriter()
 
-        # Создаем HTTP-ответ с содержимым PDF
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="filled_template.pdf"'
+        # Копируем все страницы в новый PDF-файл
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            pdf_writer.add_page(page)
 
-        # Сохраняем заполненный PDF в буфер
-        output_buffer = io.BytesIO()
-        output_pdf.write(output_buffer)
-        # Возвращаем указатель на начало буфера
-        output_buffer.seek(0)
-        response.write(output_buffer.getvalue())
+        # Редактируем данные на страницах по вашему усмотрению
+        # Например, добавляем текст на первую страницу
+        first_page = pdf_writer.pages[0]
+        with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\act.pdf', 'rb') as act_file:
+            act_page = PdfReader(act_file).pages[0]
+            first_page.merge_page(act_page)
 
-    return response
+        # Сохраняем изменения в новый PDF-файл
+        with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'wb') as output_file:
+            pdf_writer.write(output_file)
+
+    # Возвращаем отредактированный PDF-файл в ответе
+    with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'rb') as edited_file:
+        response = HttpResponse(edited_file.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="edited_file.pdf"'
+        return response

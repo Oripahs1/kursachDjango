@@ -20,7 +20,7 @@ urlpatterns = [
     path('order/<int:car_id>', views.OrderPageView.as_view(), name='order'),
     path('orders/', views.OrdersPageView.as_view(), name='orders'),
     path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
-    path('pdf_order/<str:document_name>/', views.fill_pdf, name='fill_pdf'),
+    path('pdf_order/', views.edit_pdf, name='edit_pdf'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))
