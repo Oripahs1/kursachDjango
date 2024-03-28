@@ -17,12 +17,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse
-#
-# from django.http import HttpResponse
-# from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
-# import io
-# from reportlab.pdfgen import canvas
-# from reportlab.lib.pagesizes import letter
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
@@ -503,7 +497,7 @@ class OrderInOrdersPageView(TemplateView):
                 for customs_duty in customs_dutys:
                     if customs_duty.value_first <= int(volume_or_price) <= customs_duty.value_last:
                         coefficient_customs_duty = int(volume) * 1000 * customs_duty.bet
-                        print(volume*1000, year, customs_duty.bet)
+                        print(volume * 1000, year, customs_duty.bet)
                     elif customs_duty.value_last == 0 and coefficient_customs_duty == 0:
                         coefficient_customs_duty = int(volume) * 1000 * customs_duty.bet
 
@@ -523,7 +517,7 @@ class OrderInOrdersPageView(TemplateView):
                 # Акциз excises
                 final_price = final_price + coefficient_excise
                 # НДС (стоимость авто+таможенная пошлина+акциз)*20%
-                nds = (int(price) + int(coefficient_customs_duty) + int(coefficient_excise))*0.2
+                nds = (int(price) + int(coefficient_customs_duty) + int(coefficient_excise)) * 0.2
                 final_price = final_price + int(nds)
                 print(power)
                 print(int(price), base_bet * coefficient_bet, price_transportation, coefficient_excise,
@@ -1094,78 +1088,41 @@ class BuhgalterNewInvoicePageView(TemplateView):
         return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
 
 
-# from PyPDF2 import PdfReader, PdfWriter
-# from django.http import HttpResponse
+from django.http import HttpResponse
+from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 import io
+from reportlab.pdfgen import canvas
+from django.http import FileResponse
+from reportlab.lib.colors import black
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.units import inch, cm
+from reportlab.lib.pagesizes import letter
 
 
-# def fill_pdf(request, document_name, order_id):
-#     # Получаем данные заказа из базы данных
-#     # order_id = order.id_order
-#     print('order_id = ', order_id)
-#
-#     # Открываем готовый PDF-файл
-#     with open(f'C:\\Users\\oripahs\\kursachDjango\\pdf\\{document_name}', 'rb') as template_file:
-#         template_reader = PdfReader(template_file)
-#         # Создаем объект для записи в новый PDF-файл
-#         output_pdf = PdfWriter()
-#
-#         # Заполняем каждую страницу шаблона данными
-#         for page_number in range(len(template_reader.pages)):
-#             # page = template_reader.pages[page_number]
-#             # # Заменяем текст на странице
-#             # filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
-#             # # Создаем новую страницу с заполненным текстом
-#             # output_page = page
-#             # output_page.merge_page(page)
-#             # # Добавляем заполненную страницу в PDF-файл
-#             # output_pdf.add_page(output_page)
-#             page = template_reader.pages[page_number]
-#             # Заменяем текст на странице
-#             filled_page_text = page.extract_text().replace('{{order_num}}', str(order_id))
-#             # Создаем новую страницу с заполненным текстом
-#             output_page = template_reader.pages[page_number]
-#             output_page['/Contents'] = filled_page_text.encode('utf-8')  # Заменяем содержимое страницы на заполненный текст
-#             # Добавляем заполненную страницу в PDF-файл
-#             output_pdf.add_page(output_page)
-#
-#         # Создаем HTTP-ответ с содержимым PDF
-#         response = HttpResponse(content_type='application/pdf')
-#         response['Content-Disposition'] = 'attachment; filename="filled_template.pdf"'
-#
-#         # Сохраняем заполненный PDF в буфер
-#         output_buffer = io.BytesIO()
-#         output_pdf.write(output_buffer)
-#         # Возвращаем указатель на начало буфера
-#         output_buffer.seek(0)
-#         response.write(output_buffer.getvalue())
-#
-#     return response
+def some_view(request, order_id):
+    buffer = io.BytesIO()
+    page = canvas.Canvas(buffer, pagesize=letter)
+    order = Order.objects.get(id_order=order_id)
+    # print(order.id_customer.)
+    # A4 = 210×297 мм = 8,27×11,69
+    # Загрузка шрифта Arial, поддерживающего кириллицу
+    pdfmetrics.registerFont(TTFont('Arial', 'static\\fonts\\ArialRegular.ttf'))
 
-# def edit_pdf(request):
-#     # Открываем существующий PDF-файл
-#     with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\dogovor.pdf', 'rb') as file:
-#         pdf_reader = PdfReader(file)
-#         pdf_writer = PdfWriter()
-#
-#         # Копируем все страницы в новый PDF-файл
-#         for page_num in range(len(pdf_reader.pages)):
-#             page = pdf_reader.pages[page_num]
-#             pdf_writer.add_page(page)
-#
-#         # Редактируем данные на страницах по вашему усмотрению
-#         # Например, добавляем текст на первую страницу
-#         first_page = pdf_writer.pages[0]
-#         with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\act.pdf', 'rb') as act_file:
-#             act_page = PdfReader(act_file).pages[0]
-#             first_page.merge_page(act_page)
-#
-#         # Сохраняем изменения в новый PDF-файл
-#         with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'wb') as output_file:
-#             pdf_writer.write(output_file)
-#
-#     # Возвращаем отредактированный PDF-файл в ответе
-#     with open('C:\\Users\\oripahs\\kursachDjango\\pdf\\file.pdf', 'rb') as edited_file:
-#         response = HttpResponse(edited_file.read(), content_type='application/pdf')
-#         response['Content-Disposition'] = 'inline; filename="edited_file.pdf"'
-#         return response
+    # Установка шрифта Arial
+    page.setFont("Arial", 12)
+
+    # Рисование текста с кириллицей
+    page.drawString(7.5 * cm, 26.5 * cm, f"Агентский договор № {Order.objects.get(id_order=order_id)} /24")
+    text = f"Общество с ограниченной ответственностью «NAHODKA MOTORS», именуемое в"
+    page.drawString(4 * cm, 26.5 * cm - 0.5 * cm * 1, text)
+    text = f"тексте договора «Поставщик», в лице ____________________, действующего на основании {order.id_customer} с одной стороны,"
+    page.drawString(3 * cm, 26.5 * cm - 0.5 * cm * 2, text)
+    page.drawString(7.5 * cm, 26.5 * cm, text)
+
+    # Сохранение и закрытие PDF
+    page.save()
+
+    # Возвращаем PDF-файл в виде HTTP-ответа
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename=f'dogovot.pdf')

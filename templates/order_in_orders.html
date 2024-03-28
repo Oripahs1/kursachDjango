@@ -96,12 +96,11 @@
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
                 <input type="submit" name="calculate_price" class="btn btn-outline-dark position-relative" value="Рассчитать цену"/>
             </div>
-{#            <div class="bd-example bd-example-position-examples d-flex justify-content-around">#}
-{#                <a href="{% url 'edit_pdf' %}">#}
-{#                    <input type="button" class="btn btn-outline-dark position-relative" value="Открыть договор"/>#}
-{#                </a>#}
-{#            </div>#}
-
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <a href="{% url 'some_view' order_id=order.id_order %}">
+                    <input type="button" class="btn btn-outline-dark position-relative" value="Открыть договор"/>
+                </a>
+            </div>
         </form>
     </div>
 {% endblock content %}
