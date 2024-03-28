@@ -8,7 +8,7 @@ urlpatterns = [
     path('', views.HomePageView.as_view(), name='home'),
     path('parser/', views.ParserPageView.as_view(), name='parser'),
     path('login/', views.LoginPageView.as_view(), name='login'),
-    path('logout/', views.logout_view, name='logout'), ##!!!!!
+    path('logout/', views.logout_view, name='logout'),  ##!!!!!
     path('registration/', views.RegistrationPageView.as_view(), name='registration'),
     path('catalog/', views.CatalogPageView.as_view(), name='catalog'),
     path('catalog/car/<int:car_id>', views.CarPageView.as_view(), name='car'),
@@ -37,6 +37,16 @@ urlpatterns = [
     path('excises/', views.ExcisesPageView.as_view(), name='excises'),
     path('excises_new/', views.ExciseNewPageView.as_view(), name='excise_new'),
     path('excises/<int:excise_id>', views.ExcisePageView.as_view(), name='excise'),
+
+    path('transport_companies/', views.TransportCompaniesPageView.as_view(), name='transport_companies'),
+    path('transport_company_new/', views.TransportCompanyNewPageView.as_view(), name='transport_company_new'),
+    path('transport_companies/<int:transport_company_id>', views.TransportCompanyPageView.as_view(),
+         name='transport_company'),
+    path('transport_company_prices_new/', views.TransportCompanyPricesNewPageView.as_view(),
+         name='transport_company_prices_new'),
+    path('transport_company_prices/<int:transport_company_prices_id>', views.TransportCompanyPricePageView.as_view(),
+         name='transport_company_prices'),
+
     # path('pdf_order/', views.edit_pdf, name='edit_pdf'),
 ]
 

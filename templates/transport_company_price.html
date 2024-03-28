@@ -1,0 +1,36 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+    <title>Цены</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'order.css' %}">
+{% endblock head %}
+
+{% block content %}
+
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form_flex" style="padding-top: 20px">
+
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.place.id_for_label }}">{{ form.place.label }}</label>
+                    {{ form.place }}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                    {{ form.price }}
+                </div>
+
+            </div>
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
+                <input type="submit" name="save" class="btn btn-outline-dark position-relative" value="Сохранить"/>
+            </div>
+
+        </form>
+    </div>
+
+{% endblock content %}

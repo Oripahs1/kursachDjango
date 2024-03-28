@@ -1,5 +1,5 @@
 from django import forms
-from .models import Worker, Order, Customer, Car, Invoice, Duty, Price, CustomsDuty, Excise
+from .models import Worker, Order, Customer, Car, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany
 from django.db import IntegrityError
 import datetime
 
@@ -457,3 +457,41 @@ class ExciseForm(forms.Form):
             power_last_car=self.cleaned_data['power_last_car'],
             bet=self.cleaned_data['bet'],
         )
+
+
+
+class TransportCompanyForm(forms.Form):
+    title = forms.CharField(label='Название транспортной компании',
+                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+    contract = forms.FileField(label='Договор с ТК', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+                           required=False)
+
+    def save(self):
+        TransportCompany.objects.create(
+            title=self.cleaned_data['title'],
+            contract=self.cleaned_data['contract'],
+        )
+
+    def update(self, transport_company_id, contract):
+        print(contract)
+        transport_company = TransportCompany.objects.filter(pk=transport_company_id)
+        transport_company.update(
+            title=self.cleaned_data['title'],
+            contract=contract,
+        )
+
+class TransportCompanyPriceForm(forms.Form):
+    place = forms.CharField(label='Место перевозки',
+                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+    price = forms.CharField(label='Цена перевозки',
+                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    def save(self):
+        # TransportCompany.objects.create(
+        #     title=self.cleaned_data['place'],
+        #     contract=self.cleaned_data['price'],
+        # )
+        return
+
+    def update(self, transport_company_id, contract):
+        return

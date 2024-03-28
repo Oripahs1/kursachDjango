@@ -34,6 +34,9 @@
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'parser' %}">Обновить БД</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
+                        </li>
                     {% elif user.job_title == 'HR' %}
                         <li class="nav-item">
                             <a class="nav-link active" href="{% url 'workers' %}">Сотрудники</a>
@@ -54,6 +57,18 @@
                     {% elif user.job_title == 'Оперативник' %}
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'parser' %}">Обновить БД</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'duties' %}">Ставки утилизационного сбора</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'customs_dutys' %}">Таможенные пошлины</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'excises' %}">Акциз</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'prices' %}">Цены перевозки авто из ЯП</a>
                         </li>
                     {% endif %}
                     <li class="nav-item">

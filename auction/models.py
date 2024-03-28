@@ -53,7 +53,6 @@ class Trans(models.Model):
 
 
 class Duty(models.Model):
-
     volume_first = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     volume_last = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     coefficient_less_3 = models.DecimalField(max_digits=5, decimal_places=2)
@@ -81,6 +80,18 @@ class Excise(models.Model):
         return reverse('excise', kwargs={'excise_id': self.pk})
 
 
+class TransportCompany(models.Model):
+    title = models.TextField(null=True, blank=True)
+    contract = models.FileField(null=True, upload_to='transport_contract/', blank=True)
+
+    def get_absolute_url_transport_company(self):
+        return reverse('transport_company', kwargs={'transport_company_id': self.pk})
+
+
+class TransportCompanyPrice(models.Model):
+    id_transport_company = models.ForeignKey('TransportCompany', on_delete=models.CASCADE)
+    place = models.TextField(null=True, blank=True)
+    price = models.IntegerField(null=True, blank=True)
 
 
 class CustomsDuty(models.Model):
@@ -103,29 +114,7 @@ class CustomsDuty(models.Model):
 
 
 class Order(models.Model):
-    # STATUS_1 = 'Не предоплачен'
-    # STATUS_2 = 'Предоплачен'
-    # STATUS_3 = 'Выкуплен'
-    # STATUS_4 = 'Не оплачен'
-    # STATUS_5 = 'Оплачен'
-    # STATUS_6 = 'В пути до РФ'
-    # STATUS_7 = 'В РФ'
-    # STATUS_8 = 'Ожидает отправки'
-    # STATUS_9 = 'В пути по РФ'
-    # STATUS_10 = 'Выполнен'
-    # ORDER_STATUS = [
-    #     (STATUS_1, 'Не предоплачен'),
-    #     (STATUS_2, 'Предоплачен'),
-    #     (STATUS_3, 'Выкуплен'),
-    #     (STATUS_4, 'Не оплачен'),
-    #     (STATUS_5, 'Оплачен'),
-    #     (STATUS_6, 'В пути до РФ'),
-    #     (STATUS_7, 'В РФ'),
-    #     (STATUS_8, 'Ожидает отправки'),
-    #     (STATUS_9, 'В пути по РФ'),
-    #     (STATUS_10, 'Выполнен'),
-    # ]
-    #неоплачен, оплачен
+    # неоплачен, оплачен
     id_order = models.AutoField(primary_key=True)
     # клиент
     id_customer = models.ForeignKey('Customer', on_delete=models.CASCADE)
@@ -138,6 +127,7 @@ class Order(models.Model):
     sbts = models.FileField(null=True, upload_to='sbts/', blank=True)
     ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+
     # order_status = models.TextField(choices=ORDER_STATUS)
 
     def get_absolute_url_order(self):
@@ -208,7 +198,6 @@ class Car(models.Model):
         return reverse('car', kwargs={'car_id': self.pk})
 
     def get_absolute_url_order(self):
-        print('ХОП')
         return reverse('order', kwargs={'car_id': self.pk})
 
     def get_fields(self):
