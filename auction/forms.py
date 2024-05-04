@@ -406,16 +406,15 @@ class PriceForm(forms.Form):
         )
 
 
-
 class CustomsDutyForm(forms.Form):
     type = forms.ChoiceField(label='Возраст машины', choices=CustomsDuty.TYPE_CHOICE,
-                                         widget=forms.Select(attrs={'class': 'custom-select'}))
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
     value_first = forms.IntegerField(label='От значения',
-                                        widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
+                                     widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
     value_last = forms.IntegerField(label='До Значения',
-                                              widget=forms.NumberInput(attrs={'class': 'form-control'}))
+                                    widget=forms.NumberInput(attrs={'class': 'form-control'}))
     bet = forms.DecimalField(label='Ставка за 1 куб. см.', decimal_places=2, max_digits=10,
-                                            widget=forms.NumberInput(attrs={'class': 'form-control'}))
+                             widget=forms.NumberInput(attrs={'class': 'form-control'}))
 
     def save(self):
         CustomsDuty.objects.create(
@@ -441,7 +440,7 @@ class ExciseForm(forms.Form):
     power_last_car = forms.IntegerField(label='Мощность двигателя до',
                                         widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
     bet = forms.IntegerField(label='Цена за 1 л.с. в р.',
-                                              widget=forms.NumberInput(attrs={'class': 'form-control'}))
+                             widget=forms.NumberInput(attrs={'class': 'form-control'}))
 
     def save(self):
         Excise.objects.create(
@@ -459,12 +458,11 @@ class ExciseForm(forms.Form):
         )
 
 
-
 class TransportCompanyForm(forms.Form):
     title = forms.CharField(label='Название транспортной компании',
-                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
     contract = forms.FileField(label='Договор с ТК', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
-                           required=False)
+                               required=False)
 
     def save(self):
         TransportCompany.objects.create(
@@ -480,11 +478,12 @@ class TransportCompanyForm(forms.Form):
             contract=contract,
         )
 
+
 class TransportCompanyPriceForm(forms.Form):
     place = forms.CharField(label='Место перевозки',
-                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
     price = forms.CharField(label='Цена перевозки',
-                                         widget=forms.TextInput(attrs={'class': 'form-control'}))
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self):
         # TransportCompany.objects.create(
