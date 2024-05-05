@@ -1,9 +1,14 @@
 import datetime
+import os
 
 import django.http
+import docx
+from django.core.files import File
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 # import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
+from django.http import HttpResponse
 
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
@@ -18,6 +23,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse
+from docx import Document
+from docx.shared import Inches, RGBColor
 
 
 #
@@ -670,6 +677,88 @@ class OrderInOrdersPageView(TemplateView):
 
         elif request.method == 'POST' and 'calculate_price' in request.POST:
             return render(request, 'order_in_orders.html')
+
+        elif request.method == 'POST' and 'create_contract' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+
+            heading = document.add_heading('Агентский договор № _/_', 1)
+            heading.alignment = 1
+
+            prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
+            prim1.alignment = 1
+
+            document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
+            paragraph1 = document.add_paragraph('Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
+            paragraph1.paragraph_format.first_line_indent = Inches(0.5)
+            paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+
+            document.add_heading('1. Предмет договора', 1)
+
+            document.add_paragraph('1.1. Поставщик обязуется за вознаграждение совершать по поручению Заказчика юридические и иные действия от своего имени, но за счет Заказчика, либо от имени и за счет Заказчика.')
+            document.add_paragraph('1.2. Поставщик приобретает права и становится обязанным по сделке, совершенной с третьим лицом от своего имени за счет Заказчика.')
+            document.add_paragraph('1.3. По сделке, совершенной Поставщиком с третьим лицом от имени и за счет Заказчика, права и обязанности возникают у Заказчика.')
+            document.add_paragraph('1.4. В соответствии с настоящим договором Поставщик обязуется по поручению Заказчика организовать покупку транспортного средства (далее по тексту ТС) на автомобильных аукционах в Японии и доставку указанного ТС до места получения ТС в соответствии с заявкой (поручением) Заказчика.')
+            document.add_paragraph('1.5. Для исполнения поручения Заказчика Поставщик обязуется совершить следующие действия:')
+            document.add_paragraph('- осуществить покупку указанного Заказчиком ТС на аукционе Японии;')
+            document.add_paragraph('- осуществить доставку приобретенного ТС в порт погрузки в Японии;')
+            document.add_paragraph('- осуществить доставку приобретенного ТС морским транспортом до порта г. Владивосток;')
+            document.add_paragraph('- осуществить действия по таможенной очистке ТС в г. Владивосток, в том числе оформить необходимые таможенные документы;')
+            document.add_paragraph('- осуществить передачу приобретенного ТС Заказчику.')
+            document.add_paragraph('1.6. Для осуществления действий указанных в п.1.5. настоящего договора Поставщик заключает от своего имени необходимые договоры, в том числе агентские, подписывает необходимые документы, а также производит необходимые платежи.')
+
+
+            document.add_page_break()
+
+            document.save('media/client_contract/demo.docx')
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
+                order.contract = File(open('media/client_contract/demo.docx', 'rb'))
+                order.save()
+                file_path = 'media/client_contract/demo.docx'
+                if os.path.exists(file_path):
+                    with open(file_path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                        return response
+
+        elif request.method == 'POST' and 'create_defective_statement' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+
+            heading = document.add_heading('Дефектная ведомость', 1)
+            heading.alignment = 1
+
+            prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
+            prim1.alignment = 1
+
+            document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
+            paragraph1 = document.add_paragraph('Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
+            paragraph1.paragraph_format.first_line_indent = Inches(0.5)
+            paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+
+            document.add_heading('1. Предмет договора', 1)
+
+            document.add_paragraph('Дата')
+
+
+            document.add_page_break()
+
+            document.save('media/client_contract/demo.docx')
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
+                order.contract = File(open('media/client_contract/demo.docx', 'rb'))
+                order.save()
+                file_path = 'media/client_contract/demo.docx'
+                if os.path.exists(file_path):
+                    with open(file_path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                        return response
 
         user_id = request.user.id
         orders = Order.objects.filter(date_end=None, id_worker=user_id)

@@ -126,6 +126,8 @@ class Order(models.Model):
     id_car = models.ForeignKey('Car', on_delete=models.CASCADE)
     sbts = models.FileField(null=True, upload_to='sbts/', blank=True)
     ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
+    contract = models.FileField(null=True, upload_to='client_contract/', blank=True)
+    defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
 
     # order_status = models.TextField(choices=ORDER_STATUS)
