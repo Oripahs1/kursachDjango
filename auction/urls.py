@@ -39,8 +39,10 @@ urlpatterns = [
     path('customer/<int:customer_id>', views.CustomerPageView.as_view(), name='customer'),
     path('customers/', views.CustomersPageView.as_view(), name='customers'),
     path('customer_new/', views.CustomerNewPageView.as_view(), name='customer_new'),
+    path('customer_new/<int:car_id>', views.CustomerNewPageView.as_view(), name='customer_new_for_order'),
 
     path('order/<int:car_id>', views.OrderPageView.as_view(), name='order'),
+    path('order/<int:car_id>/<int:customer_id>', views.OrderPageView.as_view(), name='order_with_customer'),
     path('orders/', views.OrdersPageView.as_view(), name='orders'),
     path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
 

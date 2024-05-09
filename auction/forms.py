@@ -288,7 +288,7 @@ class CustomerForm(forms.Form):
     telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self, commit=True):
-        Customer.objects.create(
+        customer = Customer.objects.create(
             first_name_client=self.cleaned_data['first_name_client'],
             last_name_client=self.cleaned_data['last_name_client'],
             patronymic_client=self.cleaned_data['patronymic_client'],
@@ -300,6 +300,7 @@ class CustomerForm(forms.Form):
             passport_department_name=self.cleaned_data['passport_department_name'],
             telephone=self.cleaned_data['telephone']
         )
+        return customer.pk
 
     def update_customer(self, customer_id):
         customer = Customer.objects.filter(pk=customer_id)

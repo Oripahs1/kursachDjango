@@ -819,6 +819,8 @@ class OrderPageView(TemplateView):
         user_name = Worker.objects.filter(id=request.user.id)[0]
         form.fields['worker'].widget.attrs.update({'value': user_name})
         form.fields['price'].initial = str(car.price) + ' р.'
+        print(kwargs.get('customer_id'))
+        form.fields['customer'].initial = kwargs.get('customer_id')
         return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
@@ -831,8 +833,8 @@ class OrderPageView(TemplateView):
             else:
                 messages.error(request, "Некорректная форма")
                 return render(request, 'order.html', {'form': form})
-        elif request.method == 'POST' and 'customer':
-            return django.http.HttpResponseRedirect(reverse('customer_new'))
+        elif request.method == 'POST' and 'customer' in request.POST:
+            return django.http.HttpResponseRedirect(reverse('customer_new_for_order', kwargs={'car_id': kwargs.get('car_id')}))
 
         user_id = request.user.id
         orders = Order.objects.filter(date_end=None, id_worker=user_id)
@@ -892,15 +894,26 @@ class CustomerNewPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         form = CustomerForm()
+        if kwargs.get('car_id'):
+            print('ЕСТЬ')
+            car = Car.objects.get(id_car=kwargs.get('car_id'))
+            return render(request, self.template_name, {'form': form, 'car': car})
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = CustomerForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.success(request, "Клиент создан")
+                if Customer.objects.filter(passport_number=form.cleaned_data['passport_number'], passport_series=form.cleaned_data['passport_series']).exists():
+                    print('Такой уже есть')
+                    messages.error(request, "Такой уже есть")
+                    return django.http.HttpResponseRedirect(
+                        reverse('customer_new_for_order', kwargs={'car_id': kwargs.get('car_id')}))
 
+                customer = form.save()
+                messages.success(request, "Клиент создан")
+                if 'save_and_continue' in request.POST:
+                    return django.http.HttpResponseRedirect(reverse('order_with_customer', kwargs={'car_id': kwargs.get('car_id'), 'customer_id': customer}))
                 return django.http.HttpResponseRedirect(reverse('customers'))
             else:
                 messages.error(request, "Некорректная форма")

@@ -69,9 +69,19 @@
             </div>
 
 
+
+            {% if car %}
+{#            <a href="{{ car.get_absolute_url_order }}">#}
+{#                <button type="button" class="btn btn-outline-dark position-relative" style="margin: 20px auto 50px auto; display: block">Сохранить</button>#}
+{#            </a>#}
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
-                <input type="submit" class="btn btn-outline-dark position-relative" value="Сохранить"/>
+                <input name="save_and_continue" type="submit" class="btn btn-outline-dark position-relative" value="Сохранить"/>
             </div>
+            {% else %}
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around">
+                <input name="save" type="submit" class="btn btn-outline-dark position-relative" value="Сохранить"/>
+            </div>
+            {% endif %}
         </form>
     </div>
 {% endblock content %}
