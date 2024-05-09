@@ -203,19 +203,7 @@ class RegistrationForm(forms.ModelForm):
 
 
 class OrderForm(forms.Form):
-    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    date_of_birth = forms.DateField(label='Дата рождения', widget=forms.DateInput(
-        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}))
-    place_of_birth = forms.CharField(label='Место рождения', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    passport_series = forms.CharField(label='Серия паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    passport_number = forms.CharField(label='Номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    passport_department_code = forms.CharField(label='Код подразделения',
-                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
-    passport_department_name = forms.CharField(label='Паспорт выдан',
-                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
-    telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    customer = forms.ModelChoiceField(label='Клиент', queryset=Customer.objects.all(), widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
     # worker = forms.ModelChoiceField(label='Сотрудник',
     #                                 queryset=Worker.objects.filter(is_superuser=False, job_title='Менеджер'),
@@ -226,23 +214,12 @@ class OrderForm(forms.Form):
                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
 
     def save(self, commit=True):
-        customer = Customer.objects.create(
-            first_name_client=self.cleaned_data['first_name_client'],
-            last_name_client=self.cleaned_data['last_name_client'],
-            patronymic_client=self.cleaned_data['patronymic_client'],
-            date_of_birth=self.cleaned_data['date_of_birth'],
-            place_of_birth=self.cleaned_data['place_of_birth'],
-            passport_series=self.cleaned_data['passport_series'],
-            passport_number=self.cleaned_data['passport_number'],
-            passport_department_code=self.cleaned_data['passport_department_code'],
-            passport_department_name=self.cleaned_data['passport_department_name'],
-            telephone=self.cleaned_data['telephone']
-        )
+
 
         car = Car.objects.get(pk=self.cleaned_data['id_car'])
 
         Order.objects.create(
-            id_customer=customer,
+            id_customer=self.cleaned_data['customer'],
             id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,
             date_start=datetime.date.today(),
@@ -268,7 +245,11 @@ class OrderInOrdersForm(forms.Form):
     sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
                            required=False)
     ptd = forms.FileField(label='ПТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
-    contract = forms.FileField(label='Договор купли продажи из ЯП',
+    contract_japan = forms.FileField(label='Договор купли продажи из ЯП',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    client_contract = forms.FileField(label='Договор с клиентом',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    def_ved = forms.FileField(label='Дефектная ведомость',
                                widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
     price = forms.CharField(label='Рассчитанная цена',
                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}),
@@ -289,6 +270,36 @@ class OrderInOrdersForm(forms.Form):
         customer = order[0].id_customer
         customer.telephone = self.cleaned_data['telephone']
         customer.save()
+
+
+class CustomerForm(forms.Form):
+    first_name_client = forms.CharField(label='Имя', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    last_name_client = forms.CharField(label='Фамилия', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    patronymic_client = forms.CharField(label='Отчество', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_of_birth = forms.DateField(label='Дата рождения', widget=forms.DateInput(
+        attrs={'class': 'form-control', 'placeholder': 'YYYY-MM-DD', 'data-slots': '_'}))
+    place_of_birth = forms.CharField(label='Место рождения', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_series = forms.CharField(label='Серия паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_number = forms.CharField(label='Номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_department_code = forms.CharField(label='Код подразделения',
+                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_department_name = forms.CharField(label='Паспорт выдан',
+                                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+    telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+    def save(self, commit=True):
+        Customer.objects.create(
+            first_name_client=self.cleaned_data['first_name_client'],
+            last_name_client=self.cleaned_data['last_name_client'],
+            patronymic_client=self.cleaned_data['patronymic_client'],
+            date_of_birth=self.cleaned_data['date_of_birth'],
+            place_of_birth=self.cleaned_data['place_of_birth'],
+            passport_series=self.cleaned_data['passport_series'],
+            passport_number=self.cleaned_data['passport_number'],
+            passport_department_code=self.cleaned_data['passport_department_code'],
+            passport_department_name=self.cleaned_data['passport_department_name'],
+            telephone=self.cleaned_data['telephone']
+        )
 
 
 class InvoiceForm(forms.Form):

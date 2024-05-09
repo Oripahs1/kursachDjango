@@ -3,21 +3,24 @@ import os
 
 import django.http
 import docx
+from sendfile import sendfile
 from django.core.files import File
+import urllib.parse
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 # import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
 from django.http import HttpResponse
-
+from django.http import FileResponse
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from openpyxl.reader.excel import load_workbook
 
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice
+    TransportCompanyPrice, Customer
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
-    NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm
+    NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
+    CustomerForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -558,6 +561,12 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['ptd'].widget.input_text = 'Заменить'
         form.fields['ptd'].widget.clear_checkbox_label = ''
         form.fields['sbts'].widget.clear_checkbox_label = ''
+        form.fields['client_contract'].widget.initial_text = ''
+        form.fields['client_contract'].widget.input_text = 'Заменить'
+        form.fields['client_contract'].widget.clear_checkbox_label = ''
+        form.fields['def_ved'].widget.initial_text = ''
+        form.fields['def_ved'].widget.input_text = 'Заменить'
+        form.fields['def_ved'].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
@@ -566,6 +575,10 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['sbts'].initial = order.sbts
         if order.ptd is not None:
             form.fields['ptd'].initial = order.ptd
+        if order.contract is not None:
+            form.fields['client_contract'].initial = order.contract
+        if order.defective_statement is not None:
+            form.fields['def_ved'].initial = order.defective_statement
         return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
 
     def post(self, request, *args, **kwargs):
@@ -581,15 +594,25 @@ class OrderInOrdersPageView(TemplateView):
                 print(form.cleaned_data['date_end'])
                 # print(form.fields['ptd'].initial)
 
-                if order.ptd == '':
+                if request.FILES.get('ptd') != '':
                     order.ptd = request.FILES.get('ptd')
                 else:
                     order.ptd = order.ptd
 
-                if order.sbts == '':
+                if request.FILES.get('sbts') != '':
                     order.sbts = request.FILES.get('sbts')
                 else:
                     order.sbts = order.sbts
+
+                if request.FILES.get('client_contract') != '':
+                    order.contract = request.FILES.get('client_contract')
+                else:
+                    order.contract = order.contract
+
+                if request.FILES.get('def_ved') != '':
+                    order.defective_statement = request.FILES.get('def_ved')
+                else:
+                    order.defective_statement = order.defective_statement
 
                 order.save()
 
@@ -708,21 +731,14 @@ class OrderInOrdersPageView(TemplateView):
             document.add_paragraph('- осуществить передачу приобретенного ТС Заказчику.')
             document.add_paragraph('1.6. Для осуществления действий указанных в п.1.5. настоящего договора Поставщик заключает от своего имени необходимые договоры, в том числе агентские, подписывает необходимые документы, а также производит необходимые платежи.')
 
-
-            document.add_page_break()
-
             document.save('media/client_contract/demo.docx')
-            form = OrderInOrdersForm(request.POST, request.FILES)
-            if form.is_valid():
-                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
-                order.contract = File(open('media/client_contract/demo.docx', 'rb'))
-                order.save()
-                file_path = 'media/client_contract/demo.docx'
-                if os.path.exists(file_path):
-                    with open(file_path, 'rb') as fh:
-                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
-                        return response
+
+            file_path = 'media/client_contract/demo.docx'
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
+                    return response
 
         elif request.method == 'POST' and 'create_defective_statement' in request.POST:
             document = docx.Document()
@@ -732,33 +748,51 @@ class OrderInOrdersPageView(TemplateView):
             heading = document.add_heading('Дефектная ведомость', 1)
             heading.alignment = 1
 
-            prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
-            prim1.alignment = 1
+            para = document.add_paragraph('Дата:')
+            para.paragraph_format.space_after = Inches(0.001)
+            para = document.add_paragraph('Агент:')
+            para.paragraph_format.space_after = Inches(0.001)
+            para = document.add_paragraph('ВладивостокМоторс')
+            # para.alignment = 2
+            para.paragraph_format.space_after = Inches(0.001)
+            para = document.add_paragraph('г. Владивосток,')
+            # para.alignment = 2
+            para.paragraph_format.space_after = Inches(0.001)
+            # para.alignment = 2
+            para = document.add_paragraph('ул. Авроровская 19А, к. 195')
+            para.paragraph_format.space_after = Inches(0.001)
+            # para.alignment = 2
+            para = document.add_paragraph('тел: +7908237482')
+            para.paragraph_format.space_after = Inches(0.001)
+            # para.alignment = 2
+            para = document.add_paragraph('e-mail: vladmotors@vladmotors.ru')
+            para.paragraph_format.space_after = Inches(0.001)
+            # para.alignment = 2
+            document.add_picture('media/def_ved_img.png', width=Inches(7))
 
-            document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
-            paragraph1 = document.add_paragraph('Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
-            paragraph1.paragraph_format.first_line_indent = Inches(0.5)
-            paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+            records = (
+                ('Модель'),
+                ('№ Кузова'),
+                ('VIN'),
+                ('Цвет')
+            )
 
-            document.add_heading('1. Предмет договора', 1)
-
-            document.add_paragraph('Дата')
-
-
-            document.add_page_break()
+            table = document.add_table(rows=1, cols=2)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Наименование'
+            for qty in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(qty)
 
             document.save('media/client_contract/demo.docx')
-            form = OrderInOrdersForm(request.POST, request.FILES)
-            if form.is_valid():
-                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
-                order.contract = File(open('media/client_contract/demo.docx', 'rb'))
-                order.save()
-                file_path = 'media/client_contract/demo.docx'
-                if os.path.exists(file_path):
-                    with open(file_path, 'rb') as fh:
-                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
-                        return response
+
+            file_path = 'media/client_contract/demo.docx'
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+                    response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
+                    return response
 
         user_id = request.user.id
         orders = Order.objects.filter(date_end=None, id_worker=user_id)
@@ -788,7 +822,7 @@ class OrderPageView(TemplateView):
         return render(request, 'order.html', {'car': car, 'form': form, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
+        if request.method == 'POST' and 'create' in request.POST:
             form = OrderForm(request.POST)
             if form.is_valid():
                 form.save()
@@ -797,11 +831,85 @@ class OrderPageView(TemplateView):
             else:
                 messages.error(request, "Некорректная форма")
                 return render(request, 'order.html', {'form': form})
-        else:
-            form = OrderForm()
+        elif request.method == 'POST' and 'customer':
+            return django.http.HttpResponseRedirect(reverse('customer_new'))
+
         user_id = request.user.id
         orders = Order.objects.filter(date_end=None, id_worker=user_id)
         return render(request, 'orders.html', {'orders': orders})
+
+
+class CustomerPageView(TemplateView):
+    template_name = 'customer.html'
+
+    def get(self, request, *args, **kwargs):
+        form = CustomerForm()
+        customer = Customer.objects.get(pk=kwargs['customer_id'])
+        form.fields['first_name_client'].initial = customer.first_name_client
+        form.fields['last_name_client'].initial = customer.last_name_client
+        form.fields['patronymic_client'].initial = customer.patronymic_client
+        form.fields['date_of_birth'].initial = customer.date_of_birth
+        form.fields['place_of_birth'].initial = customer.place_of_birth
+        form.fields['passport_number'].initial = customer.passport_number
+        form.fields['passport_series'].initial = customer.passport_series
+        form.fields['passport_department_code'].initial = customer.passport_department_code
+        form.fields['passport_department_name'].initial = customer.passport_department_name
+        form.fields['telephone'].initial = customer.telephone
+
+
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        return
+
+
+class CustomersPageView(TemplateView):
+    template_name = 'customers.html'
+
+    def get(self, request, *args, **kwargs):
+        customers = Customer.objects.all()
+        return render(request, 'customers.html', {'customers': customers})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = CustomerForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Клиент создан")
+                return django.http.HttpResponseRedirect(reverse('customers'))
+            else:
+                messages.error(request, "Некорректная форма")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                return render(request, 'customer.html', {'form': form})
+        else:
+            form = CustomerForm()
+        customers = Customer.objects.all()
+        return render(request, 'customers.html', {'customers': customers})
+
+class CustomerNewPageView(TemplateView):
+    template_name = 'customer.html'
+
+    def get(self, request, *args, **kwargs):
+        form = CustomerForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = CustomerForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Клиент создан")
+                return django.http.HttpResponseRedirect(reverse('customers'))
+            else:
+                messages.error(request, "Некорректная форма")
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                return render(request, 'customer.html', {'form': form})
+        else:
+            form = CustomerForm()
+        customers = Customer.objects.all()
+        return render(request, 'customers.html', {'customers': customers})
 
 
 class CatalogPageView(TemplateView):

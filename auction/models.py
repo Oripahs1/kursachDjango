@@ -153,7 +153,10 @@ class Customer(models.Model):
     telephone = models.TextField()
 
     def __str__(self):
-        return str(self.last_name_client)
+        return str(self.last_name_client + " " + self.first_name_client + " " + self.patronymic_client + " " + self.passport_series + " " + self.passport_number)
+
+    def get_absolute_url_customer(self):
+        return reverse('customer', kwargs={'customer_id': self.pk})
 
 
 class Car(models.Model):

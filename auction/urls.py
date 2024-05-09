@@ -36,11 +36,13 @@ urlpatterns = [
     path('buhgalter/invoice/<int:invoice_id>', views.BuhgalterInvoicePageView.as_view(), name='invoice'),
     path('buhgalter/new_invoice', views.BuhgalterNewInvoicePageView.as_view(), name='buhgalter_new_invoice'),
 
+    path('customer/<int:customer_id>', views.CustomerPageView.as_view(), name='customer'),
+    path('customers/', views.CustomersPageView.as_view(), name='customers'),
+    path('customer_new/', views.CustomerNewPageView.as_view(), name='customer_new'),
+
     path('order/<int:car_id>', views.OrderPageView.as_view(), name='order'),
     path('orders/', views.OrdersPageView.as_view(), name='orders'),
     path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
-
-
 
     path('transport_companies/', views.TransportCompaniesPageView.as_view(), name='transport_companies'),
     path('transport_company_new/', views.TransportCompanyNewPageView.as_view(), name='transport_company_new'),

@@ -27,6 +27,10 @@
                         <li class="nav-item">
                             <a class="nav-link active" href="{% url 'orders' %}">Заказы</a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'customers' %}">Клиенты</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'parser' %}">Обновить БД</a>
                         </li>
@@ -72,6 +76,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'prices' %}">Цены перевозки авто из ЯП</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
                         </li>
                     {% endif %}
                     <li class="nav-item">

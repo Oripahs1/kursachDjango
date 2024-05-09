@@ -19,6 +19,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+SENDFILE_BACKEND = 'sendfile.backends.simple'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
