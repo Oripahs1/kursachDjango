@@ -860,22 +860,12 @@ class CustomerPageView(TemplateView):
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
-        return
-
-
-class CustomersPageView(TemplateView):
-    template_name = 'customers.html'
-
-    def get(self, request, *args, **kwargs):
-        customers = Customer.objects.all()
-        return render(request, 'customers.html', {'customers': customers})
-
-    def post(self, request, *args, **kwargs):
         if request.method == 'POST':
             form = CustomerForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.success(request, "Клиент создан")
+                form.update_customer(kwargs['customer_id'])
+                messages.success(request, "Клиент изменен")
+
                 return django.http.HttpResponseRedirect(reverse('customers'))
             else:
                 messages.error(request, "Некорректная форма")
@@ -886,6 +876,16 @@ class CustomersPageView(TemplateView):
             form = CustomerForm()
         customers = Customer.objects.all()
         return render(request, 'customers.html', {'customers': customers})
+
+
+class CustomersPageView(TemplateView):
+    template_name = 'customers.html'
+
+    def get(self, request, *args, **kwargs):
+        customers = Customer.objects.all()
+        return render(request, 'customers.html', {'customers': customers})
+
+
 
 class CustomerNewPageView(TemplateView):
     template_name = 'customer.html'
@@ -900,6 +900,7 @@ class CustomerNewPageView(TemplateView):
             if form.is_valid():
                 form.save()
                 messages.success(request, "Клиент создан")
+
                 return django.http.HttpResponseRedirect(reverse('customers'))
             else:
                 messages.error(request, "Некорректная форма")

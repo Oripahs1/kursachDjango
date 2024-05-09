@@ -301,6 +301,22 @@ class CustomerForm(forms.Form):
             telephone=self.cleaned_data['telephone']
         )
 
+    def update_customer(self, customer_id):
+        customer = Customer.objects.filter(pk=customer_id)
+        print(customer)
+        customer.update(
+            first_name_client=self.cleaned_data['first_name_client'],
+            last_name_client=self.cleaned_data['last_name_client'],
+            patronymic_client=self.cleaned_data['patronymic_client'],
+            date_of_birth=self.cleaned_data['date_of_birth'],
+            place_of_birth=self.cleaned_data['place_of_birth'],
+            passport_series=self.cleaned_data['passport_series'],
+            passport_number=self.cleaned_data['passport_number'],
+            passport_department_code=self.cleaned_data['passport_department_code'],
+            passport_department_name=self.cleaned_data['passport_department_name'],
+            telephone=self.cleaned_data['telephone']
+        )
+
 
 class InvoiceForm(forms.Form):
     id_invoice = forms.IntegerField(label='ID',
