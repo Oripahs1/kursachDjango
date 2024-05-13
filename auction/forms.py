@@ -223,7 +223,7 @@ class OrderForm(forms.Form):
             id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,
             date_start=datetime.date.today(),
-            # order_status=Order.STATUS_1
+            order_status=Order.AT_WORK
         )
 
 

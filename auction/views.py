@@ -3,7 +3,6 @@ import os
 
 import django.http
 import docx
-from sendfile import sendfile
 from django.core.files import File
 import urllib.parse
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -131,7 +130,7 @@ class TransportCompanyPricesNewPageView(TemplateView):
             form = TransportCompanyPriceForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая цена для ТК")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -167,7 +166,7 @@ class TransportCompanyPricePageView(TemplateView):
                 print(kwargs['price_id'])
 
                 form.update(kwargs['price_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Цена ТК изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -198,7 +197,7 @@ class TransportCompanyNewPageView(TemplateView):
 
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая транспортная компания")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -232,7 +231,7 @@ class TransportCompanyPageView(TemplateView):
                 else:
                     contract = transport_company.contract
                 form.update(kwargs['transport_company_id'], contract)
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Транспортная компания изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -270,7 +269,7 @@ class CustomsDutyNewPageView(TemplateView):
             form = CustomsDutyForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая таможенная пошлина")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -300,7 +299,7 @@ class CustomsDutyPageView(TemplateView):
                 print(kwargs['customs_duty_id'])
 
                 form.update(kwargs['customs_duty_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Таможенная пошлина изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -330,7 +329,7 @@ class ExciseNewPageView(TemplateView):
             form = ExciseForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлен новый акциз")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -358,7 +357,7 @@ class ExcisePageView(TemplateView):
                 print(kwargs['excise_id'])
 
                 form.update(kwargs['excise_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Акциз изменен")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -388,7 +387,7 @@ class PriceNewPageView(TemplateView):
             form = PriceForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая цена перевозки авто из ЯП")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -419,7 +418,7 @@ class PricePageView(TemplateView):
                 print(kwargs['price_id'])
 
                 form.update(kwargs['price_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Цена перевоза авто из ЯП изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -448,7 +447,7 @@ class DutyNewPageView(TemplateView):
             form = DutyForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая ставка утилизационного сбора")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -477,7 +476,7 @@ class DutyPageView(TemplateView):
                 print(kwargs['duty_id'])
 
                 form.update(kwargs['duty_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Ставка утилизационного сбора изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -593,26 +592,30 @@ class OrderInOrdersPageView(TemplateView):
                 print(form.initial)
                 print(form.cleaned_data['date_end'])
                 # print(form.fields['ptd'].initial)
+                print(request.FILES.get('ptd'))
 
-                if request.FILES.get('ptd') != '':
+                if 'ptd' in request.FILES:
                     order.ptd = request.FILES.get('ptd')
                 else:
                     order.ptd = order.ptd
 
-                if request.FILES.get('sbts') != '':
+                if 'sbts' in request.FILES:
                     order.sbts = request.FILES.get('sbts')
                 else:
                     order.sbts = order.sbts
 
-                if request.FILES.get('client_contract') != '':
+                if 'client_contract' in request.FILES:
                     order.contract = request.FILES.get('client_contract')
                 else:
                     order.contract = order.contract
 
-                if request.FILES.get('def_ved') != '':
+                if 'def_ved' in request.FILES:
                     order.defective_statement = request.FILES.get('def_ved')
                 else:
                     order.defective_statement = order.defective_statement
+                print(order.ptd)
+                if order.ptd and order.sbts:
+                    order.order_status = order.WAITING_TO_BE_SENT
 
                 order.save()
 
@@ -622,6 +625,7 @@ class OrderInOrdersPageView(TemplateView):
                 messages.error(request, "Некорректная форма")
                 for field in form:
                     print("Field Error:", field.name, field.errors)
+            return django.http.HttpResponseRedirect(reverse('orders'))
 
         elif request.method == 'POST' and 'calculate_price' in request.POST:
             form = OrderInOrdersForm(request.POST, request.FILES)
@@ -804,7 +808,13 @@ class OrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         user_id = request.user.id
-        orders = Order.objects.filter(date_end=None, id_worker=user_id)
+        user = Worker.objects.get(pk=user_id)
+        if user.job_title == 'Менеджер':
+            orders = Order.objects.filter(date_end=None, id_worker=user_id)
+        elif user.job_title == 'Оперативник':
+            orders = Order.objects.all()
+        else:
+            orders = Order.objects.all()
         return render(request, 'orders.html', {'orders': orders})
 
 

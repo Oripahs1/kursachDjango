@@ -9,6 +9,7 @@
 {% endblock head %}
 
 {% block content %}
+    {% include 'messages.html' %}
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "price_new" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Новый диапазон</button>

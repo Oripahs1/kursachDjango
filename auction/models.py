@@ -130,7 +130,34 @@ class Order(models.Model):
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
 
-    # order_status = models.TextField(choices=ORDER_STATUS)
+    AT_WORK = 'В работе'
+    NOT_PREPAID = 'Не предоплачен'
+    PREPAID = 'Предоплачен'
+    REDEEMED = 'Выкуплен'
+    NOT_REDEEMED = 'Не выкуплен'
+    PAID_FOR = 'Оплачен'
+    NOT_PAID_FOR = 'Не оплачен'
+    ON_THE_WAY_TO_RF = 'В пути до РФ'
+    IN_THE_RF = 'В РФ'
+    WAITING_TO_BE_SENT = 'Ожидает отправки'
+    ON_THE_WAY_INTO_RF = 'В пути по РФ'
+    COMPLETED = 'Выполнен'
+
+    ORDER_STATUS = [
+        (AT_WORK, 'В работе'),
+        (NOT_PREPAID, 'Не предоплачен'),
+        (PREPAID, 'Предоплачен'),
+        (REDEEMED, 'Выкуплен'),
+        (NOT_REDEEMED, 'Не выкуплен'),
+        (PAID_FOR, 'Оплачен'),
+        (NOT_PAID_FOR, 'Не оплачен'),
+        (ON_THE_WAY_TO_RF, 'В пути до РФ'),
+        (IN_THE_RF, 'В РФ'),
+        (WAITING_TO_BE_SENT, 'Ожидает отправки'),
+        (ON_THE_WAY_INTO_RF, 'В пути по РФ'),
+        (COMPLETED, 'Выполнен'),
+    ]
+    order_status = models.TextField(choices=ORDER_STATUS)
 
     def get_absolute_url_order(self):
         return reverse('order_in_orders', kwargs={'order_id': self.pk})

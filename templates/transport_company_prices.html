@@ -9,6 +9,7 @@
 {% endblock head %}
 
 {% block content %}
+    {% include 'messages.html' %}
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "transport_company_prices_new" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Добавить пункт назначения</button>
