@@ -9,11 +9,16 @@
 {% endblock head %}
 
 {% block content %}
-    <div style="text-align: center; margin-top: 15px">
-        <a href="{% url "transport_company_prices_new" %}">
-            <button style="width: 300px" class="btn btn-outline-dark">Добавить пункт назначения</button>
-        </a>
-    </div>
+    {% include 'messages.html' %}
+
+    <form method="POST" enctype="multipart/form-data" style="text-align: center; margin-top: 15px">
+            {% csrf_token %}
+            <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
+                <input type="submit" name="new" class="btn btn-outline-dark position-relative" value="Добавить пункт назначения"/>
+            </div>
+
+    </form>
+
     <ul class="d-grid gap-2 col-8 mx-auto">
         <table class="table table-striped">
             <thead>
@@ -32,7 +37,7 @@
                     <td>{{ el.price }}</td>
                     <td>
 
-                        <a href="{{ el.get_absolute_url_transport_company }}">
+                        <a href="{{ el.get_absolute_url_transport_company_price }}">
                             <button style="width: 100px"
                                     class="btn btn-outline-dark">
                                 Открыть

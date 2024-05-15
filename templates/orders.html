@@ -11,7 +11,7 @@
 {% block content %}
     {% include 'messages.html' %}
     <ul class="d-grid gap-2 col-8 mx-auto">
-        <table class="table table-striped">
+        <table class="table">
             <thead>
             <tr>
                 <th scope="col">#</th>
@@ -24,7 +24,12 @@
             </thead>
             <tbody>
             {% for el in orders %}
-                <tr style="vertical-align: middle">
+{#                class="table-warning"#}
+                {% if el.order_status == 'В работе' %}
+                <tr style="vertical-align: middle" class="table-success">
+                {% elif el.order_status == 'Ожидает отправки' %}
+                <tr style="vertical-align: middle" class="table-warning">
+                {% endif %}
                     <th scope="row">{{ el.id_order }}</th>
                     <td>{{ el.id_customer.first_name_client }} {{ el.id_customer.last_name_client }} {{ el.id_customer.patronymic_client }}</td>
                     <td>{{ el.id_car.title }}</td>

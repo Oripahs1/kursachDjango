@@ -3,7 +3,6 @@ import os
 
 import django.http
 import docx
-from sendfile import sendfile
 from django.core.files import File
 import urllib.parse
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -117,12 +116,36 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+class TransportCompanyPricePageView(TemplateView):
+    template_name = 'transport_company_price.html'
+
+    def get(self, request, *args, **kwargs):
+        transport_company_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        form = TransportCompanyPriceForm()
+        form.fields['price'].initial = transport_company_price.price
+        form.fields['place'].initial = transport_company_price.place
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = TransportCompanyPriceForm(request.POST)
+            if form.is_valid():
+                form.update(kwargs['price_id'])
+                messages.info(request, "Цена ТК изменена")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, 'Ошибка валидации формы')
+        tk_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': tk_price.id_transport_company.pk}))
+
+
+
+
 class TransportCompanyPricesNewPageView(TemplateView):
     template_name = 'transport_company_price.html'
 
     def get(self, request, *args, **kwargs):
-        print('NEW')
-        print(kwargs)
         form = TransportCompanyPriceForm()
         return render(request, self.template_name, {'form': form})
 
@@ -130,50 +153,26 @@ class TransportCompanyPricesNewPageView(TemplateView):
         if request.method == 'POST':
             form = TransportCompanyPriceForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                print(kwargs['tk_id'])
+                form.save(kwargs['tk_id'])
+                messages.info(request, "Добавлена новая цена ТК")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
-                messages.info(request, "Ошибка валидации формы")
-        print(kwargs)
-        transport_company_prices = TransportCompanyPrice.objects.filter(
-            id_transport_company=kwargs['transport_company_id'])
-        transport_company_prices = {
-            'transport_company_prices': transport_company_prices
-        }
-        return render(request, 'transport_company_prices.html', transport_company_prices)
+                messages.info(request, 'Ошибка валидации формы')
+        return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': kwargs['tk_id']}))
 
 
-class TransportCompanyPricePageView(TemplateView):
-    template_name = 'price.html'
+class TransportCompanyPricesPageView(TemplateView):
+    template_name = 'transport_company_prices.html'
 
     def get(self, request, *args, **kwargs):
-        form = PriceForm()
-        # form.fields['name'].initial
-        price = Price.objects.get(id=kwargs['price_id'])
-        form.fields['price_first_car'].initial = price.price_first_car
-        if price.price_last_car is not None:
-            form.fields['price_last_car'].initial = price.price_last_car
-        # else:
-        #     form.fields['']
-        form.fields['price_transportation'].initial = price.price_transportation
-        return render(request, self.template_name, {'form': form})
+        transport_company_prices = TransportCompanyPrice.objects.filter(id_transport_company=kwargs['transport_company_prices_id'])
+        return render(request, self.template_name, {'transport_company_prices': transport_company_prices})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = PriceForm(request.POST)
-            if form.is_valid():
-                print(kwargs['price_id'])
-
-                form.update(kwargs['price_id'])
-                messages.info(request, "Добавлена новая пошлина")
-            else:
-                for field in form:
-                    print("Field Error:", field.name, field.errors)
-                messages.info(request, "Ошибка валидации формы")
-        prices = Price.objects.all()
-        return render(request, 'prices.html', {'prices': prices})
+        if request.method == 'POST' and 'new' in request.POST:
+            return django.http.HttpResponseRedirect(reverse('transport_company_prices_new', kwargs={'tk_id': kwargs['transport_company_prices_id']}))
 
 
 class TransportCompaniesPageView(TemplateView):
@@ -198,7 +197,7 @@ class TransportCompanyNewPageView(TemplateView):
 
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая транспортная компания")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -232,7 +231,7 @@ class TransportCompanyPageView(TemplateView):
                 else:
                     contract = transport_company.contract
                 form.update(kwargs['transport_company_id'], contract)
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Транспортная компания изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -246,7 +245,9 @@ class TransportCompanyPageView(TemplateView):
             transport_company_prices = {
                 'transport_company_prices': transport_company_prices
             }
-            return render(request, 'transport_company_prices.html', transport_company_prices)
+            print(kwargs['transport_company_id'])
+            return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': kwargs['transport_company_id']}))
+            # return render(request, 'transport_company_prices.html', transport_company_prices)
 
 
 class CustomsDutysPageView(TemplateView):
@@ -270,7 +271,7 @@ class CustomsDutyNewPageView(TemplateView):
             form = CustomsDutyForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая таможенная пошлина")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -300,7 +301,7 @@ class CustomsDutyPageView(TemplateView):
                 print(kwargs['customs_duty_id'])
 
                 form.update(kwargs['customs_duty_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Таможенная пошлина изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -330,7 +331,7 @@ class ExciseNewPageView(TemplateView):
             form = ExciseForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлен новый акциз")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -358,7 +359,7 @@ class ExcisePageView(TemplateView):
                 print(kwargs['excise_id'])
 
                 form.update(kwargs['excise_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Акциз изменен")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -388,7 +389,7 @@ class PriceNewPageView(TemplateView):
             form = PriceForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая цена перевозки авто из ЯП")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -419,7 +420,7 @@ class PricePageView(TemplateView):
                 print(kwargs['price_id'])
 
                 form.update(kwargs['price_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Цена перевоза авто из ЯП изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -448,7 +449,7 @@ class DutyNewPageView(TemplateView):
             form = DutyForm(request.POST)
             if form.is_valid():
                 form.save()
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Добавлена новая ставка утилизационного сбора")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -477,7 +478,7 @@ class DutyPageView(TemplateView):
                 print(kwargs['duty_id'])
 
                 form.update(kwargs['duty_id'])
-                messages.info(request, "Добавлена новая пошлина")
+                messages.info(request, "Ставка утилизационного сбора изменена")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
@@ -593,26 +594,30 @@ class OrderInOrdersPageView(TemplateView):
                 print(form.initial)
                 print(form.cleaned_data['date_end'])
                 # print(form.fields['ptd'].initial)
+                print(request.FILES.get('ptd'))
 
-                if request.FILES.get('ptd') != '':
+                if 'ptd' in request.FILES:
                     order.ptd = request.FILES.get('ptd')
                 else:
                     order.ptd = order.ptd
 
-                if request.FILES.get('sbts') != '':
+                if 'sbts' in request.FILES:
                     order.sbts = request.FILES.get('sbts')
                 else:
                     order.sbts = order.sbts
 
-                if request.FILES.get('client_contract') != '':
+                if 'client_contract' in request.FILES:
                     order.contract = request.FILES.get('client_contract')
                 else:
                     order.contract = order.contract
 
-                if request.FILES.get('def_ved') != '':
+                if 'def_ved' in request.FILES:
                     order.defective_statement = request.FILES.get('def_ved')
                 else:
                     order.defective_statement = order.defective_statement
+                print(order.ptd)
+                if order.ptd and order.sbts:
+                    order.order_status = order.WAITING_TO_BE_SENT
 
                 order.save()
 
@@ -622,6 +627,7 @@ class OrderInOrdersPageView(TemplateView):
                 messages.error(request, "Некорректная форма")
                 for field in form:
                     print("Field Error:", field.name, field.errors)
+            return django.http.HttpResponseRedirect(reverse('orders'))
 
         elif request.method == 'POST' and 'calculate_price' in request.POST:
             form = OrderInOrdersForm(request.POST, request.FILES)
@@ -804,7 +810,13 @@ class OrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         user_id = request.user.id
-        orders = Order.objects.filter(date_end=None, id_worker=user_id)
+        user = Worker.objects.get(pk=user_id)
+        if user.job_title == 'Менеджер':
+            orders = Order.objects.filter(date_end=None, id_worker=user_id)
+        elif user.job_title == 'Оперативник':
+            orders = Order.objects.all()
+        else:
+            orders = Order.objects.all()
         return render(request, 'orders.html', {'orders': orders})
 
 
