@@ -93,6 +93,9 @@ class TransportCompanyPrice(models.Model):
     place = models.TextField(null=True, blank=True)
     price = models.IntegerField(null=True, blank=True)
 
+    def get_absolute_url_transport_company_price(self):
+        return reverse('transport_company_price', kwargs={'price_id': self.pk})
+
 
 class CustomsDuty(models.Model):
     from_0 = 'От 0 до 3 лет'

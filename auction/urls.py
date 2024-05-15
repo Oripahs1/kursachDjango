@@ -50,10 +50,13 @@ urlpatterns = [
     path('transport_company_new/', views.TransportCompanyNewPageView.as_view(), name='transport_company_new'),
     path('transport_companies/<int:transport_company_id>', views.TransportCompanyPageView.as_view(),
          name='transport_company'),
-    path('transport_company_prices_new/', views.TransportCompanyPricesNewPageView.as_view(),
+
+    path('transport_company_prices_new/<int:tk_id>', views.TransportCompanyPricesNewPageView.as_view(),
          name='transport_company_prices_new'),
-    path('transport_company_prices/<int:transport_company_prices_id>', views.TransportCompanyPricePageView.as_view(),
+    path('transport_company_prices/<int:transport_company_prices_id>', views.TransportCompanyPricesPageView.as_view(),
          name='transport_company_prices'),
+    path('transport_company_price/<int:price_id>', views.TransportCompanyPricePageView.as_view(),
+         name='transport_company_price'),
 
     # path('pdf_order/', views.edit_pdf, name='edit_pdf'),
 ]

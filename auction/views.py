@@ -116,12 +116,31 @@ class RegistrationPageView(TemplateView):
         return render(request, 'registration/registration.html', {'form': form})
 
 
+class TransportCompanyPricePageView(TemplateView):
+    template_name = 'transport_company_price.html'
+
+    def get(self, request, *args, **kwargs):
+        transport_company_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        form = TransportCompanyPriceForm()
+        form.fields['price'].initial = transport_company_price.price
+        form.fields['place'].initial = transport_company_price.place
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = TransportCompanyPriceForm(request.POST)
+            if form.is_valid():
+                form.update(kwargs['price_id'])
+        tk_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': tk_price.id_transport_company.pk}))
+
+
+
+
 class TransportCompanyPricesNewPageView(TemplateView):
     template_name = 'transport_company_price.html'
 
     def get(self, request, *args, **kwargs):
-        print('NEW')
-        print(kwargs)
         form = TransportCompanyPriceForm()
         return render(request, self.template_name, {'form': form})
 
@@ -129,50 +148,26 @@ class TransportCompanyPricesNewPageView(TemplateView):
         if request.method == 'POST':
             form = TransportCompanyPriceForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.info(request, "Добавлена новая цена для ТК")
+                print(kwargs['tk_id'])
+                form.save(kwargs['tk_id'])
+                messages.info(request, "Добавлена новая цена ТК")
             else:
                 for field in form:
                     print("Field Error:", field.name, field.errors)
-                messages.info(request, "Ошибка валидации формы")
-        print(kwargs)
-        transport_company_prices = TransportCompanyPrice.objects.filter(
-            id_transport_company=kwargs['transport_company_id'])
-        transport_company_prices = {
-            'transport_company_prices': transport_company_prices
-        }
-        return render(request, 'transport_company_prices.html', transport_company_prices)
+                messages.info(request, 'Ошибка валидации формы')
+        return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': kwargs['tk_id']}))
 
 
-class TransportCompanyPricePageView(TemplateView):
-    template_name = 'price.html'
+class TransportCompanyPricesPageView(TemplateView):
+    template_name = 'transport_company_prices.html'
 
     def get(self, request, *args, **kwargs):
-        form = PriceForm()
-        # form.fields['name'].initial
-        price = Price.objects.get(id=kwargs['price_id'])
-        form.fields['price_first_car'].initial = price.price_first_car
-        if price.price_last_car is not None:
-            form.fields['price_last_car'].initial = price.price_last_car
-        # else:
-        #     form.fields['']
-        form.fields['price_transportation'].initial = price.price_transportation
-        return render(request, self.template_name, {'form': form})
+        transport_company_prices = TransportCompanyPrice.objects.filter(id_transport_company=kwargs['transport_company_prices_id'])
+        return render(request, self.template_name, {'transport_company_prices': transport_company_prices})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            form = PriceForm(request.POST)
-            if form.is_valid():
-                print(kwargs['price_id'])
-
-                form.update(kwargs['price_id'])
-                messages.info(request, "Цена ТК изменена")
-            else:
-                for field in form:
-                    print("Field Error:", field.name, field.errors)
-                messages.info(request, "Ошибка валидации формы")
-        prices = Price.objects.all()
-        return render(request, 'prices.html', {'prices': prices})
+        if request.method == 'POST' and 'new' in request.POST:
+            return django.http.HttpResponseRedirect(reverse('transport_company_prices_new', kwargs={'tk_id': kwargs['transport_company_prices_id']}))
 
 
 class TransportCompaniesPageView(TemplateView):
@@ -245,7 +240,9 @@ class TransportCompanyPageView(TemplateView):
             transport_company_prices = {
                 'transport_company_prices': transport_company_prices
             }
-            return render(request, 'transport_company_prices.html', transport_company_prices)
+            print(kwargs['transport_company_id'])
+            return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': kwargs['transport_company_id']}))
+            # return render(request, 'transport_company_prices.html', transport_company_prices)
 
 
 class CustomsDutysPageView(TemplateView):
