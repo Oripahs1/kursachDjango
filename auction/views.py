@@ -131,6 +131,11 @@ class TransportCompanyPricePageView(TemplateView):
             form = TransportCompanyPriceForm(request.POST)
             if form.is_valid():
                 form.update(kwargs['price_id'])
+                messages.info(request, "Цена ТК изменена")
+            else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
+                messages.info(request, 'Ошибка валидации формы')
         tk_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
         return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': tk_price.id_transport_company.pk}))
 
