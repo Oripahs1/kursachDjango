@@ -4,6 +4,16 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+class Student(models.Model):
+    course_choices = (
+        ('1','Java'),
+        ('2','Python'),
+        ('3','Javascript')
+        )
+    name = models.CharField(max_length=50)
+    rollno = models.IntegerField()
+    course = models.CharField(max_length=15,
+        choices = course_choices)
 
 class PhotoCar(models.Model):
     id_photo = models.AutoField(primary_key=True)

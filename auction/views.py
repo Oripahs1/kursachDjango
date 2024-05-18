@@ -9,14 +9,14 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 # import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.http import FileResponse
 from django.views.generic import TemplateView
 from django.shortcuts import render, redirect
 from openpyxl.reader.excel import load_workbook
 
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice, Customer
+    TransportCompanyPrice, Customer, Student
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
     NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
     CustomerForm
@@ -35,6 +35,12 @@ from docx.shared import Inches, RGBColor
 # import io
 # from reportlab.pdfgen import canvas
 # from reportlab.lib.pagesizes import letter
+
+
+def jsondata(request):
+    return JsonResponse({
+        'data_for_1c': True
+    })
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
@@ -737,9 +743,9 @@ class OrderInOrdersPageView(TemplateView):
             document.add_paragraph('- осуществить передачу приобретенного ТС Заказчику.')
             document.add_paragraph('1.6. Для осуществления действий указанных в п.1.5. настоящего договора Поставщик заключает от своего имени необходимые договоры, в том числе агентские, подписывает необходимые документы, а также производит необходимые платежи.')
 
-            document.save('media/client_contract/demo.docx')
+            document.save('media/demo.docx')
 
-            file_path = 'media/client_contract/demo.docx'
+            file_path = 'media/demo.docx'
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as fh:
                     response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
@@ -791,9 +797,9 @@ class OrderInOrdersPageView(TemplateView):
                 row_cells = table.add_row().cells
                 row_cells[0].text = str(qty)
 
-            document.save('media/client_contract/demo.docx')
+            document.save('media/demo.docx')
 
-            file_path = 'media/client_contract/demo.docx'
+            file_path = 'media/demo.docx'
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as fh:
                     response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")

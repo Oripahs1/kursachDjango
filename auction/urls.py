@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
 
+    path("json/", views.jsondata, name="jsondata"),
+
     path('duties/', views.DutiesPageView.as_view(), name='duties'),
     path('duty_new/', views.DutyNewPageView.as_view(), name='duty_new'),
     path('duties/<int:duty_id>', views.DutyPageView.as_view(), name='duty'),
