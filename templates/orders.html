@@ -10,6 +10,7 @@
 
 {% block content %}
     {% include 'messages.html' %}
+
     <ul class="d-grid gap-2 col-8 mx-auto">
         <table class="table">
             <thead>
@@ -22,30 +23,24 @@
                 <th scope="col"></th>
             </tr>
             </thead>
-            <tbody>
-            {% for el in orders %}
-{#                class="table-warning"#}
-                {% if el.order_status == 'В работе' %}
-                <tr style="vertical-align: middle" class="table-success">
-                {% elif el.order_status == 'Ожидает отправки' %}
-                <tr style="vertical-align: middle" class="table-warning">
-                {% endif %}
-                    <th scope="row">{{ el.id_order }}</th>
-                    <td>{{ el.id_customer.first_name_client }} {{ el.id_customer.last_name_client }} {{ el.id_customer.patronymic_client }}</td>
-                    <td>{{ el.id_car.title }}</td>
-                    <td>{{ el.id_customer.telephone }}</td>
-                    <td>{{ el.date_start }}</td>
-                    <td>
-                        <a href="{{ el.get_absolute_url_order }}">
-                            <button style="width: 100px"
-                                    class="btn btn-outline-dark">
-                                Открыть
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
+
         </table>
     </ul>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#status').change(function() {
+                var status = $(this).val();
+
+                $.ajax({
+                    url: '{% url 'orders' %}',
+                    type: 'GET',
+                    data: { status: status },
+                    success: function(data) {
+                        $('#orders-table').html(data.html);
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock content %}

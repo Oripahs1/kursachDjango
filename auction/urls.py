@@ -58,7 +58,7 @@ urlpatterns = [
     path('transport_company_price/<int:price_id>', views.TransportCompanyPricePageView.as_view(),
          name='transport_company_price'),
 
-    # path('pdf_order/', views.edit_pdf, name='edit_pdf'),
+    # path('filter/', views.FilterView.as_view(), name='filter'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))

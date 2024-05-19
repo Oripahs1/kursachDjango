@@ -5,13 +5,15 @@ import django.http
 import docx
 from django.core.files import File
 import urllib.parse
+
+from django.db.models import Q
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 # import reportlab.lib.pagesizes
 from bs4 import BeautifulSoup
 import requests
 from django.http import HttpResponse
 from django.http import FileResponse
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView
 from django.shortcuts import render, redirect
 from openpyxl.reader.excel import load_workbook
 
@@ -114,6 +116,36 @@ class RegistrationPageView(TemplateView):
         else:
             form = RegistrationForm()
         return render(request, 'registration/registration.html', {'form': form})
+
+
+class GenreYear:
+    """Жанры и года выхода фильмов"""
+
+    def get_genres(self):
+        print(Order.objects.all().values('order_status'))
+        return Order.objects.all().values('order_status')
+
+    def get_years(self):
+        return Order.objects.all().values('order_status')
+
+
+# class FilterView(GenreYear, ListView):
+#     paginate_by = 5
+#
+#     def get_queryset(self):
+#         queryset = Order.objects.filter(
+#             Q(order_status__in=self.request.GET.getlist('genre'))
+#         ).distinct()
+#         print(queryset)
+#         return queryset
+#
+#     def get_context_data(self, *args, **kwargs):
+#         context = super().get_context_data(*args, **kwargs)
+#         context["year"] = ''.join([f"year={x}&" for x in self.request.GET.getlist("year")])
+#         context["genre"] = ''.join([f"genre={x}&" for x in self.request.GET.getlist("genre")])
+#         print(context)
+#         return context
+
 
 
 class TransportCompanyPricePageView(TemplateView):
@@ -805,7 +837,7 @@ class OrderInOrdersPageView(TemplateView):
         return render(request, 'orders.html', {"orders": orders})
 
 
-class OrdersPageView(TemplateView):
+class OrdersPageView(GenreYear, TemplateView):
     template_name = "orders.html"
 
     def get(self, request, *args, **kwargs):
