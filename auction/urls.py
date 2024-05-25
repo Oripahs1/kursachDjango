@@ -58,7 +58,10 @@ urlpatterns = [
     path('transport_company_price/<int:price_id>', views.TransportCompanyPricePageView.as_view(),
          name='transport_company_price'),
 
+    path('orders/ajax/', views.orders, name='orders'),
+    path('orders/ajax/<str:status>/', views.orders, name='orders_filter'),  # URL с параметром статуса
     # path('filter/', views.FilterView.as_view(), name='filter'),
+    path('search_orders/', views.search_orders, name='search_orders'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))

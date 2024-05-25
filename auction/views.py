@@ -5,7 +5,8 @@ import django.http
 import docx
 from django.core.files import File
 import urllib.parse
-
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 from django.db.models import Q
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 # import reportlab.lib.pagesizes
@@ -1486,4 +1487,45 @@ class BuhgalterNewInvoicePageView(TemplateView):
         return render(request, 'buhgalter/buhgalter.html', {'invoices': invoices})
 
 
+def orders(request):
+    status = request.GET.get('status')
+    print(status)
+    if status:
+        orders = Order.objects.filter(order_status=status)
+    else:
+        orders = Order.objects.all()
+
+    context = {
+        'orders': orders
+    }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Проверка AJAX-запроса через заголовок
+        html = render_to_string('order_table.html', context)
+        return JsonResponse({'html': html})
+
+    return render(request, 'orders.html', context)
+
+
+def search_orders(request):
+
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        full_name = request.GET.get('last_name')
+        print(full_name)
+        if full_name:
+            parts = full_name.split()
+            condition = Q()
+            for part in parts:
+                condition |= Q(id_customer__last_name_client__icontains=part) | \
+                             Q(id_customer__first_name_client__icontains=part) | \
+                             Q(id_customer__patronymic_client__icontains=part)
+            orders = Order.objects.filter(condition)
+        else:
+            orders = Order.objects.all()
+
+        print('ALO',orders)
+        context = {
+            'orders': orders
+        }
+        html = render_to_string('order_table.html', context)
+        return JsonResponse({'html': html})
 
