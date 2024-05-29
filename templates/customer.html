@@ -6,6 +6,7 @@
 {% block head %}
     <title>Новый заказ</title>
     <link rel="stylesheet" type="text/css" href="{% static 'order.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock head %}
 
 {% block content %}
@@ -32,7 +33,12 @@
             <div class="form_flex">
                 <div class="col-md-6 mb-2">
                     <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}</label>
-                    {{ form.date_of_birth }}
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-calendar"></i> <!-- Иконка календаря -->
+                        </span>
+                        {{ form.date_of_birth }}
+                    </div>
                 </div>
                 <div class="col-md-6 mb-2">
                     <label for="{{ form.place_of_birth.id_for_label }}">{{ form.place_of_birth.label }}</label>
@@ -84,4 +90,38 @@
             {% endif %}
         </form>
     </div>
+    <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Подключение flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
+    <script>
+        $(document).ready(function() {
+            // Инициализация маски для телефона с помощью IMask.js
+            var phoneMask = IMask(
+                document.getElementById('{{ form.telephone.id_for_label }}'), {
+                    mask: '+{7} (000) 000-00-00'
+                });
+
+            // Инициализация flatpickr для выбора даты
+            flatpickr("#{{ form.date_of_birth.id_for_label }}", {
+                dateFormat: "Y-m-d",
+                locale: "ru"  // Если нужна локализация на русский
+            });
+
+            var seriesMask = IMask(
+            document.getElementById('{{ form.passport_series.id_for_label }}'), {
+                mask: '0000' // Формат маски для серии
+            });
+
+            // Инициализация маски для номера паспорта с помощью IMask.js
+            var numberMask = IMask(
+                document.getElementById('{{ form.passport_number.id_for_label }}'), {
+                    mask: '000000' // Формат маски для номера
+                });
+            });
+    </script>
 {% endblock content %}

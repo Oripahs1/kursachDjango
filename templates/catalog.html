@@ -23,34 +23,96 @@
     </style>
 
     <body translate="no">
-    <ul class="cards">
-        {% for el in cars %}
-            <li>
-
-                <a href="{{ el.get_absolute_url_car }}" class="card">
-                    <img src="{{ el.image }}" class="card__image" alt="">
-                    <div class="card__overlay">
-                        <div class="card__header">
-
-
-                            <h3 class="card__title">{{ el.title }}</h3>
-
-
-                            <p class="car_option"><span>Кузов</span> {{ el.the_body }}</p>
-                            <p class="car_option"><span>Объем</span> {{ el.volume }}</p>
-                            <p class="car_option"><span>КПП</span> {{ el.cpp }}</p>
-                            <p class="car_option"><span>Год</span> {{ el.year_car }}</p>
-                            <p class="car_option"><span>Пробег</span><strong> {{ el.mileage }}</strong></p>
-                            <p class="car_option"><span>Оценка</span><strong> {{ el.estimation }}</strong></p>
-
-                            {#                                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores, blanditiis?</p>#}
-                            {#                                <p class="card__description"> <span></span> </p>#}
-
-                        </div>
+    <div class="container mt-8">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <form id="filter-form" class="mt-4">
+                <div class="form-group row mb-3">
+                    <label for="car_name" class="col-sm-2 col-form-label">Название машины:</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="car_name" name="car_name" class="form-control" placeholder="Введите название машины">
                     </div>
-                </a>
-            </li>
-        {% endfor %}
+                </div>
+                <div class="form-group row mb-3">
+                    <label for="engine_volume" class="col-sm-2 col-form-label">Объем двигателя:</label>
+                    <div class="col-sm-10">
+                        <input type="text" id="engine_volume" name="engine_volume" class="form-control" placeholder="Введите объем двигателя">
+                    </div>
+                </div>
+                <div class="form-group row mb-3">
+                    <label for="year" class="col-sm-2 col-form-label">Год выпуска:</label>
+                    <div class="col-sm-10">
+                        <input type="number" id="year" name="year" class="form-control" placeholder="Введите год выпуска">
+                    </div>
+                </div>
+               <div class="form-group row mb-3">
+                    <label class="col-sm-2 col-form-label">Оценка:</label>
+                    <div class="col-sm-10 d-flex align-items-center">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating1" name="rating" value="1">
+                            <label class="form-check-label" for="rating1">1</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating2" name="rating" value="2">
+                            <label class="form-check-label" for="rating2">2</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating3" name="rating" value="3">
+                            <label class="form-check-label" for="rating3">3</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating3.5" name="rating" value="3.5">
+                            <label class="form-check-label" for="rating3.5">3.5</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating4" name="rating" value="4">
+                            <label class="form-check-label" for="rating4">4</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating4.5" name="rating" value="4.5">
+                            <label class="form-check-label" for="rating4.5">4.5</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating5" name="rating" value="5">
+                            <label class="form-check-label" for="rating5">5</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="rating6" name="rating" value="6">
+                            <label class="form-check-label" for="rating6">6</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="ratingS" name="rating" value="S">
+                            <label class="form-check-label" for="ratingS">S</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="ratingR" name="rating" value="R">
+                            <label class="form-check-label" for="ratingR">R</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" id="ratingRA" name="rating" value="RA">
+                            <label class="form-check-label" for="ratingRA">RA</label>
+                        </div>
+                        <!-- Другие чекбоксы для оценки -->
+                    </div>
+                </div>
+                <div class="form-group row mb-3">
+                    <label for="mileage" class="col-sm-2 col-form-label">Пробег:</label>
+                    <div class="col-sm-10">
+                        <input type="number" id="mileage" name="mileage" class="form-control" placeholder="Введите пробег">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-12 text-center">
+                        <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
+                        <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <ul id="input-table" class="cards">
+        {% include 'catalog_table.html' %}
     </ul>
 
 
@@ -58,6 +120,48 @@
 
 
 
+<!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
 
+    <script>
+     $(document).ready(function() {
+    // Обработчик для отправки формы с фильтрами
+    $('#filter-form').submit(function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize(); // Сериализуем данные формы
+        $.ajax({
+            url: '/catalog/ajax/',
+            type: 'GET',
+            data: formData,
+            dataType: 'json',
+            success: function(data) {
+                $('#input-table').html(data.html);
+            },
+            error: function(xhr, status, error) {
+                console.log(xhr.responseText);
+            }
+        });
+    });
+
+            // Обработчик для отправки формы с фильтрами
+            $('#filter-form').submit(function(e) {
+                e.preventDefault();
+                // ваш код AJAX запроса для фильтрации
+            });
+
+            // Обработчик для кнопки "Сбросить фильтры"
+            $('#reset-btn').click(function() {
+                // Сбросить значения всех элементов формы
+                $('#filter-form')[0].reset();
+
+                 // Отправить форму
+                $('#filter-form').submit();
+
+            });
+        });
+
+    </script>
 {% endblock content %}
 

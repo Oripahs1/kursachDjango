@@ -1488,44 +1488,156 @@ class BuhgalterNewInvoicePageView(TemplateView):
 
 
 def orders(request):
-    status = request.GET.get('status')
-    print(status)
-    if status:
-        orders = Order.objects.filter(order_status=status)
-    else:
-        orders = Order.objects.all()
-
-    context = {
-        'orders': orders
-    }
-
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Проверка AJAX-запроса через заголовок
-        html = render_to_string('order_table.html', context)
-        return JsonResponse({'html': html})
-
-    return render(request, 'orders.html', context)
-
-
-def search_orders(request):
-
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Если это AJAX-запрос, обрабатываем его
+        status = request.GET.get('status')
         full_name = request.GET.get('last_name')
-        print(full_name)
+        orders = Order.objects.all()
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
+
+        if status:
+            # Фильтрация по статусу
+            orders = orders.filter(order_status=status)
+
         if full_name:
+            # Фильтрация по фамилии, имени или отчеству
             parts = full_name.split()
             condition = Q()
             for part in parts:
                 condition |= Q(id_customer__last_name_client__icontains=part) | \
                              Q(id_customer__first_name_client__icontains=part) | \
                              Q(id_customer__patronymic_client__icontains=part)
-            orders = Order.objects.filter(condition)
-        else:
-            orders = Order.objects.all()
+            orders = orders.filter(condition)
 
-        print('ALO',orders)
+        if start_date_str and end_date_str:
+            # Фильтрация заказов по дате
+            orders = orders.filter(date_start__range=[start_date_str, end_date_str])
+
         context = {
             'orders': orders
         }
         html = render_to_string('order_table.html', context)
         return JsonResponse({'html': html})
 
+    # Если это не AJAX-запрос, возвращаем страницу заказов целиком
+    orders = Order.objects.all()
+    context = {
+        'orders': orders
+    }
+    return render(request, 'orders.html', context)
+
+
+def customers(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Если это AJAX-запрос, обрабатываем его
+        phone = request.GET.get('phone')
+        full_name = request.GET.get('last_name')
+        customers = Customer.objects.all()
+        passport = request.GET.get('passport')
+
+        print(phone, full_name, passport)
+
+        if phone:
+            # Фильтрация по статусу
+            customers = customers.filter(telephone__icontains=phone)
+
+
+        if full_name:
+            # Фильтрация по фамилии, имени или отчеству
+            parts = full_name.split()
+            condition = Q()
+            for part in parts:
+                condition |= Q(last_name_client__icontains=part) | \
+                             Q(first_name_client__icontains=part) | \
+                             Q(patronymic_client__icontains=part)
+            customers = customers.filter(condition)
+
+        if passport:
+            parts = passport.split()
+            condition = Q()
+            for part in parts:
+                condition &= Q(passport_series__icontains=part) | Q(passport_number__icontains=part)
+            customers = customers.filter(condition)
+
+        context = {
+            'customers': customers
+        }
+        print(context)
+        html = render_to_string('customer_table.html', context)
+        return JsonResponse({'html': html})
+
+        # Если это не AJAX-запрос, возвращаем страницу заказов целиком
+    customers = Customer.objects.all()
+    context = {
+        'customers': customers
+    }
+    return render(request, 'customers.html', context)
+
+
+
+def transport_companies(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        name = request.GET.get('name', '')
+        transport_companies = TransportCompany.objects.all()
+
+        if name:
+            transport_companies = transport_companies.filter(title__icontains=name)
+
+        context = {
+            'transport_companies': transport_companies
+        }
+        html = render_to_string('transport_companies_table.html', context)
+        return JsonResponse({'html': html})
+
+    # Загружаем начальные данные при первой загрузке страницы
+    transport_companies = TransportCompany.objects.all()
+    print(transport_companies)
+    context = {
+        'transport_companies': transport_companies
+    }
+    return render(request, 'transport_companies.html', context)
+
+def catalog(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        carName = request.GET.get('car_name')
+        engine_volume = request.GET.get('engine_volume')
+        year = request.GET.get('year')
+        ratings = request.GET.getlist('rating')
+        mileage = request.GET.get('mileage')
+        car = Car.objects.all()
+        print('/', carName, '/', engine_volume, year, ratings, mileage)
+
+        if carName:
+            carName = carName.upper()
+            print('/',carName, '/', engine_volume, year, ratings, mileage)
+            car = car.filter(title__icontains=carName)
+
+        if engine_volume:
+            car = car.filter(volume=engine_volume)
+
+        if year:
+            car = car.filter(year_car=year)
+
+        if ratings:
+            car = car.filter(estimation__in=ratings)
+
+        if mileage:
+            car = car.filter(mileage=mileage)
+
+        for el in car:
+            el.image = PhotoCar.objects.filter(id_car=el.id_car)[:1][0].photo
+
+
+
+        context = {
+            'cars': car,
+        }
+        html = render_to_string('catalog_table.html', context)
+        return JsonResponse({'html': html})
+
+    cars = Car.objects.all()
+    context = {
+        'cars': cars
+    }
+    return render(request, 'transport_companies.html', context)

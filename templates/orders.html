@@ -10,47 +10,13 @@
 
 {% block content %}
     {% include 'messages.html' %}
-    <div class="container mt-5">
+    <div class="container mt-8">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h1 class="text-center mb-4">Поиск заказов</h1>
+        <div class="col-md-10">
             <form id="filter-form" class="mt-4">
-                <div class="form-group row">
-                    <label for="date" class="col-sm-2 col-form-label">Дата:</label>
-                    <div class="col-sm-10">
-                        <input type="date" name="date" id="date" class="form-control">
-                    </div>
-                </div>
-                <div class="form-group row justify-content-end">
-                    <div class="col-sm-12 text-center">
-                        <button type="submit" class="btn btn-primary">Применить фильтр</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-    <ul class="d-grid gap-2 col-8 mx-auto">
-        <div class="container mt-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <h2 class="text-center mb-4">Поиск заказов по ФИО</h2>
-                    <div class="input-group mb-3">
-                        <input type="text" id="last-name-input" class="form-control" placeholder="Введите фамилию">
-                        <div class="input-group-append">
-                            <button id="search-btn" class="btn btn-primary">Найти</button>
-                        </div>
-                    </div>
-                    <div id="search-results" class="list-group">
-                        <!-- Сюда будут выводиться результаты поиска -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        <form id="filter-form" class="mt-4">
-        <div class="form-group row">
+    <div class="form-group row mb-3">
         <label for="status" class="col-sm-2 col-form-label">Фильтр по статусу:</label>
-        <div class="col-sm-6">
+        <div class="col-sm-10">
             <select name="status" id="status" class="form-control">
                 <option value="">Все</option>
                 <option value="В работе">В работе</option>
@@ -58,68 +24,104 @@
                 <!-- Добавьте остальные статусы по вашему примеру -->
             </select>
         </div>
+    </div>
+    <div class="form-group row mb-3">
+        <label for="start_date" class="col-sm-2 col-form-label">Дата с:</label>
         <div class="col-sm-4">
-            <button type="submit" class="btn btn-primary">Применить фильтр</button>
+            <input type="date" id="start_date" name="start_date" class="form-control">
         </div>
-            </div>
-        </form>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">ФИО клиента</th>
-                    <th scope="col">Название машины</th>
-                    <th scope="col">Номер телефона клиента</th>
-                    <th scope="col">Дата</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody id="orders-table" >
-            {% include 'order_table.html' %}
-            </tbody>
-        </table>
+        <label for="end_date" class="col-sm-2 col-form-label">Дата по:</label>
+        <div class="col-sm-4">
+            <input type="date" id="end_date" name="end_date" class="form-control">
+        </div>
+    </div>
+    <div class="form-group row mb-3">
+        <label for="last_name" class="col-sm-2 col-form-label">Поиск по ФИО:</label>
+        <div class="col-sm-10">
+            <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Введите ФИО">
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-12 text-center">
+            <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
+            <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+        </div>
+    </div>
+</form>
+
+        </div>
+    </div>
+</div>
+    <ul class="d-grid gap-2 col-8 mx-auto">
+        <div class="container mt-5">
+
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">ФИО клиента</th>
+                        <th scope="col">Название машины</th>
+                        <th scope="col">Номер телефона клиента</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody id="orders-table" >
+                {% include 'order_table.html' %}
+                </tbody>
+            </table>
+        </div>
     </ul>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#filter-form').submit(function(e) {
-                e.preventDefault();
-                var status = $('#status').val();
-                console.log(status);
-                $.ajax({
-                    url: 'ajax/',  // Убедитесь, что это правильный URL для вашего представления
-                    type: 'GET',
-                    data: { status: status },
-                    success: function(data) {
-                        $('#orders-table').html(data.html);
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(xhr.responseText);
-                    }
-                });
+<script>
+    $(document).ready(function() {
+        $('#filter-form').submit(function(e) {
+            e.preventDefault();
+            var status = $('#status').val();
+            var lastName = $('#last_name').val();
+            var startDate = $('#start_date').val();
+            var endDate = $('#end_date').val();
+
+            $.ajax({
+                url: '/orders/ajax/',
+                type: 'GET',
+                data: {
+                    status: status,
+                    last_name: lastName,
+                    start_date: startDate,
+                    end_date: endDate
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#orders-table').html(data.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
             });
         });
-    </script>
-    <script>
-    $(document).ready(function(){
-    $('#search-btn').click(function(){
-        var lastName = $('#last-name-input').val();
+    });
 
-        $.ajax({
-            url: '/search_orders/',
-            type: 'GET',
-            data: {
-                'last_name': lastName
-            },
-            dataType: 'json',
-            success: function(data) {
-                        $('#orders-table').html(data.html);
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(xhr.responseText);
-                    }
-        });
+    $(document).ready(function() {
+    // Обработчик для кнопки "Сбросить фильтры"
+    $('#reset-btn').click(function() {
+        // Сбросить значения всех элементов формы
+        $('#status').val('');
+        $('#start_date').val('');
+        $('#end_date').val('');
+        $('#last_name').val('');
+
+        // Отправить форму
+        $('#filter-form').submit();
+    });
+
+    // Обработчик для отправки формы с фильтрами
+    $('#filter-form').submit(function(e) {
+        e.preventDefault();
+        // ваш код AJAX запроса для фильтрации
     });
 });
-    </script>
+</script>
 {% endblock content %}

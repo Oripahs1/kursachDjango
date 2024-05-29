@@ -1,5 +1,3 @@
-
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -10,12 +8,33 @@
 
 {% block content %}
     {% include 'messages.html' %}
+    <div class="container mt-8">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <form id="filter-form" class="mt-4">
+                    <div class="form-group row mb-3">
+                        <label for="last_name" class="col-sm-4 col-form-label">Поиск по названию:</label>
+                        <div class="col-sm-8">
+                            <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Введите название">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-center">
+                            <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
+                            <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "transport_company_new" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Добавить транспортную компанию</button>
         </a>
     </div>
-    <ul class="d-grid gap-2 col-8 mx-auto">
+    <div class="d-grid gap-2 col-8 mx-auto">
         <table class="table table-striped">
             <thead>
             <tr>
@@ -24,23 +43,46 @@
                 <th scope="col"></th>
             </tr>
             </thead>
-            <tbody>
-            {% for el in transport_companies %}
-                <tr style="vertical-align: middle">
-                    <th scope="row">{{ el.id }}</th>
-                    <td>{{ el.title }}</td>
-                    <td>
-
-                        <a href="{{ el.get_absolute_url_transport_company }}">
-                            <button style="width: 100px"
-                                    class="btn btn-outline-dark">
-                                Открыть
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
+            <tbody id="input-table">
+                {% include 'transport_companies_table.html' %}
             </tbody>
         </table>
-    </ul>
+    </div>
+    <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Обработчик для отправки формы с фильтрами
+            $('#filter-form').submit(function(e) {
+                e.preventDefault();
+                var name = $('#last_name').val();
+
+                $.ajax({
+                    url: '/transport_companies/ajax/',
+                    type: 'GET',
+                    data: {
+                        name: name,
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#input-table').html(data.html);
+                    },
+                    error: function(xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            // Обработчик для кнопки "Сбросить фильтры"
+            $('#reset-btn').click(function() {
+                // Сбросить значения всех элементов формы
+                $('#filter-form')[0].reset();
+                // Отправить форму
+                $('#filter-form').submit();
+            });
+        });
+    </script>
 {% endblock content %}
