@@ -1,0 +1,27 @@
+{% for el in cars %}
+            <li>
+
+                <a href="{{ el.get_absolute_url_car }}" class="card">
+                    <img src="{{ el.image }}" class="card__image" alt="">
+                    <div class="card__overlay">
+                        <div class="card__header">
+
+
+                            <h3 class="card__title">{{ el.title }}</h3>
+
+
+                            <p class="car_option"><span>Кузов</span> {{ el.the_body }}</p>
+                            <p class="car_option"><span>Объем</span> {{ el.volume }}</p>
+                            <p class="car_option"><span>КПП</span> {{ el.cpp }}</p>
+                            <p class="car_option"><span>Год</span> {{ el.year_car }}</p>
+                            <p class="car_option"><span>Пробег</span><strong> {{ el.mileage }}</strong></p>
+                            <p class="car_option"><span>Оценка</span><strong> {{ el.estimation }}</strong></p>
+
+                            {#                                <p class="card__description">Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores, blanditiis?</p>#}
+                            {#                                <p class="card__description"> <span></span> </p>#}
+
+                        </div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}

@@ -84,3 +84,17 @@
 .form_disable_checkbox input[type='checkbox']{
     display: none;
 }
+
+
+ .input-group-text::after {
+        content: "\f073"; /* Unicode для иконки календаря */
+        font-family: "Font Awesome 5 Free";
+        font-weight: 900;
+        font-size: 1.25rem;
+        color: #6c757d; /* Цвет иконки */
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+        z-index: 1;
+    }
