@@ -1,0 +1,19 @@
+{% for el in duties %}
+    <tr style="vertical-align: middle">
+        <th scope="row">{{ el.id }}</th>
+        <td>{{ el.date_of_action|date:"d.m.Y" }}</td>
+        <td>{{ el.volume_first }}</td>
+        <td>{{ el.volume_last }}</td>
+        <td>{{ el.coefficient_less_3 }}</td>
+        <td>{{ el.coefficient_more_3 }}</td>
+        <td>
+
+            <a href="{{ el.get_absolute_url_duty }}">
+                <button style="width: 100px"
+                        class="btn btn-outline-dark">
+                    Открыть
+                </button>
+            </a>
+        </td>
+    </tr>
+{% endfor %}

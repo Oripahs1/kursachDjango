@@ -5,6 +5,8 @@ import django.http
 import docx
 from django.core.files import File
 import urllib.parse
+from django.db.models import Max
+from django.db.models.functions import TruncDate
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.db.models import Q
@@ -1637,11 +1639,83 @@ def catalog(request):
         return JsonResponse({'html': html})
 
     cars = Car.objects.all()
-
     for car in cars:
         car.image = PhotoCar.objects.filter(id_car=car.id_car)[:1][0].photo
-
     context = {
         'cars': cars
     }
     return render(request, 'catalog.html', context)
+
+def duties(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        start_date = request.GET.get('start_date')
+
+        all_dates = Duty.objects.values_list('date_of_action', flat=True).distinct()
+
+        # Преобразуем QuerySet в список дат
+        unique_dates_list = list(all_dates)
+
+        # Убираем None из списка, если есть
+        unique_dates_list = [date for date in unique_dates_list if date is not None]
+
+        # Сортируем даты по возрастанию
+        unique_dates_list.sort()
+
+        duties = Duty.objects.all()
+        if start_date:
+            # Найти последнюю дату пошлины, которая меньше или равна указанной дате
+            latest_date = Duty.objects.filter(date_of_action__lte=start_date).aggregate(Max('date_of_action'))['date_of_action__max']
+            if latest_date:
+                duties = duties.filter(date_of_action=latest_date)
+        print(duties)
+        context = {
+            'duties': duties
+        }
+        html = render_to_string('duties_table.html', context)
+        return JsonResponse({'html': html})
+
+    duties = Duty.objects.all()
+    context = {
+        'duties': duties
+    }
+    return render(request, 'duties.html', context)
+
+
+def customs_dutys(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        start_date = request.GET.get('start_date')
+        typeof = request.GET.get('status')
+        print(typeof)
+        all_dates = CustomsDuty.objects.values_list('date_of_action', flat=True).distinct()
+
+        # Преобразуем QuerySet в список дат
+        unique_dates_list = list(all_dates)
+
+        # Убираем None из списка, если есть
+        unique_dates_list = [date for date in unique_dates_list if date is not None]
+
+        # Сортируем даты по возрастанию
+        unique_dates_list.sort()
+
+        customs_dutys = CustomsDuty.objects.all()
+        if start_date:
+            # Найти последнюю дату пошлины, которая меньше или равна указанной дате
+            latest_date = CustomsDuty.objects.filter(date_of_action__lte=start_date).aggregate(Max('date_of_action'))['date_of_action__max']
+            if latest_date:
+                customs_dutys = customs_dutys.filter(date_of_action=latest_date)
+            else:
+                customs_dutys = CustomsDuty.objects.none()  # Если нет подходящей даты, возвращаем пустой QuerySet
+
+        if typeof:
+            customs_dutys = customs_dutys.filter(type=typeof)
+        context = {
+            'customs_dutys': customs_dutys
+        }
+        html = render_to_string('customs_dutys_table.html', context)
+        return JsonResponse({'html': html})
+
+    customs_dutys = CustomsDuty.objects.all()
+    context = {
+        'customs_dutys': customs_dutys
+    }
+    return render(request, 'customs_dutys.html', context)

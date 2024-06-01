@@ -295,6 +295,8 @@ class NewInvoiceForm(forms.Form):
 class DutyForm(forms.Form):
     volume_first = forms.DecimalField(label='Объем двигателя от', decimal_places=2, max_digits=5,
                                       widget=forms.NumberInput(attrs={'class': 'form-control'}))
+    date_of_action = forms.DateField(label='Действует от', widget=forms.DateInput(
+                                    attrs={'class': 'form-control'}))
     volume_last = forms.DecimalField(label='Объем двигателя до', decimal_places=2, max_digits=5,
                                      widget=forms.NumberInput(attrs={'class': 'form-control'}))
     coefficient_less_3 = forms.DecimalField(label='До 3 лет', decimal_places=2, max_digits=5,
@@ -304,6 +306,7 @@ class DutyForm(forms.Form):
 
     def save(self):
         Duty.objects.create(
+            date_of_action=self.cleaned_data['date_of_action'],
             volume_first=self.cleaned_data['volume_first'],
             volume_last=self.cleaned_data['volume_last'],
             coefficient_less_3=self.cleaned_data['coefficient_less_3'],
@@ -313,6 +316,7 @@ class DutyForm(forms.Form):
     def update(self, duty_id):
         duty = Duty.objects.filter(pk=duty_id)
         duty.update(
+            date_of_action=self.cleaned_data['date_of_action'],
             volume_first=self.cleaned_data['volume_first'],
             volume_last=self.cleaned_data['volume_last'],
             coefficient_less_3=self.cleaned_data['coefficient_less_3'],
@@ -349,6 +353,8 @@ class PriceForm(forms.Form):
 class CustomsDutyForm(forms.Form):
     type = forms.ChoiceField(label='Возраст машины', choices=CustomsDuty.TYPE_CHOICE,
                              widget=forms.Select(attrs={'class': 'custom-select'}))
+    date_of_action = forms.DateField(label='Действует от', widget=forms.DateInput(
+        attrs={'class': 'form-control'}))
     value_first = forms.IntegerField(label='От значения',
                                      widget=forms.NumberInput(attrs={'class': 'form-control'}), required=False)
     value_last = forms.IntegerField(label='До Значения',
@@ -358,6 +364,7 @@ class CustomsDutyForm(forms.Form):
 
     def save(self):
         CustomsDuty.objects.create(
+            date_of_action=self.cleaned_data['date_of_action'],
             type=self.cleaned_data['type'],
             value_first=self.cleaned_data['value_first'],
             value_last=self.cleaned_data['value_last'],
@@ -367,6 +374,7 @@ class CustomsDutyForm(forms.Form):
     def update(self, customs_duty_id):
         customs_duty = CustomsDuty.objects.filter(pk=customs_duty_id)
         customs_duty.update(
+            date_of_action=self.cleaned_data['date_of_action'],
             type=self.cleaned_data['type'],
             value_first=self.cleaned_data['value_first'],
             value_last=self.cleaned_data['value_last'],
