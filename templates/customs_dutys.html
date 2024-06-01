@@ -10,6 +10,38 @@
 
 {% block content %}
     {% include 'messages.html' %}
+     <div class="container mt-8">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <form id="filter-form" class="mt-4">
+                     <div class="form-group row mb-3">
+                        <label for="start_date" class="col-sm-3 col-form-label">Поиск по дате действия:</label>
+                        <div class="col-sm-9">
+                            <input type="date" id="start_date" name="start_date" class="form-control">
+                        </div>
+                    </div>
+                     <div class="form-group row mb-3">
+                        <label for="status" class="col-sm-3 col-form-label">Возраст машины:</label>
+                        <div class="col-sm-9">
+                            <select name="status" id="status" class="form-control">
+                                <option value="">Все</option>
+                                <option value="От 0 до 3 лет">От 0 до 3 лет</option>
+                                <option value="От 3 до 5 лет">От 3 до 5 лет</option>
+                                <option value="От 5 лет">От 5 лет</option>
+                                <!-- Добавьте остальные статусы по вашему примеру -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-center">
+                            <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
+                            <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "customs_duty_new" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Новый диапазон</button>
@@ -20,6 +52,7 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
+                <th scope="col">Действует с</th>
                 <th scope="col">Возраст машины</th>
                 <th scope="col">От значения</th>
                 <th scope="col">До Значения</th>
@@ -27,26 +60,63 @@
                 <th scope="col"></th>
             </tr>
             </thead>
-            <tbody>
-            {% for el in customs_dutys %}
-                <tr style="vertical-align: middle">
-                    <th scope="row">{{ el.id }}</th>
-                    <td>{{ el.type }}</td>
-                    <td>{{ el.value_first }}</td>
-                    <td>{{ el.value_last }}</td>
-                    <td>{{ el.bet }}</td>
-                    <td>
-
-                        <a href="{{ el.get_absolute_url_customs_duty }}">
-                            <button style="width: 100px"
-                                    class="btn btn-outline-dark">
-                                Открыть
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
+            <tbody id="input-table">
+            {% include 'customs_dutys_table.html' %}
             </tbody>
         </table>
     </ul>
+
+     <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Подключение flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+     $(document).ready(function() {
+            $('#filter-form').submit(function(e) {
+            e.preventDefault();
+            var start_date = $('#start_date').val();
+            var status = $('#status').val()
+
+
+            $.ajax({
+                url: '/customs_dutys/ajax/',
+                type: 'GET',
+                data: {
+                    start_date: start_date,
+                    status: status,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#input-table').html(data.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+            // Обработчик для отправки формы с фильтрами
+            $('#filter-form').submit(function(e) {
+                e.preventDefault();
+                // ваш код AJAX запроса для фильтрации
+            });
+
+            // Обработчик для кнопки "Сбросить фильтры"
+            $('#reset-btn').click(function() {
+                // Сбросить значения всех элементов формы
+                $('#filter-form')[0].reset();
+
+                 // Отправить форму
+                $('#filter-form').submit();
+
+            });
+             flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            locale: "ru"  // Если нужна локализация на русский
+            });
+        });
+
+    </script>
 {% endblock content %}

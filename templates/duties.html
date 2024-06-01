@@ -6,10 +6,31 @@
 {% block head %}
     <title>Заказы</title>
     <link rel="stylesheet" type="text/css" href="{% static 'orders.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock head %}
 
 {% block content %}
     {% include 'messages.html' %}
+    <div class="container mt-8">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <form id="filter-form" class="mt-4">
+                     <div class="form-group row mb-3">
+                        <label for="start_date" class="col-sm-3 col-form-label">Поиск по дате действия:</label>
+                        <div class="col-sm-9">
+                            <input type="date" id="start_date" name="start_date" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-12 text-center">
+                            <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
+                            <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div style="text-align: center; margin-top: 15px">
         <a href="{% url "duty_new" %}">
             <button style="width: 300px" class="btn btn-outline-dark">Новый диапазон</button>
@@ -20,6 +41,7 @@
             <thead>
             <tr>
                 <th scope="col">#</th>
+                <th scope="col">Действует от</th>
                 <th scope="col">Объем двигателя от</th>
                 <th scope="col">Объем двигателя до</th>
                 <th scope="col">До 3 лет</th>
@@ -27,26 +49,61 @@
                 <th scope="col"></th>
             </tr>
             </thead>
-            <tbody>
-            {% for el in duties %}
-                <tr style="vertical-align: middle">
-                    <th scope="row">{{ el.id }}</th>
-                    <td>{{ el.volume_first }}</td>
-                    <td>{{ el.volume_last }}</td>
-                    <td>{{ el.coefficient_less_3 }}</td>
-                    <td>{{ el.coefficient_more_3 }}</td>
-                    <td>
-
-                        <a href="{{ el.get_absolute_url_duty }}">
-                            <button style="width: 100px"
-                                    class="btn btn-outline-dark">
-                                Открыть
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-            {% endfor %}
+            <tbody id="input-table">
+            {% include 'duties_table.html' %}
             </tbody>
         </table>
     </ul>
+
+    <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Подключение flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+     $(document).ready(function() {
+            $('#filter-form').submit(function(e) {
+            e.preventDefault();
+            var start_date = $('#start_date').val();
+
+
+            $.ajax({
+                url: '/duties/ajax/',
+                type: 'GET',
+                data: {
+                    start_date: start_date,
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#input-table').html(data.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+            // Обработчик для отправки формы с фильтрами
+            $('#filter-form').submit(function(e) {
+                e.preventDefault();
+                // ваш код AJAX запроса для фильтрации
+            });
+
+            // Обработчик для кнопки "Сбросить фильтры"
+            $('#reset-btn').click(function() {
+                // Сбросить значения всех элементов формы
+                $('#filter-form')[0].reset();
+
+                 // Отправить форму
+                $('#filter-form').submit();
+
+            });
+             flatpickr("#start_date", {
+            dateFormat: "Y-m-d",
+            locale: "ru"  // Если нужна локализация на русский
+            });
+        });
+
+    </script>
 {% endblock content %}

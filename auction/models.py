@@ -53,6 +53,7 @@ class Trans(models.Model):
 
 
 class Duty(models.Model):
+    date_of_action = models.DateField(null=True, blank=True)
     volume_first = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     volume_last = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     coefficient_less_3 = models.DecimalField(max_digits=5, decimal_places=2)
@@ -72,6 +73,7 @@ class Price(models.Model):
 
 
 class Excise(models.Model):
+    date_of_action = models.DateField(null=True, blank=True)
     power_first_car = models.IntegerField(null=True, blank=True)
     power_last_car = models.IntegerField(null=True, blank=True)
     bet = models.IntegerField(null=True, blank=True)
@@ -107,6 +109,7 @@ class CustomsDuty(models.Model):
         (from_5, 'От 5 лет'),
     ]
     #     job_title = models.TextField(choices=JOB_CHOICE)
+    date_of_action = models.DateField(null=True, blank=True)
     type = models.TextField(choices=TYPE_CHOICE)
     value_first = models.IntegerField(null=True, blank=True)
     value_last = models.IntegerField(null=True, blank=True)
