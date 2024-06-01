@@ -1637,7 +1637,11 @@ def catalog(request):
         return JsonResponse({'html': html})
 
     cars = Car.objects.all()
+
+    for car in cars:
+        car.image = PhotoCar.objects.filter(id_car=car.id_car)[:1][0].photo
+
     context = {
         'cars': cars
     }
-    return render(request, 'transport_companies.html', context)
+    return render(request, 'catalog.html', context)
