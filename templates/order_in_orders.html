@@ -40,7 +40,7 @@
                     {{ form.date_start }}
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label for="{{ form.date_end.id_for_label }}">{{ form.date_end.label }}</label>
+                    <label for="id_date_end">{{ form.date_end.label }}</label>
                     {{ form.date_end }}
                 </div>
             </div>
@@ -123,4 +123,20 @@
 
         </form>
     </div>
+    <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Подключение flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+     <script>
+    $(document).ready(function() {
+        // Инициализация flatpickr для выбора даты
+        flatpickr("#id_date_end", {
+            dateFormat: "Y-m-d",
+            locale: "ru"  // Если нужна локализация на русский
+        });
+    });
+    </script>
 {% endblock content %}

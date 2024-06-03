@@ -383,6 +383,8 @@ class CustomsDutyForm(forms.Form):
 
 
 class ExciseForm(forms.Form):
+    date_of_action = forms.DateField(label='Действует от', widget=forms.DateInput(
+        attrs={'class': 'form-control'}))
     power_first_car = forms.IntegerField(label='Мощность двигателя от',
                                          widget=forms.NumberInput(attrs={'class': 'form-control'}))
     power_last_car = forms.IntegerField(label='Мощность двигателя до',
@@ -392,6 +394,7 @@ class ExciseForm(forms.Form):
 
     def save(self):
         Excise.objects.create(
+            date_of_action=self.cleaned_data['date_of_action'],
             power_first_car=self.cleaned_data['power_first_car'],
             power_last_car=self.cleaned_data['power_last_car'],
             bet=self.cleaned_data['bet'],
@@ -400,6 +403,7 @@ class ExciseForm(forms.Form):
     def update(self, excise_id):
         excise = Excise.objects.filter(pk=excise_id)
         excise.update(
+            date_of_action=self.cleaned_data['date_of_action'],
             power_first_car=self.cleaned_data['power_first_car'],
             power_last_car=self.cleaned_data['power_last_car'],
             bet=self.cleaned_data['bet'],

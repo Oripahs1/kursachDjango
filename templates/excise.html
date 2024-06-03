@@ -29,10 +29,31 @@
                     {{ form.bet }}
                 </div>
             </div>
+            <div class="form-group row mb-3">
+                <label for="id_date_of_action" class="col-sm-2 col-form-label">{{ form.date_of_action.label }}</label>
+                <div class="col-sm-10">
+                    {{ form.date_of_action }}
+                </div>
+            </div>
             <div class="bd-example bd-example-position-examples d-flex justify-content-around">
                 <input type="submit" name="calculate_price" class="btn btn-outline-dark position-relative" value="Сохранить"/>
             </div>
         </form>
     </div>
+    <!-- Подключение jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
+    <!-- Подключение flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+     <script>
+    $(document).ready(function() {
+        // Инициализация flatpickr для выбора даты
+        flatpickr("#id_date_of_action", {
+            dateFormat: "Y-m-d",
+            locale: "ru"  // Если нужна локализация на русский
+        });
+    });
+    </script>
 {% endblock content %}

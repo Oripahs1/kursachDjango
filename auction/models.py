@@ -136,6 +136,14 @@ class Order(models.Model):
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
 
+    NEED = 'Нужна доставка'
+    NO_NEED = 'Доставка не требуется'
+
+    NEEDS_DELIVERY = [
+        (NEED, 'Нужна доставка'),
+        (NO_NEED, 'Доставка не требуется'),
+    ]
+
     AT_WORK = 'В работе'
     NOT_PREPAID = 'Не предоплачен'
     PREPAID = 'Предоплачен'
@@ -163,6 +171,7 @@ class Order(models.Model):
         (ON_THE_WAY_INTO_RF, 'В пути по РФ'),
         (COMPLETED, 'Выполнен'),
     ]
+    delivery = models.TextField(choices=NEEDS_DELIVERY)
     order_status = models.TextField(choices=ORDER_STATUS)
 
     def get_absolute_url_order(self):

@@ -327,6 +327,7 @@ class CustomsDutyPageView(TemplateView):
         form.fields['value_first'].initial = customs_duty.value_first
         form.fields['value_last'].initial = customs_duty.value_last
         form.fields['bet'].initial = customs_duty.bet
+        form.fields['date_of_action'].initial = customs_duty.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -385,6 +386,7 @@ class ExcisePageView(TemplateView):
         form.fields['power_first_car'].initial = excise.power_first_car
         form.fields['power_last_car'].initial = excise.power_last_car
         form.fields['bet'].initial = excise.bet
+        form.fields['date_of_action'].initial = excise.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -504,6 +506,7 @@ class DutyPageView(TemplateView):
         form.fields['volume_last'].initial = duty.volume_last
         form.fields['coefficient_less_3'].initial = duty.coefficient_less_3
         form.fields['coefficient_more_3'].initial = duty.coefficient_more_3
+        form.fields['date_of_action'].initial = duty.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -1719,3 +1722,41 @@ def customs_dutys(request):
         'customs_dutys': customs_dutys
     }
     return render(request, 'customs_dutys.html', context)
+
+
+def excises(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        start_date = request.GET.get('start_date')
+
+        all_dates = Excise.objects.values_list('date_of_action', flat=True).distinct()
+
+        # Преобразуем QuerySet в список дат
+        unique_dates_list = list(all_dates)
+
+        # Убираем None из списка, если есть
+        unique_dates_list = [date for date in unique_dates_list if date is not None]
+
+        # Сортируем даты по возрастанию
+        unique_dates_list.sort()
+
+        excises = Excise.objects.all()
+        if start_date:
+            # Найти последнюю дату акциза, которая меньше или равна указанной дате
+            latest_date = Excise.objects.filter(date_of_action__lte=start_date).aggregate(Max('date_of_action'))['date_of_action__max']
+            if latest_date:
+                excises = excises.filter(date_of_action=latest_date)
+            else:
+                excises = Excise.objects.none()  # Если нет подходящей даты, возвращаем пустой QuerySet
+
+        context = {
+            'excises': excises
+        }
+        print(excises)
+        html = render_to_string('excises_table.html', context)
+        return JsonResponse({'html': html})
+
+    excises = Excise.objects.all()
+    context = {
+        'excises': excises
+    }
+    return render(request, 'excises.html', context)

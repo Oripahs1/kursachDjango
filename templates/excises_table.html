@@ -1,0 +1,21 @@
+{% if excises.exists %}
+    {% for el in excises %}
+        <tr style="vertical-align: middle">
+            <th scope="row">{{ el.id }}</th>
+            <td>{{ el.date_of_action|date:"d.m.Y" }}</td>
+            <td>{{ el.power_first_car }}</td>
+            <td>{{ el.power_last_car }}</td>
+            <td>{{ el.bet }} р.</td>
+            <td>
+                <a href="{{ el.get_absolute_url_excise }}">
+                    <button style="width: 100px" class="btn btn-outline-dark">Открыть</button>
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+
+{% else %}
+    <tr>
+        <td colspan="5" class="text-center">Нет данных для отображения</td>
+    </tr>
+{% endif %}
