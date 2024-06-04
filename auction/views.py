@@ -861,6 +861,11 @@ class OrdersPageView(GenreYear, TemplateView):
             orders = Order.objects.all()
         return render(request, 'orders.html', {'orders': orders})
 
+    def post(self, request, *args, **kwargs):
+        print('Моя попытка номер 5')
+        if request.method == 'POST' and 'auc_doc_btn' in request.POST:
+            print('Пытаемся печатать')
+
 
 class OrderPageView(TemplateView):
     template_name = "order.html"

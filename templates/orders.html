@@ -42,9 +42,14 @@
         </div>
     </div>
     <div class="form-group row">
-        <div class="col-sm-12 text-center">
+        <div class="col-sm-12 text-center mb-3">
             <button type="submit" id="search-btn" class="btn btn-primary">Применить фильтр</button>
             <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
+
+        </div>
+        <div class="col-sm-12 text-center ">
+            <button type="button" id="auc_doc" class="btn btn-info">Сформировать список для аукциона</button>
+
         </div>
     </div>
 </form>
@@ -92,6 +97,28 @@
                     last_name: lastName,
                     start_date: startDate,
                     end_date: endDate
+                },
+                dataType: 'json',
+                success: function(data) {
+                    $('#orders-table').html(data.html);
+                },
+                error: function(xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+    });
+
+    $(document).ready(function() {
+        $('#auc-doc-btn').click(function() {
+            e.preventDefault();
+            var auc_doc_btn = $('#auc_doc').val();
+
+            $.ajax({
+                url: '/orders/ajax/',
+                type: 'GET',
+                data: {
+                    auc_doc_btn: auc_doc_btn,
                 },
                 dataType: 'json',
                 success: function(data) {
