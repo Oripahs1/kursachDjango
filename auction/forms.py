@@ -116,6 +116,14 @@ class RegistrationForm(forms.ModelForm):
 
 class OrderForm(forms.Form):
     customer = forms.ModelChoiceField(label='Клиент', queryset=Customer.objects.all(), widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    delivery = forms.ChoiceField(label='Доставка', choices=Order.NEEDS_DELIVERY,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
+    city = forms.ChoiceField(
+        label='Доставка',
+        choices=[(place, f"{place} - {price} руб.") for place, price in
+                 TransportCompanyPrice.objects.values_list('place', 'price').distinct()],
+        widget=forms.Select(attrs={'class': 'custom-select'})
+    )
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
     # worker = forms.ModelChoiceField(label='Сотрудник',
     #                                 queryset=Worker.objects.filter(is_superuser=False, job_title='Менеджер'),
@@ -131,6 +139,8 @@ class OrderForm(forms.Form):
         car = Car.objects.get(pk=self.cleaned_data['id_car'])
 
         Order.objects.create(
+            city=self.cleaned_data['city'],
+            delivery=self.cleaned_data['delivery'],
             id_customer=self.cleaned_data['customer'],
             id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,

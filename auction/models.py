@@ -135,6 +135,7 @@ class Order(models.Model):
     contract = models.FileField(null=True, upload_to='client_contract/', blank=True)
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+    city = models.TextField(null=True, blank=True)
 
     NEED = 'Нужна доставка'
     NO_NEED = 'Доставка не требуется'
@@ -173,6 +174,8 @@ class Order(models.Model):
     ]
     delivery = models.TextField(choices=NEEDS_DELIVERY)
     order_status = models.TextField(choices=ORDER_STATUS)
+
+
 
     def get_absolute_url_order(self):
         return reverse('order_in_orders', kwargs={'order_id': self.pk})
@@ -307,12 +310,14 @@ class Worker(AbstractUser):
     HR = 'HR'
     ACCOUNTANT = 'Бухгалтер'
     OPERATIVNIK = 'Оперативник'
+    CUSTOMER = 'Клиент'
     JOB_CHOICE = [
         (MANAGER, 'Менеджер'),
         (LOGIST, 'Логист'),
         (HR, 'HR'),
         (ACCOUNTANT, 'Бухгалтер'),
-        (OPERATIVNIK, 'Оперативник')
+        (OPERATIVNIK, 'Оперативник'),
+        (CUSTOMER, 'Клиент'),
     ]
 
     full_name = models.TextField()

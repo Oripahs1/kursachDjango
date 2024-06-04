@@ -572,6 +572,8 @@ class WorkersCardPageView(TemplateView):
                 form.update()
                 messages.success(request, "Данные обновлены")
             else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
                 messages.error(request, "Некорректная форма")
 
         else:
@@ -853,6 +855,8 @@ class OrdersPageView(GenreYear, TemplateView):
             orders = Order.objects.filter(date_end=None, id_worker=user_id)
         elif user.job_title == 'Оперативник':
             orders = Order.objects.all()
+        elif user.job_title == 'Клиент':
+            orders = Order.objects.filter(date_end=None, id_worker=user_id)
         else:
             orders = Order.objects.all()
         return render(request, 'orders.html', {'orders': orders})
@@ -862,8 +866,10 @@ class OrderPageView(TemplateView):
     template_name = "order.html"
 
     def get(self, request, *args, **kwargs):
+        print(TransportCompanyPrice.objects.values_list('place', flat=True).distinct())
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         form = OrderForm()
+
         photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
         form.fields['id_car'].widget.attrs.update({'value': car.id_car})
         user_name = Worker.objects.filter(id=request.user.id)[0]
@@ -1493,6 +1499,9 @@ class BuhgalterNewInvoicePageView(TemplateView):
 
 
 def orders(request):
+    user_id = request.user.id
+    user = Worker.objects.get(pk=user_id)
+    user_passport = user.passport.split()
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Если это AJAX-запрос, обрабатываем его
         status = request.GET.get('status')
@@ -1519,6 +1528,9 @@ def orders(request):
             # Фильтрация заказов по дате
             orders = orders.filter(date_start__range=[start_date_str, end_date_str])
 
+
+        if user.job_title == 'Клиент':
+            orders = Order.objects.filter(id_customer__passport_number=user_passport[1], id_customer__passport_series=user_passport[0])
         context = {
             'orders': orders
         }
@@ -1527,6 +1539,9 @@ def orders(request):
 
     # Если это не AJAX-запрос, возвращаем страницу заказов целиком
     orders = Order.objects.all()
+    if user.job_title == 'Клиент':
+        orders = Order.objects.filter(id_customer__passport_number=user_passport[1],
+                                      id_customer__passport_series=user_passport[0])
     context = {
         'orders': orders
     }

@@ -42,6 +42,10 @@
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
                         </li>
+                    {% elif user.job_title == 'Клиент' %}
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'orders' %}">Мой заказ</a>
+                        </li>
                     {% elif user.job_title == 'HR' %}
                         <li class="nav-item">
                             <a class="nav-link active" href="{% url 'workers' %}">Сотрудники</a>

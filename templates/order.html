@@ -77,6 +77,22 @@
                     </div>
                 </div>
             </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.delivery.id_for_label }}">{{ form.delivery.label }}</label>
+                    <div class="input-group">
+                        {{ form.delivery }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex" id="city-selection">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                    <div class="input-group">
+                        {{ form.city }}
+                    </div>
+                </div>
+            </div>
 
             <div class="form_flex mb-3">
                 <div class="col-md-9 mb-1">
@@ -98,4 +114,23 @@
             </div>
         </form>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deliverySelect = document.getElementById('id_delivery');
+        var citySelection = document.getElementById('city-selection');
+
+        function toggleCitySelection() {
+            if (deliverySelect.value === 'Нужна доставка') {
+                citySelection.style.display = 'block';
+            } else {
+                citySelection.style.display = 'none';
+            }
+        }
+
+        deliverySelect.addEventListener('change', toggleCitySelection);
+
+        // Проверка при загрузке страницы
+        toggleCitySelection();
+    });
+    </script>
 {% endblock content %}
