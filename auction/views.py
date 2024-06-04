@@ -845,7 +845,7 @@ class OrderInOrdersPageView(TemplateView):
         return render(request, 'orders.html', {"orders": orders})
 
 
-class OrdersPageView(GenreYear, TemplateView):
+class OrdersPageView(TemplateView):
     template_name = "orders.html"
 
     def get(self, request, *args, **kwargs):
@@ -862,9 +862,11 @@ class OrdersPageView(GenreYear, TemplateView):
         return render(request, 'orders.html', {'orders': orders})
 
     def post(self, request, *args, **kwargs):
-        print('Моя попытка номер 5')
-        if request.method == 'POST' and 'auc_doc_btn' in request.POST:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'auc_doc_btn' in request.POST:
             print('Пытаемся печатать')
+            response_data = {'message': 'Запрос успешно обработан'}
+            return JsonResponse(response_data)
+        return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 
 class OrderPageView(TemplateView):
