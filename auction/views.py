@@ -911,6 +911,71 @@ class OrdersPageView(TemplateView):
                 file_url = f'/media/client_contract/demo.docx'
                 return JsonResponse({'file_url': file_url})
 
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'trans_btn' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            styles['Heading 2'].font.color.rgb = RGBColor(0, 0, 0)
+
+            today_date = datetime.datetime.now().strftime('%d.%m.%Y')
+
+            heading_text = f'ЗАЯВКА ОТ {today_date}г.'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            heading_text = f'НА ОСНОВАНИИ ДОГОВОРА НА ОСУЩЕСТВЛЕНИЕ ПЕРЕВОЗКИ №1'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку в г. Владивосток следующего груза:'
+            heading = document.add_heading(heading_text, 2)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            table = document.add_table(rows=1, cols=2)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Характер груза'
+            hdr_cells[1].text = 'Экспортный серктификат'
+
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+            orders = Order.objects.all()
+            records = []
+            for order in orders:
+                records.append({
+                    'auction_name': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body) + '\n' + 'VIN: ' + str(order.price),
+                    'lot_number': order.id_car.auc_number,
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['auction_name']
+                row_cells[1].text = record['lot_number']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+
+
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+
+            if os.path.exists(file_path):
+                file_url = f'/media/client_contract/demo.docx'
+                return JsonResponse({'file_url': file_url})
+
         return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 

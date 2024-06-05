@@ -47,6 +47,7 @@
                         </div>
                         <div class="col-sm-12 text-center">
                             <button type="button" id="auc_doc" value="some_value" class="btn btn-info">Сформировать список для аукциона</button>
+                            <button type="button" id="trans_btn" value="some_value" class="btn btn-info">Сформировать заявку на перевозку </button>
                         </div>
                     </div>
                 </form>
@@ -105,12 +106,39 @@
             $('#auc_doc').click(function(e) {
                 e.preventDefault();
                 var auc_doc_btn = $('#auc_doc').val();
+                var trans_btn = $('#trans_btn').val();
 
                 $.ajax({
                     url: '/orders/',
                     type: 'POST',
                     data: {
                         'auc_doc_btn': auc_doc_btn,
+                        'trans_btn': trans_btn,
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.file_url) {
+                            window.open(response.file_url, '_blank');
+                        } else {
+                            console.error('Error: File URL not found.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            $('#trans_btn').click(function(e) {
+                e.preventDefault();
+                var trans_btn = $('#trans_btn').val();
+
+                $.ajax({
+                    url: '/orders/',
+                    type: 'POST',
+                    data: {
+                        'trans_btn': trans_btn,
                         'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
                     },
                     dataType: 'json',
