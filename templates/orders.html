@@ -111,16 +111,18 @@
                     type: 'POST',
                     data: {
                         'auc_doc_btn': auc_doc_btn,
-
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
                     },
                     dataType: 'json',
                     success: function(response) {
-                        console.log('Success:', response);
-                        // Обработка ответа
+                        if (response.file_url) {
+                            window.open(response.file_url, '_blank');
+                        } else {
+                            console.error('Error: File URL not found.');
+                        }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error:', error);
-                        // Обработка ошибки
                     }
                 });
             });

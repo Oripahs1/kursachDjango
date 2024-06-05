@@ -132,6 +132,8 @@ class OrderForm(forms.Form):
                              widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     price = forms.CharField(label='Предварительная цена',
                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    price_customer = forms.CharField(label='Сумма которую готов заплатить клиент',
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self, commit=True):
 
@@ -145,7 +147,8 @@ class OrderForm(forms.Form):
             id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,
             date_start=datetime.date.today(),
-            order_status=Order.AT_WORK
+            order_status=Order.AT_WORK,
+            price_customer=self.cleaned_data['price_customer']
         )
 
 

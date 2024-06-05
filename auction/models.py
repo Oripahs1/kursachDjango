@@ -135,6 +135,7 @@ class Order(models.Model):
     contract = models.FileField(null=True, upload_to='client_contract/', blank=True)
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+    price_customer = models.TextField(max_length=5, null=True, blank=True)
     city = models.TextField(null=True, blank=True)
 
     NEED = 'Нужна доставка'

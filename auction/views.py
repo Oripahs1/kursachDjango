@@ -31,7 +31,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse
 from docx import Document
-from docx.shared import Inches, RGBColor
+from docx.shared import Inches, RGBColor, Pt
 
 
 #
@@ -863,9 +863,54 @@ class OrdersPageView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'auc_doc_btn' in request.POST:
-            print('Пытаемся печатать')
-            response_data = {'message': 'Запрос успешно обработан'}
-            return JsonResponse(response_data)
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+
+            heading = document.add_heading('Список автомобилей к покупке на аукционе', 1)
+            heading.alignment = 1
+
+
+
+            table = document.add_table(rows=1, cols=3)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Наименование аукциона'
+            hdr_cells[1].text = 'Номер лота'
+            hdr_cells[2].text = 'Диапазон бюджета'
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+            orders = Order.objects.all()
+            records = []
+            for order in orders:
+                records.append({
+                    'auction_name': order.id_car.auc_name,
+                    'lot_number': order.id_car.auc_number,
+                    'budget_range': str(order.id_car.price) + ' - ' + str(order.price_customer)
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['auction_name']
+                row_cells[1].text = record['lot_number']
+                row_cells[2].text = record['budget_range']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+
+            if os.path.exists(file_path):
+                file_url = f'/media/client_contract/demo.docx'
+                return JsonResponse({'file_url': file_url})
+
         return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 
