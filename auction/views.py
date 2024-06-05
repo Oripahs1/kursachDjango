@@ -31,7 +31,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.urls import reverse
 from docx import Document
-from docx.shared import Inches, RGBColor
+from docx.shared import Inches, RGBColor, Pt
 
 
 #
@@ -327,6 +327,7 @@ class CustomsDutyPageView(TemplateView):
         form.fields['value_first'].initial = customs_duty.value_first
         form.fields['value_last'].initial = customs_duty.value_last
         form.fields['bet'].initial = customs_duty.bet
+        form.fields['date_of_action'].initial = customs_duty.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -385,6 +386,7 @@ class ExcisePageView(TemplateView):
         form.fields['power_first_car'].initial = excise.power_first_car
         form.fields['power_last_car'].initial = excise.power_last_car
         form.fields['bet'].initial = excise.bet
+        form.fields['date_of_action'].initial = excise.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -504,6 +506,7 @@ class DutyPageView(TemplateView):
         form.fields['volume_last'].initial = duty.volume_last
         form.fields['coefficient_less_3'].initial = duty.coefficient_less_3
         form.fields['coefficient_more_3'].initial = duty.coefficient_more_3
+        form.fields['date_of_action'].initial = duty.date_of_action
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
@@ -569,6 +572,8 @@ class WorkersCardPageView(TemplateView):
                 form.update()
                 messages.success(request, "Данные обновлены")
             else:
+                for field in form:
+                    print("Field Error:", field.name, field.errors)
                 messages.error(request, "Некорректная форма")
 
         else:
@@ -582,7 +587,7 @@ class OrderInOrdersPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
         form = OrderInOrdersForm()
-
+        form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
         form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
         form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
@@ -603,6 +608,9 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['def_ved'].widget.initial_text = ''
         form.fields['def_ved'].widget.input_text = 'Заменить'
         form.fields['def_ved'].widget.clear_checkbox_label = ''
+        form.fields['export_certificate'].widget.initial_text = ''
+        form.fields['export_certificate'].widget.input_text = 'Заменить'
+        form.fields['export_certificate'].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
@@ -615,6 +623,8 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['client_contract'].initial = order.contract
         if order.defective_statement is not None:
             form.fields['def_ved'].initial = order.defective_statement
+        if order.export_certificate is not None:
+            form.fields['export_certificate'].initial = order.export_certificate
         return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
 
     def post(self, request, *args, **kwargs):
@@ -650,6 +660,10 @@ class OrderInOrdersPageView(TemplateView):
                     order.defective_statement = request.FILES.get('def_ved')
                 else:
                     order.defective_statement = order.defective_statement
+                if 'export_certificate' in request.FILES:
+                    order.export_certificate = request.FILES.get('export_certificate')
+                else:
+                    order.export_certificate = order.export_certificate
                 print(order.ptd)
                 if order.ptd and order.sbts:
                     order.order_status = order.WAITING_TO_BE_SENT
@@ -736,6 +750,8 @@ class OrderInOrdersPageView(TemplateView):
                       coefficient_customs_duty, nds)
                 print(final_price)
                 form.fields['price'].widget.attrs.update({'value': final_price})
+                order.price = final_price
+                order.save()
 
             return render(request, 'order_in_orders.html', {'form': form, 'order': order})
 
@@ -840,7 +856,7 @@ class OrderInOrdersPageView(TemplateView):
         return render(request, 'orders.html', {"orders": orders})
 
 
-class OrdersPageView(GenreYear, TemplateView):
+class OrdersPageView(TemplateView):
     template_name = "orders.html"
 
     def get(self, request, *args, **kwargs):
@@ -850,17 +866,138 @@ class OrdersPageView(GenreYear, TemplateView):
             orders = Order.objects.filter(date_end=None, id_worker=user_id)
         elif user.job_title == 'Оперативник':
             orders = Order.objects.all()
+        elif user.job_title == 'Клиент':
+            orders = Order.objects.filter(date_end=None, id_worker=user_id)
         else:
             orders = Order.objects.all()
         return render(request, 'orders.html', {'orders': orders})
+
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'auc_doc_btn' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+
+            heading = document.add_heading('Список автомобилей к покупке на аукционе', 1)
+            heading.alignment = 1
+
+
+
+            table = document.add_table(rows=1, cols=3)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Наименование аукциона'
+            hdr_cells[1].text = 'Номер лота'
+            hdr_cells[2].text = 'Диапазон бюджета'
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+            orders = Order.objects.all()
+            records = []
+            for order in orders:
+                records.append({
+                    'auction_name': order.id_car.auc_name,
+                    'lot_number': order.id_car.auc_number,
+                    'budget_range': str(order.id_car.price) + ' - ' + str(order.price_customer)
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['auction_name']
+                row_cells[1].text = record['lot_number']
+                row_cells[2].text = record['budget_range']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+
+            if os.path.exists(file_path):
+                file_url = f'/media/client_contract/demo.docx'
+                return JsonResponse({'file_url': file_url})
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'trans_btn' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            styles['Heading 2'].font.color.rgb = RGBColor(0, 0, 0)
+
+            today_date = datetime.datetime.now().strftime('%d.%m.%Y')
+
+            heading_text = f'ЗАЯВКА ОТ {today_date}г.'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            heading_text = f'НА ОСНОВАНИИ ДОГОВОРА НА ОСУЩЕСТВЛЕНИЕ ПЕРЕВОЗКИ №1'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку в г. Владивосток следующего груза:'
+            heading = document.add_heading(heading_text, 2)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            table = document.add_table(rows=1, cols=2)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Характер груза'
+            hdr_cells[1].text = 'Экспортный серктификат'
+
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+            orders = Order.objects.all()
+            records = []
+            for order in orders:
+                records.append({
+                    'auction_name': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
+                    'lot_number': str(order.export_certificate_number),
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['auction_name']
+                row_cells[1].text = record['lot_number']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+
+
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+
+            if os.path.exists(file_path):
+                file_url = f'/media/client_contract/demo.docx'
+                return JsonResponse({'file_url': file_url})
+
+        return JsonResponse({'error': 'Неверный запрос'}, status=400)
 
 
 class OrderPageView(TemplateView):
     template_name = "order.html"
 
     def get(self, request, *args, **kwargs):
+        print(TransportCompanyPrice.objects.values_list('place', flat=True).distinct())
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         form = OrderForm()
+
         photo = PhotoCar.objects.filter(id_car=kwargs.get('car_id'))[:1][0].photo
         form.fields['id_car'].widget.attrs.update({'value': car.id_car})
         user_name = Worker.objects.filter(id=request.user.id)[0]
@@ -1490,6 +1627,9 @@ class BuhgalterNewInvoicePageView(TemplateView):
 
 
 def orders(request):
+    user_id = request.user.id
+    user = Worker.objects.get(pk=user_id)
+    user_passport = user.passport.split()
     if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Если это AJAX-запрос, обрабатываем его
         status = request.GET.get('status')
@@ -1516,6 +1656,9 @@ def orders(request):
             # Фильтрация заказов по дате
             orders = orders.filter(date_start__range=[start_date_str, end_date_str])
 
+
+        if user.job_title == 'Клиент':
+            orders = Order.objects.filter(id_customer__passport_number=user_passport[1], id_customer__passport_series=user_passport[0])
         context = {
             'orders': orders
         }
@@ -1524,6 +1667,9 @@ def orders(request):
 
     # Если это не AJAX-запрос, возвращаем страницу заказов целиком
     orders = Order.objects.all()
+    if user.job_title == 'Клиент':
+        orders = Order.objects.filter(id_customer__passport_number=user_passport[1],
+                                      id_customer__passport_series=user_passport[0])
     context = {
         'orders': orders
     }
@@ -1719,3 +1865,41 @@ def customs_dutys(request):
         'customs_dutys': customs_dutys
     }
     return render(request, 'customs_dutys.html', context)
+
+
+def excises(request):
+    if request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        start_date = request.GET.get('start_date')
+
+        all_dates = Excise.objects.values_list('date_of_action', flat=True).distinct()
+
+        # Преобразуем QuerySet в список дат
+        unique_dates_list = list(all_dates)
+
+        # Убираем None из списка, если есть
+        unique_dates_list = [date for date in unique_dates_list if date is not None]
+
+        # Сортируем даты по возрастанию
+        unique_dates_list.sort()
+
+        excises = Excise.objects.all()
+        if start_date:
+            # Найти последнюю дату акциза, которая меньше или равна указанной дате
+            latest_date = Excise.objects.filter(date_of_action__lte=start_date).aggregate(Max('date_of_action'))['date_of_action__max']
+            if latest_date:
+                excises = excises.filter(date_of_action=latest_date)
+            else:
+                excises = Excise.objects.none()  # Если нет подходящей даты, возвращаем пустой QuerySet
+
+        context = {
+            'excises': excises
+        }
+        print(excises)
+        html = render_to_string('excises_table.html', context)
+        return JsonResponse({'html': html})
+
+    excises = Excise.objects.all()
+    context = {
+        'excises': excises
+    }
+    return render(request, 'excises.html', context)

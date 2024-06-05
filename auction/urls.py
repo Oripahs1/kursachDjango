@@ -64,6 +64,7 @@ urlpatterns = [
     path('catalog/ajax/', views.catalog, name='catalog'),
     path('duties/ajax/', views.duties, name='duties'),
     path('customs_dutys/ajax/', views.customs_dutys, name='customs_dutys'),
+    path('excises/ajax/', views.excises, name='excises'),
 
 ]
 

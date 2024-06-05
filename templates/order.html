@@ -77,6 +77,30 @@
                     </div>
                 </div>
             </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.price_customer.id_for_label }}">{{ form.price_customer.label }}</label>
+                    <div class="input-group">
+                        {{ form.price_customer }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.delivery.id_for_label }}">{{ form.delivery.label }}</label>
+                    <div class="input-group">
+                        {{ form.delivery }}
+                    </div>
+                </div>
+            </div>
+            <div class="form_flex" id="city-selection">
+                <div class="col-md-12 mb-1">
+                    <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+                    <div class="input-group">
+                        {{ form.city }}
+                    </div>
+                </div>
+            </div>
 
             <div class="form_flex mb-3">
                 <div class="col-md-9 mb-1">
@@ -98,4 +122,43 @@
             </div>
         </form>
     </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deliverySelect = document.getElementById('id_delivery');
+        var citySelection = document.getElementById('city-selection');
+
+        function toggleCitySelection() {
+            if (deliverySelect.value === 'Нужна доставка') {
+                citySelection.style.display = 'block';
+            } else {
+                citySelection.style.display = 'none';
+            }
+        }
+
+        deliverySelect.addEventListener('change', toggleCitySelection);
+
+        // Проверка при загрузке страницы
+        toggleCitySelection();
+    });
+
+        $(document).ready(function(){
+            // Применение маски для ввода цены в рублях
+            $('input[name="price_customer"]').inputmask({
+                alias: 'numeric',
+                groupSeparator: ' ',
+                autoGroup: true,
+                digits: 2,
+                digitsOptional: true,
+                prefix: '',
+                suffix: ' ₽',
+                rightAlign: false,
+                removeMaskOnSubmit: true
+            });
+
+            // Ограничение ввода только числами и запятыми
+            $('input[name="price_customer"]').on('input', function() {
+                this.value = this.value.replace(/[^0-9,.]/g, '');
+            });
+        });
+    </script>
 {% endblock content %}

@@ -116,6 +116,14 @@ class RegistrationForm(forms.ModelForm):
 
 class OrderForm(forms.Form):
     customer = forms.ModelChoiceField(label='Клиент', queryset=Customer.objects.all(), widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    delivery = forms.ChoiceField(label='Доставка', choices=Order.NEEDS_DELIVERY,
+                             widget=forms.Select(attrs={'class': 'custom-select'}))
+    city = forms.ChoiceField(
+        label='Доставка',
+        choices=[(place, f"{place} - {price} руб.") for place, price in
+                 TransportCompanyPrice.objects.values_list('place', 'price').distinct()],
+        widget=forms.Select(attrs={'class': 'custom-select'})
+    )
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
     # worker = forms.ModelChoiceField(label='Сотрудник',
     #                                 queryset=Worker.objects.filter(is_superuser=False, job_title='Менеджер'),
@@ -124,6 +132,8 @@ class OrderForm(forms.Form):
                              widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     price = forms.CharField(label='Предварительная цена',
                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
+    price_customer = forms.CharField(label='Сумма которую готов заплатить клиент',
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self, commit=True):
 
@@ -131,11 +141,14 @@ class OrderForm(forms.Form):
         car = Car.objects.get(pk=self.cleaned_data['id_car'])
 
         Order.objects.create(
+            city=self.cleaned_data['city'],
+            delivery=self.cleaned_data['delivery'],
             id_customer=self.cleaned_data['customer'],
             id_worker=Worker.objects.get(full_name=self.cleaned_data['worker']),
             id_car=car,
             date_start=datetime.date.today(),
-            order_status=Order.AT_WORK
+            order_status=Order.AT_WORK,
+            price_customer=self.cleaned_data['price_customer']
         )
 
 
@@ -156,6 +169,8 @@ class OrderInOrdersForm(forms.Form):
                               required=False)
     sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
                            required=False)
+    export_certificate = forms.FileField(label='Экспортный сертификат', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+                           required=False)
     ptd = forms.FileField(label='ПТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
     contract_japan = forms.FileField(label='Договор купли продажи из ЯП',
                                widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
@@ -168,6 +183,8 @@ class OrderInOrdersForm(forms.Form):
                             required=False)
     price_for_buhgalter = forms.CharField(label='Цена покупки машины из договора купли прождажи',
                                           widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
+    export_certificate_number = forms.CharField(label='Номер экспортной ведомости',
+                                          widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
     power = forms.CharField(label='Мощность машины в л.с.', widget=forms.TextInput(attrs={'class': 'form-control'}),
                             required=False)
 
@@ -177,7 +194,9 @@ class OrderInOrdersForm(forms.Form):
             order.update(date_end=self.cleaned_data['date_end'])
 
         order.update(
-            comment=self.cleaned_data['comment']
+            comment=self.cleaned_data['comment'],
+            price=self.cleaned_data['price'],
+            export_certificate_number=self.cleaned_data['export_certificate_number'],
         )
         customer = order[0].id_customer
         customer.telephone = self.cleaned_data['telephone']
@@ -383,6 +402,8 @@ class CustomsDutyForm(forms.Form):
 
 
 class ExciseForm(forms.Form):
+    date_of_action = forms.DateField(label='Действует от', widget=forms.DateInput(
+        attrs={'class': 'form-control'}))
     power_first_car = forms.IntegerField(label='Мощность двигателя от',
                                          widget=forms.NumberInput(attrs={'class': 'form-control'}))
     power_last_car = forms.IntegerField(label='Мощность двигателя до',
@@ -392,6 +413,7 @@ class ExciseForm(forms.Form):
 
     def save(self):
         Excise.objects.create(
+            date_of_action=self.cleaned_data['date_of_action'],
             power_first_car=self.cleaned_data['power_first_car'],
             power_last_car=self.cleaned_data['power_last_car'],
             bet=self.cleaned_data['bet'],
@@ -400,6 +422,7 @@ class ExciseForm(forms.Form):
     def update(self, excise_id):
         excise = Excise.objects.filter(pk=excise_id)
         excise.update(
+            date_of_action=self.cleaned_data['date_of_action'],
             power_first_car=self.cleaned_data['power_first_car'],
             power_last_car=self.cleaned_data['power_last_car'],
             bet=self.cleaned_data['bet'],

@@ -134,7 +134,19 @@ class Order(models.Model):
     ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
     contract = models.FileField(null=True, upload_to='client_contract/', blank=True)
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
+    export_certificate = models.FileField(null=True, upload_to='export_certificate/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+    export_certificate_number = models.TextField(max_length=5, null=True, blank=True)
+    price_customer = models.TextField(max_length=5, null=True, blank=True)
+    city = models.TextField(null=True, blank=True)
+
+    NEED = 'Нужна доставка'
+    NO_NEED = 'Доставка не требуется'
+
+    NEEDS_DELIVERY = [
+        (NEED, 'Нужна доставка'),
+        (NO_NEED, 'Доставка не требуется'),
+    ]
 
     AT_WORK = 'В работе'
     NOT_PREPAID = 'Не предоплачен'
@@ -163,7 +175,10 @@ class Order(models.Model):
         (ON_THE_WAY_INTO_RF, 'В пути по РФ'),
         (COMPLETED, 'Выполнен'),
     ]
+    delivery = models.TextField(choices=NEEDS_DELIVERY)
     order_status = models.TextField(choices=ORDER_STATUS)
+
+
 
     def get_absolute_url_order(self):
         return reverse('order_in_orders', kwargs={'order_id': self.pk})
@@ -298,12 +313,14 @@ class Worker(AbstractUser):
     HR = 'HR'
     ACCOUNTANT = 'Бухгалтер'
     OPERATIVNIK = 'Оперативник'
+    CUSTOMER = 'Клиент'
     JOB_CHOICE = [
         (MANAGER, 'Менеджер'),
         (LOGIST, 'Логист'),
         (HR, 'HR'),
         (ACCOUNTANT, 'Бухгалтер'),
-        (OPERATIVNIK, 'Оперативник')
+        (OPERATIVNIK, 'Оперативник'),
+        (CUSTOMER, 'Клиент'),
     ]
 
     full_name = models.TextField()
