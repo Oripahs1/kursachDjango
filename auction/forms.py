@@ -183,6 +183,8 @@ class OrderInOrdersForm(forms.Form):
                             required=False)
     price_for_buhgalter = forms.CharField(label='Цена покупки машины из договора купли прождажи',
                                           widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
+    export_certificate_number = forms.CharField(label='Номер экспортной ведомости',
+                                          widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
     power = forms.CharField(label='Мощность машины в л.с.', widget=forms.TextInput(attrs={'class': 'form-control'}),
                             required=False)
 
@@ -192,7 +194,9 @@ class OrderInOrdersForm(forms.Form):
             order.update(date_end=self.cleaned_data['date_end'])
 
         order.update(
-            comment=self.cleaned_data['comment']
+            comment=self.cleaned_data['comment'],
+            price=self.cleaned_data['price'],
+            export_certificate_number=self.cleaned_data['export_certificate_number'],
         )
         customer = order[0].id_customer
         customer.telephone = self.cleaned_data['telephone']

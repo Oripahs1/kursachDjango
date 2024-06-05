@@ -587,7 +587,7 @@ class OrderInOrdersPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
         form = OrderInOrdersForm()
-
+        form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
         form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
         form.fields['last_name_client'].widget.attrs.update({'value': order.id_customer.last_name_client})
@@ -608,6 +608,9 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['def_ved'].widget.initial_text = ''
         form.fields['def_ved'].widget.input_text = 'Заменить'
         form.fields['def_ved'].widget.clear_checkbox_label = ''
+        form.fields['export_certificate'].widget.initial_text = ''
+        form.fields['export_certificate'].widget.input_text = 'Заменить'
+        form.fields['export_certificate'].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
@@ -620,6 +623,8 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['client_contract'].initial = order.contract
         if order.defective_statement is not None:
             form.fields['def_ved'].initial = order.defective_statement
+        if order.export_certificate is not None:
+            form.fields['export_certificate'].initial = order.export_certificate
         return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
 
     def post(self, request, *args, **kwargs):
@@ -655,6 +660,10 @@ class OrderInOrdersPageView(TemplateView):
                     order.defective_statement = request.FILES.get('def_ved')
                 else:
                     order.defective_statement = order.defective_statement
+                if 'export_certificate' in request.FILES:
+                    order.export_certificate = request.FILES.get('export_certificate')
+                else:
+                    order.export_certificate = order.export_certificate
                 print(order.ptd)
                 if order.ptd and order.sbts:
                     order.order_status = order.WAITING_TO_BE_SENT
@@ -741,6 +750,8 @@ class OrderInOrdersPageView(TemplateView):
                       coefficient_customs_duty, nds)
                 print(final_price)
                 form.fields['price'].widget.attrs.update({'value': final_price})
+                order.price = final_price
+                order.save()
 
             return render(request, 'order_in_orders.html', {'form': form, 'order': order})
 
@@ -952,8 +963,8 @@ class OrdersPageView(TemplateView):
             records = []
             for order in orders:
                 records.append({
-                    'auction_name': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body) + '\n' + 'VIN: ' + str(order.price),
-                    'lot_number': order.id_car.auc_number,
+                    'auction_name': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
+                    'lot_number': str(order.export_certificate_number),
                 })
 
             for record in records:

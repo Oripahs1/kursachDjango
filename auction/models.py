@@ -134,7 +134,9 @@ class Order(models.Model):
     ptd = models.FileField(null=True, upload_to='ptd/', blank=True)
     contract = models.FileField(null=True, upload_to='client_contract/', blank=True)
     defective_statement = models.FileField(null=True, upload_to='defective_statement/', blank=True)
+    export_certificate = models.FileField(null=True, upload_to='export_certificate/', blank=True)
     price = models.TextField(max_length=5, null=True, blank=True)
+    export_certificate_number = models.TextField(max_length=5, null=True, blank=True)
     price_customer = models.TextField(max_length=5, null=True, blank=True)
     city = models.TextField(null=True, blank=True)
 
