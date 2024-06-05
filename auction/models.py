@@ -84,6 +84,7 @@ class Excise(models.Model):
 
 class TransportCompany(models.Model):
     title = models.TextField(null=True, blank=True)
+    number_contract = models.TextField(null=True, blank=True)
     contract = models.FileField(null=True, upload_to='transport_contract/', blank=True)
 
     def get_absolute_url_transport_company(self):

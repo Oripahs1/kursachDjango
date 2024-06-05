@@ -432,6 +432,8 @@ class ExciseForm(forms.Form):
 class TransportCompanyForm(forms.Form):
     title = forms.CharField(label='Название транспортной компании',
                             widget=forms.TextInput(attrs={'class': 'form-control'}))
+    number_contract = forms.CharField(label='Номер договора с ТК',
+                            widget=forms.TextInput(attrs={'class': 'form-control'}))
     contract = forms.FileField(label='Договор с ТК', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
                                required=False)
 
@@ -439,6 +441,7 @@ class TransportCompanyForm(forms.Form):
         TransportCompany.objects.create(
             title=self.cleaned_data['title'],
             contract=self.cleaned_data['contract'],
+            number_contract=self.cleaned_data['number_contract'],
         )
 
     def update(self, transport_company_id, contract):
@@ -446,6 +449,7 @@ class TransportCompanyForm(forms.Form):
         transport_company = TransportCompany.objects.filter(pk=transport_company_id)
         transport_company.update(
             title=self.cleaned_data['title'],
+            number_contract=self.cleaned_data['number_contract'],
             contract=contract,
         )
 
