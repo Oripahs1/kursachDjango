@@ -169,6 +169,8 @@ class OrderInOrdersForm(forms.Form):
                               required=False)
     sbts = forms.FileField(label='СБТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
                            required=False)
+    export_certificate = forms.FileField(label='Экспортный сертификат', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
+                           required=False)
     ptd = forms.FileField(label='ПТС', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
     contract_japan = forms.FileField(label='Договор купли продажи из ЯП',
                                widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
