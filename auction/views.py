@@ -238,17 +238,19 @@ class TransportCompaniesPageView(TemplateView):
             heading.alignment = 1
             heading.paragraph_format.space_after = Pt(0)
             heading.paragraph_format.space_before = Pt(0)
-            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку в г. Владивосток следующего груза:'
+            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку из г. Владивосток следующего груза:'
             heading = document.add_heading(heading_text, 2)
             heading.alignment = 1
             heading.paragraph_format.space_after = Pt(0)
             heading.paragraph_format.space_before = Pt(0)
 
-            table = document.add_table(rows=1, cols=2)
+            table = document.add_table(rows=1, cols=4)
             table.style = 'Table Grid'
             hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = 'Характер груза'
-            hdr_cells[1].text = 'Экспортный сертификат'
+            hdr_cells[0].text = 'Адрес получения'
+            hdr_cells[1].text = 'Характер груза'
+            hdr_cells[2].text = 'Грузополучатель'
+            hdr_cells[3].text = '№ Дефектной ведомости'
 
             # Установка размера текста для заголовков таблицы
             for cell in hdr_cells:
@@ -260,14 +262,18 @@ class TransportCompaniesPageView(TemplateView):
             records = []
             for order in orders:
                 records.append({
-                    'auction_name': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
-                    'lot_number': str(order.export_certificate_number),
+                    'address': order.city,
+                    'cargo': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
+                    'customer': str(order.id_customer),
+                    'dev_ved': str(order.pk),
                 })
 
             for record in records:
                 row_cells = table.add_row().cells
-                row_cells[0].text = record['auction_name']
-                row_cells[1].text = record['lot_number']
+                row_cells[0].text = record['address']
+                row_cells[1].text = record['cargo']
+                row_cells[2].text = record['customer']
+                row_cells[3].text = record['dev_ved']
                 # Установка размера текста для ячеек таблицы
                 for cell in row_cells:
                     for paragraph in cell.paragraphs:
