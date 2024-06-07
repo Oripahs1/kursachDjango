@@ -657,6 +657,8 @@ class OrderInOrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
+        car = order.id_car
+        photo = PhotoCar.objects.filter(id_car=car.pk)[:1][0].photo
         form = OrderInOrdersForm()
         form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
@@ -666,7 +668,7 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
         form.fields['date_start'].widget.attrs.update({'value': order.date_start})
         if order.price is not None:
-            form.fields['price'].widget.attrs.update({'value': str(order.price) + ' р.'})
+            form.fields['price'].widget.attrs.update({'value': str(order.price)})
         form.fields['sbts'].widget.initial_text = ''
         form.fields['sbts'].widget.input_text = 'Заменить'
         form.fields['ptd'].widget.initial_text = ''
@@ -696,7 +698,7 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['def_ved'].initial = order.defective_statement
         if order.export_certificate is not None:
             form.fields['export_certificate'].initial = order.export_certificate
-        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
+        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
@@ -821,8 +823,7 @@ class OrderInOrdersPageView(TemplateView):
                       coefficient_customs_duty, nds)
                 print(final_price)
                 form.fields['price'].widget.attrs.update({'value': final_price})
-                order.price = final_price
-                order.save()
+
 
             return render(request, 'order_in_orders.html', {'form': form, 'order': order})
 
