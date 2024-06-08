@@ -9,6 +9,45 @@
 {% block content %}
     {% include 'messages.html' %}
     <div class="d-grid gap-2 col-6 mx-auto">
+        <div class="row">
+            <div class="col">
+                <img style="max-width: 100%" src="{{ photo }}">
+            </div>
+            <div class="col">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Кузов</th>
+                            <td>{{ car.the_body }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Объем</th>
+                            <td>{{ car.volume }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">КПП</th>
+                            <td>{{ car.cpp }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Год</th>
+                            <td>{{ car.year_car }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Пробег</th>
+                            <td>{{ car.mileage }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Оценка</th>
+                            <td>{{ car.estimation }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Предварительная цена</th>
+                            <td>{{ car.price }} р.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link active" id="order-tab" data-bs-toggle="tab" href="#order" role="tab" aria-controls="order" aria-selected="true">Детали заказа</a>

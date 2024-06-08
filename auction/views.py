@@ -217,7 +217,77 @@ class TransportCompaniesPageView(TemplateView):
         transport_companies = TransportCompany.objects.all()
         return render(request, self.template_name, {'transport_companies': transport_companies})
 
+    def post(self, request, *args, **kwargs):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'application' in request.POST:
+            print(request.POST['number_contract'])
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            styles['Heading 2'].font.color.rgb = RGBColor(0, 0, 0)
 
+            today_date = datetime.datetime.now().strftime('%d.%m.%Y')
+
+            heading_text = f'ЗАЯВКА ОТ {today_date}г.'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            heading_text = f'НА ОСНОВАНИИ ДОГОВОРА НА ОСУЩЕСТВЛЕНИЕ ПЕРЕВОЗКИ №' + request.POST['number_contract']
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку из г. Владивосток следующего груза:'
+            heading = document.add_heading(heading_text, 2)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            table = document.add_table(rows=1, cols=4)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Адрес получения'
+            hdr_cells[1].text = 'Характер груза'
+            hdr_cells[2].text = 'Грузополучатель'
+            hdr_cells[3].text = '№ Дефектной ведомости'
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+            orders = Order.objects.all()
+            records = []
+            for order in orders:
+                records.append({
+                    'address': order.city,
+                    'cargo': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
+                    'customer': str(order.id_customer),
+                    'dev_ved': str(order.pk),
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['address']
+                row_cells[1].text = record['cargo']
+                row_cells[2].text = record['customer']
+                row_cells[3].text = record['dev_ved']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+
+            if os.path.exists(file_path):
+                file_url = f'/media/client_contract/demo.docx'
+                return JsonResponse({'file_url': file_url})
+
+        return JsonResponse({'error': 'Invalid request'}, status=400)
 class TransportCompanyNewPageView(TemplateView):
     template_name = 'transport_company.html'
 
@@ -249,6 +319,7 @@ class TransportCompanyPageView(TemplateView):
         # form.fields['name'].initial
         transport_company = TransportCompany.objects.get(id=kwargs['transport_company_id'])
         form.fields['title'].initial = transport_company.title
+        form.fields['number_contract'].initial = transport_company.number_contract
         form.fields['contract'].initial = transport_company.contract
         form.fields['contract'].widget.input_text = 'Заменить'
         form.fields['contract'].widget.clear_checkbox_label = ''
@@ -586,6 +657,8 @@ class OrderInOrdersPageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
+        car = order.id_car
+        photo = PhotoCar.objects.filter(id_car=car.pk)[:1][0].photo
         form = OrderInOrdersForm()
         form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
@@ -595,7 +668,7 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['telephone'].widget.attrs.update({'value': order.id_customer.telephone})
         form.fields['date_start'].widget.attrs.update({'value': order.date_start})
         if order.price is not None:
-            form.fields['price'].widget.attrs.update({'value': str(order.price) + ' р.'})
+            form.fields['price'].widget.attrs.update({'value': str(order.price)})
         form.fields['sbts'].widget.initial_text = ''
         form.fields['sbts'].widget.input_text = 'Заменить'
         form.fields['ptd'].widget.initial_text = ''
@@ -625,7 +698,7 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['def_ved'].initial = order.defective_statement
         if order.export_certificate is not None:
             form.fields['export_certificate'].initial = order.export_certificate
-        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order})
+        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
@@ -750,8 +823,7 @@ class OrderInOrdersPageView(TemplateView):
                       coefficient_customs_duty, nds)
                 print(final_price)
                 form.fields['price'].widget.attrs.update({'value': final_price})
-                order.price = final_price
-                order.save()
+
 
             return render(request, 'order_in_orders.html', {'form': form, 'order': order})
 
