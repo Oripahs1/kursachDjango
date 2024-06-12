@@ -17,13 +17,12 @@
             {% csrf_token %}
             <div class="form_flex">
                 <div class="col-md-4 mb-3">
-                    <label for="{{ form.first_name_client.id_for_label }}">{{ form.first_name_client.label }}</label>
-                    {{ form.first_name_client }}
-                </div>
-
-                <div class="col-md-4 mb-3">
                     <label for="{{ form.last_name_client.id_for_label }}">{{ form.last_name_client.label }}</label>
                     {{ form.last_name_client }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.first_name_client.id_for_label }}">{{ form.first_name_client.label }}</label>
+                    {{ form.first_name_client }}
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="{{ form.patronymic_client.id_for_label }}">{{ form.patronymic_client.label }}</label>

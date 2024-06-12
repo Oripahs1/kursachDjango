@@ -39,10 +39,13 @@
                         </li>
                     {% elif user.job_title == 'Логист' %}
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'parser' %}">Обновить БД</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'orders' %}">Заказы</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'prices' %}">Цены перевозки авто из ЯП</a>
                         </li>
                     {% elif user.job_title == 'Клиент' %}
                         <li class="nav-item">
@@ -67,26 +70,18 @@
                         </li>
                     {% elif user.job_title == 'Оперативник' %}
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'parser' %}">Обновить БД</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link active" href="{% url 'orders' %}">Заказы</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'duties' %}">Ставки утилизационного сбора</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="{% url 'customs_dutys' %}">Таможенные пошлины</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'excises' %}">Акциз</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'duties' %}">Ставки утилизационного сбора</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'prices' %}">Цены перевозки авто из ЯП</a>
+                            <a class="nav-link active" aria-current="page" href="{% url 'excises' %}">Акцизы</a>
                         </li>
-                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'transport_companies' %}">Транспортные компании</a>
-                        </li>
+
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'logout' %}">Выход</a>

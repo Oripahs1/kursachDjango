@@ -65,7 +65,7 @@ urlpatterns = [
     path('duties/ajax/', views.duties, name='duties'),
     path('customs_dutys/ajax/', views.customs_dutys, name='customs_dutys'),
     path('excises/ajax/', views.excises, name='excises'),
-
+    path('orders/<int:order_id>/download_all_documents/', views.download_all_documents, name='download_all_documents'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))

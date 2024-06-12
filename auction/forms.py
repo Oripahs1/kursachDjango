@@ -14,8 +14,8 @@ class LogoutForm(forms.Form):
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField(max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(min_length=1, max_length=65, widget=forms.PasswordInput)
+    username = forms.CharField(label = 'Имя пользователя', max_length=30, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label = 'Пароль', min_length=1, max_length=65, widget=forms.PasswordInput)
     password.widget.attrs.update({'class': 'form-control'})
 
 
@@ -183,7 +183,7 @@ class OrderInOrdersForm(forms.Form):
                             required=False)
     price_for_buhgalter = forms.CharField(label='Цена покупки машины из договора купли прождажи',
                                           widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
-    export_certificate_number = forms.CharField(label='Номер экспортной ведомости',
+    export_certificate_number = forms.CharField(label='Номер экспортного сертификата',
                                           widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
     power = forms.CharField(label='Мощность машины в л.с.', widget=forms.TextInput(attrs={'class': 'form-control'}),
                             required=False)

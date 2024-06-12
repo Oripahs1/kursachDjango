@@ -48,12 +48,15 @@
                 </table>
             </div>
         </div>
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link active" id="order-tab" data-bs-toggle="tab" href="#order" role="tab" aria-controls="order" aria-selected="true">Детали заказа</a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="documents-tab" data-bs-toggle="tab" href="#documents" role="tab" aria-controls="documents" aria-selected="false">Документы</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="download-tab" data-bs-toggle="tab" href="#download" role="tab" aria-controls="download" aria-selected="false">Скачать</a>
             </li>
         </ul>
         <form method="POST" enctype="multipart/form-data">
@@ -156,12 +159,17 @@
                         {{ form.export_certificate }}
                     </div>
                      <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
-                        <input type="submit" name="create_contract" class="btn btn-outline-dark position-relative" value="Сформировать договор с клиентом"/>
+                        <input type="submit" name="create_contract" class="btn btn-outline-dark position-relative" value="Сформировать акт передачи"/>
                     </div>
 
 
                     <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
                         <input type="submit" name="create_defective_statement" class="btn btn-outline-dark position-relative" value="Сформировать дефектную ведомость"/>
+                    </div>
+                </div>
+                 <div class="tab-pane fade" id="download" role="tabpanel" aria-labelledby="download-tab">
+                    <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
+                        <a href="{% url 'download_all_documents' order.id_order %}" class="btn btn-outline-dark position-relative">Скачать все документы</a>
                     </div>
                 </div>
             </div>

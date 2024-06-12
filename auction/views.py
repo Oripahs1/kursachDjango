@@ -1,6 +1,6 @@
 import datetime
 import os
-
+import zipfile
 import django.http
 import docx
 from django.core.files import File
@@ -1975,3 +1975,31 @@ def excises(request):
         'excises': excises
     }
     return render(request, 'excises.html', context)
+
+
+def download_all_documents(request, order_id):
+
+    order = Order.objects.get(id_order=order_id)
+    documents = [
+        order.sbts,
+        order.ptd,
+        order.contract,
+        order.defective_statement,
+        order.export_certificate
+    ]
+
+    # Create a zip file in memory
+    zip_subdir = f"order_{order_id}_documents"
+    zip_filename = f"{zip_subdir}.zip"
+
+    s = HttpResponse(content_type="application/zip")
+    s['Content-Disposition'] = f'attachment; filename={zip_filename}'
+
+    with zipfile.ZipFile(s, 'w') as zf:
+        for doc in documents:
+            if doc:
+                doc_path = os.path.join(os.getcwd(), doc.path)
+                arcname = os.path.join(zip_subdir, os.path.basename(doc_path))
+                zf.write(doc_path, arcname)
+
+    return s
