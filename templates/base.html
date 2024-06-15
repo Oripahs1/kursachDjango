@@ -12,6 +12,8 @@
             integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
             crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Подключение IMask.js -->
+    <script src="https://unpkg.com/imask"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
     {% block head %}
@@ -19,7 +21,18 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" style="
+        {% if user.is_authenticated %}
+            {% if user.job_title == 'Менеджер' %}
+                background-color: #FFA07A !important; /* Красный */
+            {% elif user.job_title == 'Логист' %}
+                 background-color: #90EE90 !important; /* Зеленый */
+            {% elif user.job_title == 'Оперативник' %}
+                background-color: #F0E68C !important; /* Желтый */
+            {% endif %}
+        {% endif %}
+    ">
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}

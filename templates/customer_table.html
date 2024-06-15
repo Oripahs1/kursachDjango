@@ -3,7 +3,7 @@
         <th scope="row">{{ el.pk }}</th>
         <td>{{ el.last_name_client }} {{ el.first_name_client }} {{ el.patronymic_client }}</td>
         <td>{{ el.telephone }}</td>
-        <td>{{ el.passport_number }} {{ el.passport_series }}</td>
+        <td>{{ el.passport_series }} {{ el.passport_number }} </td>
         <td>{{ el.date_of_birth }}</td>
         <td>
             <a href="{{ el.get_absolute_url_customer }}">

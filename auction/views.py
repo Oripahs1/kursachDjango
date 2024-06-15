@@ -3,6 +3,7 @@ import os
 import zipfile
 import django.http
 import docx
+from urllib.parse import quote
 from django.core.files import File
 import urllib.parse
 from django.db.models import Max
@@ -20,6 +21,7 @@ from django.views.generic import TemplateView, ListView
 from django.shortcuts import render, redirect
 from openpyxl.reader.excel import load_workbook
 
+from kursachDjango import settings
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
     TransportCompanyPrice, Customer
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
@@ -28,7 +30,7 @@ from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderFor
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from datetime import date
 from django.urls import reverse
 from docx import Document
 from docx.shared import Inches, RGBColor, Pt
@@ -655,6 +657,107 @@ class WorkersCardPageView(TemplateView):
 class OrderInOrdersPageView(TemplateView):
     template_name = 'order_in_orders.html'
 
+    def create_dev_ved(self, order_id):
+        order = Order.objects.get(pk=order_id)
+        document = docx.Document()
+        styles = document.styles
+        styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+        heading = 'Дефектная ведомость №' + ' ' + str(order.pk)
+        heading = document.add_heading(heading, 1)
+        heading.alignment = 1
+        para = 'Дата: ' + str(date.today())
+        para = document.add_paragraph(para)
+        para.paragraph_format.space_after = Inches(0.001)
+        para = document.add_paragraph('Агент:')
+        para.paragraph_format.space_after = Inches(0.001)
+        para = document.add_paragraph('ВладивостокМоторс')
+        # para.alignment = 2
+        para.paragraph_format.space_after = Inches(0.001)
+        para = document.add_paragraph('г. Владивосток,')
+        # para.alignment = 2
+        para.paragraph_format.space_after = Inches(0.001)
+        # para.alignment = 2
+        para = document.add_paragraph('ул. Авроровская 19А, к. 195')
+        para.paragraph_format.space_after = Inches(0.001)
+        # para.alignment = 2
+        para = document.add_paragraph('тел: +7908237482')
+        para.paragraph_format.space_after = Inches(0.001)
+        # para.alignment = 2
+        para = document.add_paragraph('e-mail: vladmotors@vladmotors.ru')
+        para.paragraph_format.space_after = Inches(0.001)
+        # para.alignment = 2
+        document.add_picture('media/def_ved_img.png', width=Inches(7))
+
+        records = (
+            ('Модель', order.id_car.title),
+            ('№ Кузова', order.id_car.the_body),
+            ('Цвет', order.id_car.color)
+        )
+
+        table = document.add_table(rows=1, cols=2)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = 'Наименование'
+        for qty in records:
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(qty[0])
+            row_cells[1].text = str(qty[1])
+        title = os.path.join(settings.MEDIA_ROOT, 'client_contract/', f'Дефектная_ведомость_{order.id_customer.first_name_client[0]}_{order.id_customer.patronymic_client[0]}_{order.id_customer.last_name_client}.docx')
+        document.save(title)
+        context = {
+
+            'title': title
+        }
+        return context
+
+    def create_contract(self, order_id):
+        order = Order.objects.get(pk=order_id)
+        document = docx.Document()
+        styles = document.styles
+        styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+
+        heading = 'Агентский договор № ' + str(order.pk) + '/' + str(order.id_customer.pk)
+        heading = document.add_heading(heading, 1)
+        heading.alignment = 1
+
+        prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
+        prim1.alignment = 1
+
+        document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
+        paragraph1 = document.add_paragraph(
+            'Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
+        paragraph1.paragraph_format.first_line_indent = Inches(0.5)
+        paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
+
+        document.add_heading('1. Предмет договора', 1)
+
+        document.add_paragraph(
+            '1.1. Поставщик обязуется за вознаграждение совершать по поручению Заказчика юридические и иные действия от своего имени, но за счет Заказчика, либо от имени и за счет Заказчика.')
+        document.add_paragraph(
+            '1.2. Поставщик приобретает права и становится обязанным по сделке, совершенной с третьим лицом от своего имени за счет Заказчика.')
+        document.add_paragraph(
+            '1.3. По сделке, совершенной Поставщиком с третьим лицом от имени и за счет Заказчика, права и обязанности возникают у Заказчика.')
+        document.add_paragraph(
+            '1.4. В соответствии с настоящим договором Поставщик обязуется по поручению Заказчика организовать покупку транспортного средства (далее по тексту ТС) на автомобильных аукционах в Японии и доставку указанного ТС до места получения ТС в соответствии с заявкой (поручением) Заказчика.')
+        document.add_paragraph(
+            '1.5. Для исполнения поручения Заказчика Поставщик обязуется совершить следующие действия:')
+        document.add_paragraph('- осуществить покупку указанного Заказчиком ТС на аукционе Японии;')
+        document.add_paragraph('- осуществить доставку приобретенного ТС в порт погрузки в Японии;')
+        document.add_paragraph('- осуществить доставку приобретенного ТС морским транспортом до порта г. Владивосток;')
+        document.add_paragraph(
+            '- осуществить действия по таможенной очистке ТС в г. Владивосток, в том числе оформить необходимые таможенные документы;')
+        document.add_paragraph('- осуществить передачу приобретенного ТС Заказчику.')
+        document.add_paragraph(
+            '1.6. Для осуществления действий указанных в п.1.5. настоящего договора Поставщик заключает от своего имени необходимые договоры, в том числе агентские, подписывает необходимые документы, а также производит необходимые платежи.')
+
+        title = os.path.join(settings.MEDIA_ROOT, 'client_contract/', f'Договор_с_клиентом_{order.id_customer.first_name_client[0]}_{order.id_customer.patronymic_client[0]}_{order.id_customer.last_name_client}.docx')
+        document.save(title)
+        context = {
+
+            'title': title
+        }
+        return context
+
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
         car = order.id_car
@@ -831,97 +934,42 @@ class OrderInOrdersPageView(TemplateView):
             return render(request, 'order_in_orders.html')
 
         elif request.method == 'POST' and 'create_contract' in request.POST:
-            document = docx.Document()
-            styles = document.styles
-            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            form = OrderInOrdersForm(request.POST, request.FILES)
+            if form.is_valid():
+                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
 
-            heading = document.add_heading('Агентский договор № _/_', 1)
-            heading.alignment = 1
+                title = self.create_contract(order.pk)['title']
+                file_path = title
+                if os.path.exists(file_path):
+                    with open(file_path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
 
-            prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
-            prim1.alignment = 1
+                        # Кодирование имени файла для использования в заголовке Content-Disposition
+                        filename = os.path.basename(file_path)
+                        filename_header = quote(filename)
 
-            document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
-            paragraph1 = document.add_paragraph('Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
-            paragraph1.paragraph_format.first_line_indent = Inches(0.5)
-            paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
-
-            document.add_heading('1. Предмет договора', 1)
-
-            document.add_paragraph('1.1. Поставщик обязуется за вознаграждение совершать по поручению Заказчика юридические и иные действия от своего имени, но за счет Заказчика, либо от имени и за счет Заказчика.')
-            document.add_paragraph('1.2. Поставщик приобретает права и становится обязанным по сделке, совершенной с третьим лицом от своего имени за счет Заказчика.')
-            document.add_paragraph('1.3. По сделке, совершенной Поставщиком с третьим лицом от имени и за счет Заказчика, права и обязанности возникают у Заказчика.')
-            document.add_paragraph('1.4. В соответствии с настоящим договором Поставщик обязуется по поручению Заказчика организовать покупку транспортного средства (далее по тексту ТС) на автомобильных аукционах в Японии и доставку указанного ТС до места получения ТС в соответствии с заявкой (поручением) Заказчика.')
-            document.add_paragraph('1.5. Для исполнения поручения Заказчика Поставщик обязуется совершить следующие действия:')
-            document.add_paragraph('- осуществить покупку указанного Заказчиком ТС на аукционе Японии;')
-            document.add_paragraph('- осуществить доставку приобретенного ТС в порт погрузки в Японии;')
-            document.add_paragraph('- осуществить доставку приобретенного ТС морским транспортом до порта г. Владивосток;')
-            document.add_paragraph('- осуществить действия по таможенной очистке ТС в г. Владивосток, в том числе оформить необходимые таможенные документы;')
-            document.add_paragraph('- осуществить передачу приобретенного ТС Заказчику.')
-            document.add_paragraph('1.6. Для осуществления действий указанных в п.1.5. настоящего договора Поставщик заключает от своего имени необходимые договоры, в том числе агентские, подписывает необходимые документы, а также производит необходимые платежи.')
-
-            document.save('media/client_contract/demo.docx')
-
-            file_path = 'media/client_contract/demo.docx'
-            if os.path.exists(file_path):
-                with open(file_path, 'rb') as fh:
-                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                    response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
-                    return response
+                        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename_header}'
+                        return response
 
         elif request.method == 'POST' and 'create_defective_statement' in request.POST:
-            document = docx.Document()
-            styles = document.styles
-            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            form = OrderInOrdersForm(request.POST, request.FILES)
 
-            heading = document.add_heading('Дефектная ведомость', 1)
-            heading.alignment = 1
+            if form.is_valid():
+                order = Order.objects.get(id_order=form.cleaned_data['id_order'])
 
-            para = document.add_paragraph('Дата:')
-            para.paragraph_format.space_after = Inches(0.001)
-            para = document.add_paragraph('Агент:')
-            para.paragraph_format.space_after = Inches(0.001)
-            para = document.add_paragraph('ВладивостокМоторс')
-            # para.alignment = 2
-            para.paragraph_format.space_after = Inches(0.001)
-            para = document.add_paragraph('г. Владивосток,')
-            # para.alignment = 2
-            para.paragraph_format.space_after = Inches(0.001)
-            # para.alignment = 2
-            para = document.add_paragraph('ул. Авроровская 19А, к. 195')
-            para.paragraph_format.space_after = Inches(0.001)
-            # para.alignment = 2
-            para = document.add_paragraph('тел: +7908237482')
-            para.paragraph_format.space_after = Inches(0.001)
-            # para.alignment = 2
-            para = document.add_paragraph('e-mail: vladmotors@vladmotors.ru')
-            para.paragraph_format.space_after = Inches(0.001)
-            # para.alignment = 2
-            document.add_picture('media/def_ved_img.png', width=Inches(7))
+                title = self.create_dev_ved(order.pk)['title']
+                print(title)
+                file_path = title
+                if os.path.exists(file_path):
+                    with open(file_path, 'rb') as fh:
+                        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
 
-            records = (
-                ('Модель'),
-                ('№ Кузова'),
-                ('VIN'),
-                ('Цвет')
-            )
+                        # Кодирование имени файла для использования в заголовке Content-Disposition
+                        filename = os.path.basename(file_path)
+                        filename_header = quote(filename)
 
-            table = document.add_table(rows=1, cols=2)
-            table.style = 'Table Grid'
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = 'Наименование'
-            for qty in records:
-                row_cells = table.add_row().cells
-                row_cells[0].text = str(qty)
-
-            document.save('media/client_contract/demo.docx')
-
-            file_path = 'media/client_contract/demo.docx'
-            if os.path.exists(file_path):
-                with open(file_path, 'rb') as fh:
-                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-                    response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
-                    return response
+                        response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename_header}'
+                        return response
 
         user_id = request.user.id
         orders = Order.objects.filter(date_end=None, id_worker=user_id)
@@ -1980,14 +2028,27 @@ def excises(request):
 def download_all_documents(request, order_id):
 
     order = Order.objects.get(id_order=order_id)
+    path_def_ved = OrderInOrdersPageView().create_dev_ved(order.pk)['title']
+
+    # document = Document(doc_path)
     documents = [
         order.sbts,
         order.ptd,
         order.contract,
         order.defective_statement,
-        order.export_certificate
+        order.export_certificate,
     ]
+    if not order.contract:
+        path_contract = OrderInOrdersPageView().create_contract(order.pk)['title']
+        documents.append(path_contract)
+    if not order.defective_statement:
+        path_def_ved = OrderInOrdersPageView().create_dev_ved(order.pk)['title']
+        documents.append(path_def_ved)
 
+
+
+
+    # documents.extend(new_documents)
     # Create a zip file in memory
     zip_subdir = f"order_{order_id}_documents"
     zip_filename = f"{zip_subdir}.zip"
@@ -1998,8 +2059,14 @@ def download_all_documents(request, order_id):
     with zipfile.ZipFile(s, 'w') as zf:
         for doc in documents:
             if doc:
-                doc_path = os.path.join(os.getcwd(), doc.path)
-                arcname = os.path.join(zip_subdir, os.path.basename(doc_path))
-                zf.write(doc_path, arcname)
+                if isinstance(doc, str):
+                    print(doc)
+                    arcname = os.path.join(zip_subdir, os.path.basename(doc))
+                    zf.write(doc, arcname)
+                else:
+                    print('2', doc)
+                    doc_path = os.path.join(os.getcwd(), doc.path)
+                    arcname = os.path.join(zip_subdir, os.path.basename(doc_path))
+                    zf.write(doc_path, arcname)
 
     return s
