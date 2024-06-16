@@ -150,6 +150,22 @@
                         <label for="{{ form.client_contract.id_for_label }}" class="form-label">{{ form.client_contract.label }}</label>
                         {{ form.client_contract }}
                     </div>
+                    <div class="mb-3 form_disable_checkbox" style="{% if user.is_authenticated %}{% if user.job_title != 'Клиент' %}display: none;{% endif %}{% endif %}">
+                        <label for="{{ form.consignment.id_for_label }}" class="form-label">{{ form.consignment.label }}</label>
+                        {{ form.consignment }}
+                    </div>
+                    <div class="mb-3 form_disable_checkbox" style="{% if user.is_authenticated %}{% if user.job_title == 'Клиент' %}display: none;{% endif %}{% endif %}">
+                        <label for="{{ form.received_ptd.id_for_label }}" class="form-label">{{ form.received_ptd.label }}</label>
+                        {{ form.received_ptd }}
+                    </div>
+                    <div class="mb-3 form_disable_checkbox" style="{% if user.is_authenticated %}{% if user.job_title == 'Клиент' %}display: none;{% endif %}{% endif %}">
+                        <label for="{{ form.invoice.id_for_label }}" class="form-label">{{ form.invoice.label }}</label>
+                        {{ form.invoice }}
+                    </div>
+                    <div class="mb-3 form_disable_checkbox" style="{% if user.is_authenticated %}{% if user.job_title == 'Клиент' %}display: none;{% endif %}{% endif %}">
+                        <label for="{{ form.payment_order.id_for_label }}" class="form-label">{{ form.payment_order.label }}</label>
+                        {{ form.payment_order }}
+                    </div>
                     <div class="mb-3 form_disable_checkbox">
                         <label for="{{ form.def_ved.id_for_label }}" class="form-label">{{ form.def_ved.label }}</label>
                         {{ form.def_ved }}

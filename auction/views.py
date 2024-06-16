@@ -787,10 +787,24 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['export_certificate'].widget.initial_text = ''
         form.fields['export_certificate'].widget.input_text = 'Заменить'
         form.fields['export_certificate'].widget.clear_checkbox_label = ''
+        form.fields['consignment'].widget.initial_text = ''
+        form.fields['consignment'].widget.input_text = 'Заменить'
+        form.fields['consignment'].widget.clear_checkbox_label = ''
+        form.fields['received_ptd'].widget.initial_text = ''
+        form.fields['received_ptd'].widget.input_text = 'Заменить'
+        form.fields['received_ptd'].widget.clear_checkbox_label = ''
+        form.fields['invoice'].widget.initial_text = ''
+        form.fields['invoice'].widget.input_text = 'Заменить'
+        form.fields['invoice'].widget.clear_checkbox_label = ''
+        form.fields['payment_order'].widget.initial_text = ''
+        form.fields['payment_order'].widget.input_text = 'Заменить'
+        form.fields['payment_order'].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
             form.fields['comment'].initial = order.comment
+        if order.consignment is not None:
+            form.fields['consignment'].initial = order.consignment
         if order.sbts is not None:
             form.fields['sbts'].initial = order.sbts
         if order.ptd is not None:
@@ -801,6 +815,12 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['def_ved'].initial = order.defective_statement
         if order.export_certificate is not None:
             form.fields['export_certificate'].initial = order.export_certificate
+        if order.received_ptd is not None:
+            form.fields['received_ptd'].initial = order.received_ptd
+        if order.invoice is not None:
+            form.fields['invoice'].initial = order.invoice
+        if order.payment_order is not None:
+            form.fields['payment_order'].initial = order.payment_order
         return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo})
 
     def post(self, request, *args, **kwargs):
@@ -836,10 +856,32 @@ class OrderInOrdersPageView(TemplateView):
                     order.defective_statement = request.FILES.get('def_ved')
                 else:
                     order.defective_statement = order.defective_statement
+
                 if 'export_certificate' in request.FILES:
                     order.export_certificate = request.FILES.get('export_certificate')
                 else:
                     order.export_certificate = order.export_certificate
+
+                if 'consignment' in request.FILES:
+                    order.consignment = request.FILES.get('consignment')
+                else:
+                    order.consignment = order.consignment
+
+                if 'received_ptd' in request.FILES:
+                    order.received_ptd = request.FILES.get('received_ptd')
+                else:
+                    order.received_ptd = order.received_ptd
+
+                if 'invoice' in request.FILES:
+                    order.invoice = request.FILES.get('invoice')
+                else:
+                    order.invoice = order.invoice
+
+                if 'payment_order' in request.FILES:
+                    order.payment_order = request.FILES.get('payment_order')
+                else:
+                    order.payment_order = order.payment_order
+
                 print(order.ptd)
                 if order.ptd and order.sbts:
                     order.order_status = order.WAITING_TO_BE_SENT
@@ -2060,11 +2102,9 @@ def download_all_documents(request, order_id):
         for doc in documents:
             if doc:
                 if isinstance(doc, str):
-                    print(doc)
                     arcname = os.path.join(zip_subdir, os.path.basename(doc))
                     zf.write(doc, arcname)
                 else:
-                    print('2', doc)
                     doc_path = os.path.join(os.getcwd(), doc.path)
                     arcname = os.path.join(zip_subdir, os.path.basename(doc_path))
                     zf.write(doc_path, arcname)

@@ -178,6 +178,14 @@ class OrderInOrdersForm(forms.Form):
                                widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
     def_ved = forms.FileField(label='Дефектная ведомость',
                                widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    consignment = forms.FileField(label='Коносамент',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    received_ptd = forms.FileField(label='Полученная ПТД',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    invoice = forms.FileField(label='Инвойс',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    payment_order = forms.FileField(label='Платежное поручение',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
     price = forms.CharField(label='Рассчитанная цена',
                             widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}),
                             required=False)
