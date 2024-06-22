@@ -764,6 +764,10 @@ class OrderInOrdersPageView(TemplateView):
         photos = order.photos.all()
         photo = PhotoCar.objects.filter(id_car=car.pk)[:1][0].photo
         form = OrderInOrdersForm()
+        file_fields = [
+            'sbts', 'ptd', 'client_contract', 'def_ved', 'export_certificate',
+            'consignment', 'received_ptd', 'invoice', 'payment_order', 'contract_japan', 'photos'
+        ]
         form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
         form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
@@ -773,33 +777,10 @@ class OrderInOrdersPageView(TemplateView):
         form.fields['date_start'].widget.attrs.update({'value': order.date_start})
         if order.price is not None:
             form.fields['price'].widget.attrs.update({'value': str(order.price)})
-        form.fields['sbts'].widget.initial_text = ''
-        form.fields['sbts'].widget.input_text = 'Заменить'
-        form.fields['ptd'].widget.initial_text = ''
-        form.fields['ptd'].widget.input_text = 'Заменить'
-        form.fields['ptd'].widget.clear_checkbox_label = ''
-        form.fields['sbts'].widget.clear_checkbox_label = ''
-        form.fields['client_contract'].widget.initial_text = ''
-        form.fields['client_contract'].widget.input_text = 'Заменить'
-        form.fields['client_contract'].widget.clear_checkbox_label = ''
-        form.fields['def_ved'].widget.initial_text = ''
-        form.fields['def_ved'].widget.input_text = 'Заменить'
-        form.fields['def_ved'].widget.clear_checkbox_label = ''
-        form.fields['export_certificate'].widget.initial_text = ''
-        form.fields['export_certificate'].widget.input_text = 'Заменить'
-        form.fields['export_certificate'].widget.clear_checkbox_label = ''
-        form.fields['consignment'].widget.initial_text = ''
-        form.fields['consignment'].widget.input_text = 'Заменить'
-        form.fields['consignment'].widget.clear_checkbox_label = ''
-        form.fields['received_ptd'].widget.initial_text = ''
-        form.fields['received_ptd'].widget.input_text = 'Заменить'
-        form.fields['received_ptd'].widget.clear_checkbox_label = ''
-        form.fields['invoice'].widget.initial_text = ''
-        form.fields['invoice'].widget.input_text = 'Заменить'
-        form.fields['invoice'].widget.clear_checkbox_label = ''
-        form.fields['payment_order'].widget.initial_text = ''
-        form.fields['payment_order'].widget.input_text = 'Заменить'
-        form.fields['payment_order'].widget.clear_checkbox_label = ''
+        for field_name in file_fields:
+            form.fields[field_name].widget.initial_text = ''
+            form.fields[field_name].widget.input_text = 'Заменить'
+            form.fields[field_name].widget.clear_checkbox_label = ''
         if order.date_end is not None:
             form.fields['date_end'].widget.attrs.update({'value': order.date_end, 'readonly': 'True'})
         if order.comment is not None:
@@ -822,6 +803,13 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['invoice'].initial = order.invoice
         if order.payment_order is not None:
             form.fields['payment_order'].initial = order.payment_order
+        user_id = request.user.id
+        user = Worker.objects.get(pk=user_id)
+        if user.job_title == 'Клиент':
+            for field in form.fields.values():
+                field.widget.attrs['readonly'] = True
+            for field_name in file_fields:
+                form.fields[field_name].widget.attrs['disabled'] = True
         return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo,  'photos': photos})
 
     def post(self, request, *args, **kwargs):
@@ -1205,14 +1193,43 @@ class CustomerPageView(TemplateView):
         form.fields['telephone'].initial = customer.telephone
         form.fields['address'].initial = customer.address
         form.fields['date_of_issue'].initial = customer.date_of_issue
+        form.fields['inn'].widget.initial_text = ''
+        form.fields['inn'].widget.input_text = 'Заменить'
+        form.fields['inn'].widget.clear_checkbox_label = ''
+        if customer.inn is not None:
+            form.fields['inn'].initial = customer.inn
+        form.fields['passport'].widget.initial_text = ''
+        form.fields['passport'].widget.input_text = 'Заменить'
+        form.fields['passport'].widget.clear_checkbox_label = ''
+        if customer.passport is not None:
+            form.fields['passport'].initial = customer.passport
+        form.fields['registration'].widget.initial_text = ''
+        form.fields['registration'].widget.input_text = 'Заменить'
+        form.fields['registration'].widget.clear_checkbox_label = ''
+        if customer.registration is not None:
+            form.fields['registration'].initial = customer.registration
 
 
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
-            form = CustomerForm(request.POST)
+            form = CustomerForm(request.POST, request.FILES)
             if form.is_valid():
+                customer = get_object_or_404(Customer, pk=kwargs['customer_id'])
+                if 'inn' in request.FILES:
+                    customer.inn = request.FILES.get('inn')
+                else:
+                    customer.inn = customer.inn
+                if 'passport' in request.FILES:
+                    customer.passport = request.FILES.get('passport')
+                else:
+                    customer.passport = customer.passport
+                if 'registration' in request.FILES:
+                    customer.registration = request.FILES.get('registration')
+                else:
+                    customer.registration = customer.registration
+                customer.save()
                 form.update_customer(kwargs['customer_id'])
                 messages.success(request, "Клиент изменен")
 

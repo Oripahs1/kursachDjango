@@ -13,7 +13,7 @@
     {% include 'messages.html' %}
     <div class="d-grid gap-2 col-6 mx-auto">
 
-        <form method="POST">
+        <form enctype="multipart/form-data" method="POST">
             {% csrf_token %}
             <div class="form_flex">
                 <div class="col-md-4 mb-3">
@@ -81,6 +81,24 @@
                 <div class="col-md-12 mb-1">
                     <label for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }}</label>
                     {{ form.telephone }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1 form_disable_checkbox">
+                    <label for="{{ form.inn.id_for_label }}">{{ form.inn.label }}</label>
+                    {{ form.inn }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1 form_disable_checkbox">
+                    <label for="{{ form.passport.id_for_label }}">{{ form.passport.label }}</label>
+                    {{ form.passport }}
+                </div>
+            </div>
+            <div class="form_flex">
+                <div class="col-md-12 mb-1 form_disable_checkbox">
+                    <label for="{{ form.registration.id_for_label }}">{{ form.registration.label }}</label>
+                    {{ form.registration }}
                 </div>
             </div>
 

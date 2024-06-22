@@ -210,6 +210,9 @@ class Customer(models.Model):
     telephone = models.TextField()
     address = models.TextField()
     date_of_issue = models.TextField()
+    inn = models.FileField(null=True, upload_to='inn/', blank=True)
+    passport = models.FileField(null=True, upload_to='passport/', blank=True)
+    registration = models.FileField(null=True, upload_to='registration/', blank=True)
 
     def __str__(self):
         return str(self.last_name_client + " " + self.first_name_client + " " + self.patronymic_client + " " + self.passport_series + " " + self.passport_number)

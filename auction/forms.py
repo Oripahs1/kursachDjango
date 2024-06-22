@@ -229,6 +229,9 @@ class CustomerForm(forms.Form):
     address = forms.CharField(label='Зарегистрирован по адресу', widget=forms.TextInput(attrs={'class': 'form-control'}))
     date_of_issue = forms.DateField(label='Дата выдачи паспорта', widget=forms.DateInput(attrs={'class': 'form-control'}))
     telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    inn = forms.FileField(label='ИНН', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    passport = forms.FileField(label='Паспорт', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
+    registration = forms.FileField(label='Прописка', widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
 
     def save(self, commit=True):
         customer = Customer.objects.create(
