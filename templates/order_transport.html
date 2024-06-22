@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+    <title>Машины и Транспортные компании</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'orders.css' %}">
+{% endblock head %}
+
+{% block content %}
+<div class="container">
+    <h1>Машины и Транспортные компании</h1>
+    <form id="order-transport-form" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Машины из заказа</h2>
+                <ul class="list-group" id="car-list">
+                    {% for car in cars %}
+                        <li class="list-group-item">
+                            <input type="checkbox" name="cars" value="{{ car.pk }}" class="car-checkbox"> {{ car.title }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h2>Транспортные компании</h2>
+                <div id="transport-company-select" class="form-control">
+                    {% include 'transport_select.html' %}
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('.car-checkbox').on('change', function() {
+        var selectedCars = [];
+        $('.car-checkbox:checked').each(function() {
+            selectedCars.push($(this).val());
+        });
+
+        $.ajax({
+            url: "{% url 'update_transport_companies' %}",
+            method: 'GET',
+            data: {
+                cars: selectedCars
+            },
+            success: function(data) {
+                // Обновить галерею фотографий
+                $('#transport-company-select').html(data.html);
+            },
+            error: function(xhr, status, error) {
+                console.log('Ошибка: ' + error.message);
+            }
+        });
+    });
+});
+</script>
+{% endblock content %}

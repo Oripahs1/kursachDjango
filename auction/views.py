@@ -2147,3 +2147,31 @@ def order_photo(request, order_id):
         else:
             return JsonResponse({'error': 'Invalid form'}, status=400)
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+class OrderTransportView(TemplateView):
+    template_name = 'order_transport.html'
+
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.all()
+        cars = Car.objects.all()
+        transport_companies = TransportCompany.objects.all()
+        return render(request, 'order_transport.html', {'cars': cars, 'transport_companies': transport_companies})
+
+    def post(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            print(request.POST)
+        return django.http.HttpResponseRedirect(reverse('order_transport'))
+
+
+def update_transport_companies(request):
+    selected_cars = request.GET.getlist('cars[]')
+    print(selected_cars)
+    # Здесь можно добавить логику для фильтрации компаний в зависимости от выбранных машин
+    # Для примера просто возвращаем все компании
+    transport_companies = TransportCompany.objects.filter(pk=1)
+    context = {
+        'transport_companies': transport_companies,
+    }
+    html = render_to_string('transport_select.html', context)
+    return JsonResponse({'html': html})

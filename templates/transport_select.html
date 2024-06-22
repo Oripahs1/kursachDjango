@@ -1,0 +1,8 @@
+{% for company in transport_companies %}
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="transport_company" id="company-{{ company.id }}" value="{{ company.id }}">
+        <label class="form-check-label" for="company-{{ company.id }}">
+            {{ company.title }}
+        </label>
+    </div>
+{% endfor %}

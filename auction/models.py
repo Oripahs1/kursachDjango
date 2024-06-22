@@ -11,6 +11,10 @@ class PhotoCar(models.Model):
     photo = models.TextField()
 
 
+class City(models.Model):
+    title = models.TextField()
+
+
 class Invoice(models.Model):
     id_invoice = models.AutoField(primary_key=True)
     payer = models.TextField()
