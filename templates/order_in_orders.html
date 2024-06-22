@@ -269,7 +269,7 @@
             data: formData,
             processData: false,
             contentType: false,
-            success: function(response) {
+            success: function(data) {
                 // Обновить галерею фотографий
                 $('#gallery').html(data.html);
             },

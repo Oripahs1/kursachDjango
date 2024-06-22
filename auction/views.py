@@ -887,10 +887,6 @@ class OrderInOrdersPageView(TemplateView):
                 if order.ptd and order.sbts:
                     order.order_status = order.WAITING_TO_BE_SENT
 
-                order.save()
-                if 'photos' in request.FILES:
-                    photo = PhotoGallery.objects.create(order=order, photo=request.FILES.get('photos'))
-                    photo.save()
 
                 messages.success(request, "Заказ изменен")
                 form.save()
