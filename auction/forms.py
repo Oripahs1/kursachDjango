@@ -195,6 +195,8 @@ class OrderInOrdersForm(forms.Form):
                                           widget=forms.TextInput(attrs={'class': 'form-control'}), required=False)
     power = forms.CharField(label='Мощность машины в л.с.', widget=forms.TextInput(attrs={'class': 'form-control'}),
                             required=False)
+    photos = forms.FileField(label='Фото',
+                               widget=forms.ClearableFileInput(attrs={'class': 'form-control'}), required=False)
 
     def save(self, commit=True):
         order = Order.objects.filter(id_order=self.cleaned_data['id_order'])

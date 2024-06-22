@@ -120,6 +120,10 @@ class CustomsDuty(models.Model):
         return reverse('customs_duty', kwargs={'customs_duty_id': self.pk})
 
 
+class PhotoGallery(models.Model):
+    order = models.ForeignKey('Order', related_name='photos', on_delete=models.CASCADE)
+    photo = models.ImageField(upload_to='order_photos/')
+
 class Order(models.Model):
     # неоплачен, оплачен
     id_order = models.AutoField(primary_key=True)

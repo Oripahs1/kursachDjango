@@ -45,6 +45,7 @@ urlpatterns = [
     path('order/<int:car_id>/<int:customer_id>', views.OrderPageView.as_view(), name='order_with_customer'),
     path('orders/', views.OrdersPageView.as_view(), name='orders'),
     path('orders/<int:order_id>', views.OrderInOrdersPageView.as_view(), name='order_in_orders'),
+    path('order_photo/<int:order_id>', views.order_photo, name='order_photo'),
 
     path('transport_companies/', views.TransportCompaniesPageView.as_view(), name='transport_companies'),
     path('transport_company_new/', views.TransportCompanyNewPageView.as_view(), name='transport_company_new'),

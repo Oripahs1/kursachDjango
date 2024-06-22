@@ -18,12 +18,12 @@ import requests
 from django.http import HttpResponse
 from django.http import FileResponse
 from django.views.generic import TemplateView, ListView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from openpyxl.reader.excel import load_workbook
 
 from kursachDjango import settings
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice, Customer
+    TransportCompanyPrice, Customer, PhotoGallery
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
     NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
     CustomerForm
@@ -761,6 +761,7 @@ class OrderInOrdersPageView(TemplateView):
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(id_order=kwargs['order_id'])
         car = order.id_car
+        photos = order.photos.all()
         photo = PhotoCar.objects.filter(id_car=car.pk)[:1][0].photo
         form = OrderInOrdersForm()
         form.fields['export_certificate_number'].initial = order.export_certificate_number
@@ -821,7 +822,7 @@ class OrderInOrdersPageView(TemplateView):
             form.fields['invoice'].initial = order.invoice
         if order.payment_order is not None:
             form.fields['payment_order'].initial = order.payment_order
-        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo})
+        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo,  'photos': photos})
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
@@ -887,6 +888,9 @@ class OrderInOrdersPageView(TemplateView):
                     order.order_status = order.WAITING_TO_BE_SENT
 
                 order.save()
+                if 'photos' in request.FILES:
+                    photo = PhotoGallery.objects.create(order=order, photo=request.FILES.get('photos'))
+                    photo.save()
 
                 messages.success(request, "Заказ изменен")
                 form.save()
@@ -2110,3 +2114,21 @@ def download_all_documents(request, order_id):
                     zf.write(doc_path, arcname)
 
     return s
+
+
+def order_photo(request, order_id):
+    print(order_id)  # Логирование для проверки
+    order = get_object_or_404(Order, pk=order_id)
+    if request.method == 'POST':
+        if 'photos' in request.FILES:
+            photo = PhotoGallery.objects.create(order=order, photo=request.FILES.get('photos'))
+            photo.save()
+            order = get_object_or_404(Order, pk=order_id)
+            context = {
+                'order': order,
+            }
+            html = render_to_string('photo_gallery.html', context)
+            return JsonResponse({'html': html})
+        else:
+            return JsonResponse({'error': 'Invalid form'}, status=400)
+    return JsonResponse({'error': 'Invalid request'}, status=400)

@@ -56,10 +56,13 @@
                 <a class="nav-link" id="documents-tab" data-bs-toggle="tab" href="#documents" role="tab" aria-controls="documents" aria-selected="false">Документы</a>
             </li>
             <li class="nav-item" role="presentation">
+                <a class="nav-link" id="photo-tab" data-bs-toggle="tab" href="#photo" role="tab" aria-controls="documents" aria-selected="false">Фотоопись</a>
+            </li>
+            <li class="nav-item" role="presentation">
                 <a class="nav-link" id="download-tab" data-bs-toggle="tab" href="#download" role="tab" aria-controls="download" aria-selected="false">Скачать</a>
             </li>
         </ul>
-        <form method="POST" enctype="multipart/form-data">
+        <form id="orderForm" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="order" role="tabpanel" aria-labelledby="order-tab">
@@ -188,6 +191,15 @@
                         <a href="{% url 'download_all_documents' order.id_order %}" class="btn btn-outline-dark position-relative">Скачать все документы</a>
                     </div>
                 </div>
+                 <div class="tab-pane fade" id="photo" role="tabpanel" aria-labelledby="photo-tab">
+                    <div class="form-group mb-3">
+                        <label for="{{ form.photos.id_for_label }}">Загрузить фотографии</label>
+                        {{ form.photos }}
+                    </div>
+                    <div class="gallery" id="gallery">
+                       {% include 'photo_gallery.html' %}
+                    </div>
+                </div>
             </div>
 
             <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
@@ -216,6 +228,56 @@
             document.getElementById('{{ form.export_certificate_number.id_for_label }}'), {
             mask: '00000-0000 0000 0000 0000'
         });
+         // Получение CSRF-токена из cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Проверка, начинается ли cookie с нужного имени
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Установка CSRF-токена в заголовок AJAX-запроса
+    function csrfSafeMethod(method) {
+        // Эти HTTP-методы не требуют CSRF-токена
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    // Обработка загрузки фотографий асинхронно
+    $('input[name="photos"]').change(function() {
+        var formData = new FormData($('#orderForm')[0]);
+        $.ajax({
+            url: "{% url 'order_photo' order.id_order %}", // текущий URL
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                // Обновить галерею фотографий
+                $('#gallery').html(data.html);
+            },
+            error: function(xhr, status, error) {
+                console.log('Ошибка: ' + error.message);
+            }
+        });
+    });
     });
     </script>
 {% endblock content %}

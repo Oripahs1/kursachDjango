@@ -1,0 +1,5 @@
+<div class="gallery">
+    {% for photo in order.photos.all %}
+        <img style="max-width: 100%" src="{{ photo.photo.url }}" alt="Фото" class="mb-4">
+    {% endfor %}
+</div>
