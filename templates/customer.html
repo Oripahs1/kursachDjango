@@ -67,6 +67,17 @@
                 </div>
             </div>
             <div class="form_flex">
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+                    {{ form.address }}
+                </div>
+
+                <div class="col-md-6 mb-2">
+                    <label for="{{ form.date_of_issue.id_for_label }}">{{ form.date_of_issue.label }}</label>
+                    {{ form.date_of_issue }}
+                </div>
+            </div>
+            <div class="form_flex">
                 <div class="col-md-12 mb-1">
                     <label for="{{ form.telephone.id_for_label }}">{{ form.telephone.label }}</label>
                     {{ form.telephone }}
@@ -107,6 +118,12 @@
 
             // Инициализация flatpickr для выбора даты
             flatpickr("#{{ form.date_of_birth.id_for_label }}", {
+                dateFormat: "Y-m-d",
+                locale: "ru"  // Если нужна локализация на русский
+            });
+
+            // Инициализация flatpickr для выбора даты
+            flatpickr("#{{ form.date_of_issue.id_for_label }}", {
                 dateFormat: "Y-m-d",
                 locale: "ru"  // Если нужна локализация на русский
             });

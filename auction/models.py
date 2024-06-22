@@ -208,6 +208,8 @@ class Customer(models.Model):
     passport_department_code = models.TextField()
     passport_department_name = models.TextField()
     telephone = models.TextField()
+    address = models.TextField()
+    date_of_issue = models.TextField()
 
     def __str__(self):
         return str(self.last_name_client + " " + self.first_name_client + " " + self.patronymic_client + " " + self.passport_series + " " + self.passport_number)

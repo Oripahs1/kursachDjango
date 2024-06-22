@@ -723,9 +723,9 @@ class OrderInOrdersPageView(TemplateView):
         prim1 = document.add_paragraph('(на приобретение транспортного средства, его доставку в РФ и оформление)')
         prim1.alignment = 1
 
-        document.add_paragraph('г. Владивосток \t\t\t\t\t\t\t\t        __-__-____г')
+        document.add_paragraph(f'г. Владивосток \t\t\t\t\t\t\t                    {str(date.today())}')
         paragraph1 = document.add_paragraph(
-            'Общество с ограниченной ответственностью ______________, именуемое в тексте договора "Поставщик", в лице __________________, действующего на основании ________ с одной стороны, и ______________________, дата рождения __.__.____ г, паспорт ____№______, выдан __________________________________________, код подразделения ___-___, дата выдачи __.__.____ г, зарегистрирован: _______________________,именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
+            f'Общество с ограниченной ответственностью АвтолендДВ, именуемое в тексте договора "Поставщик", в лице {order.id_worker.full_name}, действующего на основании Устава с одной стороны, и {order.id_customer.last_name_client} {order.id_customer.first_name_client} {order.id_customer.patronymic_client}, дата рождения {order.id_customer.date_of_birth}г, паспорт {order.id_customer.passport_series}№{order.id_customer.passport_number}, выдан {order.id_customer.passport_department_name}, код подразделения {order.id_customer.passport_department_code}, дата выдачи {order.id_customer.date_of_issue}г, зарегистрирован: {order.id_customer.address},именуемый в тексте договора "Заказчик", с другой стороны, заключили настоящий договор о нижеследующем:')
         paragraph1.paragraph_format.first_line_indent = Inches(0.5)
         paragraph1.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
 
@@ -1207,6 +1207,8 @@ class CustomerPageView(TemplateView):
         form.fields['passport_department_code'].initial = customer.passport_department_code
         form.fields['passport_department_name'].initial = customer.passport_department_name
         form.fields['telephone'].initial = customer.telephone
+        form.fields['address'].initial = customer.address
+        form.fields['date_of_issue'].initial = customer.date_of_issue
 
 
         return render(request, self.template_name, {'form': form})

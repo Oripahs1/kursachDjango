@@ -224,8 +224,10 @@ class CustomerForm(forms.Form):
     passport_number = forms.CharField(label='Номер паспорта', widget=forms.TextInput(attrs={'class': 'form-control'}))
     passport_department_code = forms.CharField(label='Код подразделения',
                                                widget=forms.TextInput(attrs={'class': 'form-control'}))
-    passport_department_name = forms.CharField(label='Паспорт выдан',
+    passport_department_name = forms.CharField(label='Кем выдан',
                                                widget=forms.TextInput(attrs={'class': 'form-control'}))
+    address = forms.CharField(label='Зарегистрирован по адресу', widget=forms.TextInput(attrs={'class': 'form-control'}))
+    date_of_issue = forms.DateField(label='Дата выдачи паспорта', widget=forms.DateInput(attrs={'class': 'form-control'}))
     telephone = forms.CharField(label='Телефон', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self, commit=True):
@@ -239,7 +241,9 @@ class CustomerForm(forms.Form):
             passport_number=self.cleaned_data['passport_number'],
             passport_department_code=self.cleaned_data['passport_department_code'],
             passport_department_name=self.cleaned_data['passport_department_name'],
-            telephone=self.cleaned_data['telephone']
+            telephone=self.cleaned_data['telephone'],
+            address=self.cleaned_data['address'],
+            date_of_issue=self.cleaned_data['date_of_issue'],
         )
         return customer.pk
 
@@ -256,7 +260,9 @@ class CustomerForm(forms.Form):
             passport_number=self.cleaned_data['passport_number'],
             passport_department_code=self.cleaned_data['passport_department_code'],
             passport_department_name=self.cleaned_data['passport_department_name'],
-            telephone=self.cleaned_data['telephone']
+            telephone=self.cleaned_data['telephone'],
+            address=self.cleaned_data['address'],
+            date_of_issue=self.cleaned_data['date_of_issue'],
         )
 
 
