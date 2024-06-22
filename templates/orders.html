@@ -47,8 +47,11 @@
                             <button type="button" id="reset-btn" class="btn btn-secondary">Сбросить фильтры</button>
                         </div>
                         <div class="col-sm-12 text-center">
+                            {% if user.is_authenticated and user.job_title == 'Менеджер' %}
                             <button type="button" id="auc_doc" value="some_value" class="btn btn-info">Сформировать список для аукциона</button>
+                            {% elif user.is_authenticated and user.job_title == 'Логист' %}
                             <button type="button" id="trans_btn" value="some_value" class="btn btn-info">Сформировать заявку на перевозку </button>
+                            {% endif %}
                         </div>
                     </div>
                 </form>
