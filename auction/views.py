@@ -2076,6 +2076,7 @@ class OrderTransportView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.filter(delivery='Нужна доставка')
+        order = order.filter(order_status='Ожидает отправки')
         transport_companies = TransportCompany.objects.all()
         return render(request, 'order_transport.html', {'orders': order, 'transport_companies': transport_companies})
 
