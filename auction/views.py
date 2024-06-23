@@ -34,14 +34,7 @@ from datetime import date
 from django.urls import reverse
 from docx import Document
 from docx.shared import Inches, RGBColor, Pt
-
-
-#
-# from django.http import HttpResponse
-# from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
-# import io
-# from reportlab.pdfgen import canvas
-# from reportlab.lib.pagesizes import letter
+from django.db.models import Count
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
@@ -219,77 +212,7 @@ class TransportCompaniesPageView(TemplateView):
         transport_companies = TransportCompany.objects.all()
         return render(request, self.template_name, {'transport_companies': transport_companies})
 
-    def post(self, request, *args, **kwargs):
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'application' in request.POST:
-            print(request.POST['number_contract'])
-            document = docx.Document()
-            styles = document.styles
-            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
-            styles['Heading 2'].font.color.rgb = RGBColor(0, 0, 0)
 
-            today_date = datetime.datetime.now().strftime('%d.%m.%Y')
-
-            heading_text = f'ЗАЯВКА ОТ {today_date}г.'
-            heading = document.add_heading(heading_text, 1)
-            heading.alignment = 1
-            heading.paragraph_format.space_after = Pt(0)
-            heading.paragraph_format.space_before = Pt(0)
-
-            heading_text = f'НА ОСНОВАНИИ ДОГОВОРА НА ОСУЩЕСТВЛЕНИЕ ПЕРЕВОЗКИ №' + request.POST['number_contract']
-            heading = document.add_heading(heading_text, 1)
-            heading.alignment = 1
-            heading.paragraph_format.space_after = Pt(0)
-            heading.paragraph_format.space_before = Pt(0)
-            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку из г. Владивосток следующего груза:'
-            heading = document.add_heading(heading_text, 2)
-            heading.alignment = 1
-            heading.paragraph_format.space_after = Pt(0)
-            heading.paragraph_format.space_before = Pt(0)
-
-            table = document.add_table(rows=1, cols=4)
-            table.style = 'Table Grid'
-            hdr_cells = table.rows[0].cells
-            hdr_cells[0].text = 'Адрес получения'
-            hdr_cells[1].text = 'Характер груза'
-            hdr_cells[2].text = 'Грузополучатель'
-            hdr_cells[3].text = '№ Дефектной ведомости'
-
-            # Установка размера текста для заголовков таблицы
-            for cell in hdr_cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
-
-            orders = Order.objects.all()
-            records = []
-            for order in orders:
-                records.append({
-                    'address': order.city,
-                    'cargo': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(order.id_car.the_body),
-                    'customer': str(order.id_customer),
-                    'dev_ved': str(order.pk),
-                })
-
-            for record in records:
-                row_cells = table.add_row().cells
-                row_cells[0].text = record['address']
-                row_cells[1].text = record['cargo']
-                row_cells[2].text = record['customer']
-                row_cells[3].text = record['dev_ved']
-                # Установка размера текста для ячеек таблицы
-                for cell in row_cells:
-                    for paragraph in cell.paragraphs:
-                        for run in paragraph.runs:
-                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
-
-            file_path = 'media/client_contract/demo.docx'
-            document.save(file_path)
-
-            if os.path.exists(file_path):
-                file_url = f'/media/client_contract/demo.docx'
-                return JsonResponse({'file_url': file_url})
-
-        return JsonResponse({'error': 'Invalid request'}, status=400)
 class TransportCompanyNewPageView(TemplateView):
     template_name = 'transport_company.html'
 
@@ -2152,23 +2075,103 @@ class OrderTransportView(TemplateView):
     template_name = 'order_transport.html'
 
     def get(self, request, *args, **kwargs):
-        order = Order.objects.all()
-        cars = Car.objects.all()
+        order = Order.objects.filter(delivery='Нужна доставка')
         transport_companies = TransportCompany.objects.all()
-        return render(request, 'order_transport.html', {'cars': cars, 'transport_companies': transport_companies})
+        return render(request, 'order_transport.html', {'orders': order, 'transport_companies': transport_companies})
 
     def post(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            print(request.POST)
-        return django.http.HttpResponseRedirect(reverse('order_transport'))
+        if request.method == 'POST' and 'transport_company' in request.POST:
+            document = docx.Document()
+            styles = document.styles
+            styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
+            styles['Heading 2'].font.color.rgb = RGBColor(0, 0, 0)
+            transport_company = get_object_or_404(TransportCompany, pk=request.POST['transport_company'])
+            today_date = datetime.datetime.now().strftime('%d.%m.%Y')
+
+            heading_text = f'ЗАЯВКА ОТ {today_date}г.'
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            heading_text = f'НА ОСНОВАНИИ ДОГОВОРА НА ОСУЩЕСТВЛЕНИЕ ПЕРЕВОЗКИ №' + str(transport_company.number_contract)
+            heading = document.add_heading(heading_text, 1)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+            heading_text = f'ООО «Автолэнд ДВ» просит организовать доставку из г. Владивосток следующего груза:'
+            heading = document.add_heading(heading_text, 2)
+            heading.alignment = 1
+            heading.paragraph_format.space_after = Pt(0)
+            heading.paragraph_format.space_before = Pt(0)
+
+            table = document.add_table(rows=1, cols=4)
+            table.style = 'Table Grid'
+            hdr_cells = table.rows[0].cells
+            hdr_cells[0].text = 'Адрес получения'
+            hdr_cells[1].text = 'Характер груза'
+            hdr_cells[2].text = 'Грузополучатель'
+            hdr_cells[3].text = '№ Дефектной ведомости'
+
+            # Установка размера текста для заголовков таблицы
+            for cell in hdr_cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(9)  # Установите желаемый размер шрифта
+            selected_cars = request.POST.getlist('cars')
+            orders = Order.objects.filter(pk__in=selected_cars)
+            records = []
+            for order in orders:
+                records.append({
+                    'address': str(order.city),
+                    'cargo': 'Легковой автомобиль: ' + str(order.id_car.title) + '\n' + 'Кузов: ' + str(
+                        order.id_car.the_body),
+                    'customer': str(order.id_customer),
+                    'dev_ved': str(order.pk),
+                })
+
+            for record in records:
+                row_cells = table.add_row().cells
+                row_cells[0].text = record['address']
+                row_cells[1].text = record['cargo']
+                row_cells[2].text = record['customer']
+                row_cells[3].text = record['dev_ved']
+                # Установка размера текста для ячеек таблицы
+                for cell in row_cells:
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(9)  # Установите желаемый размер шрифта
+
+            file_path = 'media/client_contract/demo.docx'
+            document.save(file_path)
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+
+                    # Кодирование имени файла для использования в заголовке Content-Disposition
+                    filename = os.path.basename(file_path)
+                    filename_header = quote(filename)
+
+                    response['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{filename_header}'
+                    return response
+
+        order = Order.objects.filter(delivery='Нужна доставка')
+        transport_companies = TransportCompany.objects.all()
+        return render(request, 'order_transport.html', {'orders': order, 'transport_companies': transport_companies})
 
 
 def update_transport_companies(request):
     selected_cars = request.GET.getlist('cars[]')
-    print(selected_cars)
-    # Здесь можно добавить логику для фильтрации компаний в зависимости от выбранных машин
-    # Для примера просто возвращаем все компании
-    transport_companies = TransportCompany.objects.filter(pk=1)
+    if selected_cars:
+        selected_cities = Order.objects.filter(pk__in=selected_cars).values_list('city', flat=True)
+        transport_companies = TransportCompany.objects.filter(
+            transportcompanyprices__place__in=selected_cities
+        ).annotate(num_cities=Count('transportcompanyprices__place')).filter(
+            num_cities=len(selected_cities)).distinct().prefetch_related('transportcompanyprices_set__place').order_by(
+            'title')
+    else:
+        transport_companies = TransportCompany.objects.all().order_by('title')
+
     context = {
         'transport_companies': transport_companies,
     }

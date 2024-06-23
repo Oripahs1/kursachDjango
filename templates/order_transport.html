@@ -14,9 +14,11 @@
             <div class="col-md-6">
                 <h2>Машины из заказа</h2>
                 <ul class="list-group" id="car-list">
-                    {% for car in cars %}
-                        <li class="list-group-item">
-                            <input type="checkbox" name="cars" value="{{ car.pk }}" class="car-checkbox"> {{ car.title }}
+                    {% for order in orders %}
+                        <li class="list-group-item car-item">
+                            <input type="checkbox" name="cars" value="{{ order.pk }}" class="car-checkbox">
+                            <span class="car-title">{{ order.id_car.title }}</span>
+                            <span class="car-city">{{ order.city }}</span>
                         </li>
                     {% endfor %}
                 </ul>
@@ -30,7 +32,7 @@
         </div>
         <div class="row mt-3">
             <div class="col-md-12 text-center">
-                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <button type="submit" class="btn btn-primary">Сформировать заявку</button>
             </div>
         </div>
     </form>

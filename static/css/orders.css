@@ -1,0 +1,11 @@
+.car-item {
+    margin-bottom: 10px;
+}
+.car-title {
+    font-weight: bold;
+}
+.car-city {
+    display: block;
+    font-style: italic;
+    color: gray;
+}
