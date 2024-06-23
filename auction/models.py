@@ -14,6 +14,9 @@ class PhotoCar(models.Model):
 class City(models.Model):
     title = models.TextField()
 
+    def __str__(self):
+        return str(self.title)
+
 
 class Invoice(models.Model):
     id_invoice = models.AutoField(primary_key=True)
@@ -104,6 +107,15 @@ class TransportCompanyPrice(models.Model):
         return reverse('transport_company_price', kwargs={'price_id': self.pk})
 
 
+class TransportCompanyPrices(models.Model):
+    id_transport_company = models.ForeignKey('TransportCompany', on_delete=models.CASCADE)
+    place = models.ForeignKey('City', on_delete=models.CASCADE)
+    price = models.IntegerField(null=True, blank=True)
+
+    def get_absolute_url_transport_company_price(self):
+        return reverse('transport_company_price', kwargs={'price_id': self.pk})
+
+
 class CustomsDuty(models.Model):
     from_0 = 'От 0 до 3 лет'
     from_3 = 'От 3 до 5 лет'
@@ -151,7 +163,7 @@ class Order(models.Model):
     price = models.TextField(max_length=5, null=True, blank=True)
     export_certificate_number = models.TextField(max_length=5, null=True, blank=True)
     price_customer = models.TextField(max_length=5, null=True, blank=True)
-    city = models.TextField(null=True, blank=True)
+    city = models.ForeignKey('City', on_delete=models.CASCADE, null=True, blank=True)
 
     NEED = 'Нужна доставка'
     NO_NEED = 'Доставка не требуется'

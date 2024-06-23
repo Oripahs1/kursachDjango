@@ -1,6 +1,6 @@
 from django import forms
 from .models import Worker, Order, Customer, Car, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice
+    TransportCompanyPrice, TransportCompanyPrices, City
 from django.db import IntegrityError
 import datetime
 
@@ -118,16 +118,16 @@ class OrderForm(forms.Form):
     customer = forms.ModelChoiceField(label='Клиент', queryset=Customer.objects.all(), widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
     delivery = forms.ChoiceField(label='Доставка', choices=Order.NEEDS_DELIVERY,
                              widget=forms.Select(attrs={'class': 'custom-select'}))
-    city = forms.ChoiceField(
-        label='Доставка',
-        choices=[(place, f"{place} - {price} руб.") for place, price in
-                 TransportCompanyPrice.objects.values_list('place', 'price').distinct()],
-        widget=forms.Select(attrs={'class': 'custom-select'})
-    )
+    # city = forms.ChoiceField(
+    #     label='Доставка',
+    #     choices=[(place, f"{place} - {price} руб.") for place, price in
+    #              TransportCompanyPrice.objects.values_list('place', 'price').distinct()],
+    #     widget=forms.Select(attrs={'class': 'custom-select'})
+    # )
     id_car = forms.CharField(label='Машина', widget=forms.TextInput(attrs={'class': 'form-control'}))
-    # worker = forms.ModelChoiceField(label='Сотрудник',
-    #                                 queryset=Worker.objects.filter(is_superuser=False, job_title='Менеджер'),
-    #                                 widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
+    city = forms.ModelChoiceField(label='Город',
+                                    queryset=City.objects.all(),
+                                    widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
     worker = forms.CharField(label='Сотрудник',
                              widget=forms.TextInput(attrs={'class': 'form-control form-readonly', 'readonly': 'True'}))
     price = forms.CharField(label='Предварительная цена',
@@ -474,14 +474,15 @@ class TransportCompanyForm(forms.Form):
 
 
 class TransportCompanyPriceForm(forms.Form):
-    place = forms.CharField(label='Место перевозки',
-                            widget=forms.TextInput(attrs={'class': 'form-control'}))
+    place = forms.ModelChoiceField(label='Город',
+                                    queryset=City.objects.all(),
+                                    widget=forms.Select(attrs={'class': 'custom-select'}), empty_label=None)
     price = forms.CharField(label='Цена перевозки',
                             widget=forms.TextInput(attrs={'class': 'form-control'}))
 
     def save(self, tk_id):
         tk = TransportCompany.objects.get(pk=tk_id)
-        TransportCompanyPrice.objects.create(
+        TransportCompanyPrices.objects.create(
             id_transport_company=tk,
             place=self.cleaned_data['place'],
             price=self.cleaned_data['price'],
@@ -489,7 +490,7 @@ class TransportCompanyPriceForm(forms.Form):
         return
 
     def update(self, price_id):
-        tk_price = TransportCompanyPrice.objects.filter(pk=price_id)
+        tk_price = TransportCompanyPrices.objects.filter(pk=price_id)
         tk_price.update(
             place=self.cleaned_data['place'],
             price=self.cleaned_data['price'],

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django import forms
 from .models import Car, PhotoCar, Worker, Invoice, Order, Customer, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice
+    TransportCompanyPrice, TransportCompanyPrices, City
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import ValidationError
 
@@ -18,6 +18,8 @@ admin.site.register(Excise)
 
 admin.site.register(TransportCompany)
 admin.site.register(TransportCompanyPrice)
+admin.site.register(City)
+admin.site.register(TransportCompanyPrices)
 
 # Register your models here.
 

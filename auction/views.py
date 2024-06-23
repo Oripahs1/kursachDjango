@@ -23,7 +23,7 @@ from openpyxl.reader.excel import load_workbook
 
 from kursachDjango import settings
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
-    TransportCompanyPrice, Customer, PhotoGallery
+    TransportCompanyPrice, Customer, PhotoGallery, TransportCompanyPrices
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
     NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
     CustomerForm
@@ -157,7 +157,7 @@ class TransportCompanyPricePageView(TemplateView):
     template_name = 'transport_company_price.html'
 
     def get(self, request, *args, **kwargs):
-        transport_company_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        transport_company_price = TransportCompanyPrices.objects.get(pk=kwargs['price_id'])
         form = TransportCompanyPriceForm()
         form.fields['price'].initial = transport_company_price.price
         form.fields['place'].initial = transport_company_price.place
@@ -173,7 +173,7 @@ class TransportCompanyPricePageView(TemplateView):
                 for field in form:
                     print("Field Error:", field.name, field.errors)
                 messages.info(request, 'Ошибка валидации формы')
-        tk_price = TransportCompanyPrice.objects.get(pk=kwargs['price_id'])
+        tk_price = TransportCompanyPrices.objects.get(pk=kwargs['price_id'])
         return django.http.HttpResponseRedirect(reverse('transport_company_prices', kwargs={'transport_company_prices_id': tk_price.id_transport_company.pk}))
 
 
@@ -204,7 +204,7 @@ class TransportCompanyPricesPageView(TemplateView):
     template_name = 'transport_company_prices.html'
 
     def get(self, request, *args, **kwargs):
-        transport_company_prices = TransportCompanyPrice.objects.filter(id_transport_company=kwargs['transport_company_prices_id'])
+        transport_company_prices = TransportCompanyPrices.objects.filter(id_transport_company=kwargs['transport_company_prices_id'])
         return render(request, self.template_name, {'transport_company_prices': transport_company_prices})
 
     def post(self, request, *args, **kwargs):
@@ -348,7 +348,7 @@ class TransportCompanyPageView(TemplateView):
             return render(request, 'transport_companies.html', {'transport_companies': transport_companies})
 
         if request.method == 'POST' and 'new_price' in request.POST:
-            transport_company_prices = TransportCompanyPrice.objects.filter(
+            transport_company_prices = TransportCompanyPrices.objects.filter(
                 id_transport_company=kwargs['transport_company_id'])
             transport_company_prices = {
                 'transport_company_prices': transport_company_prices
@@ -874,7 +874,7 @@ class OrderInOrdersPageView(TemplateView):
                 print(order.ptd)
                 if order.ptd and order.sbts:
                     order.order_status = order.WAITING_TO_BE_SENT
-
+                order.save()
 
                 messages.success(request, "Заказ изменен")
                 form.save()
@@ -1144,7 +1144,6 @@ class OrderPageView(TemplateView):
     template_name = "order.html"
 
     def get(self, request, *args, **kwargs):
-        print(TransportCompanyPrice.objects.values_list('place', flat=True).distinct())
         car = Car.objects.get(id_car=kwargs.get('car_id'))
         form = OrderForm()
 
