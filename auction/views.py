@@ -2163,7 +2163,8 @@ class OrderTransportView(TemplateView):
 def update_transport_companies(request):
     selected_cars = request.GET.getlist('cars[]')
     if selected_cars:
-        selected_cities = Order.objects.filter(pk__in=selected_cars).values_list('city', flat=True)
+        selected_orders = Order.objects.filter(pk__in=selected_cars)
+        selected_cities = selected_orders.values_list('city', flat=True).distinct()
         transport_companies = TransportCompany.objects.filter(
             transportcompanyprices__place__in=selected_cities
         ).annotate(num_cities=Count('transportcompanyprices__place')).filter(
