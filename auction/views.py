@@ -26,7 +26,7 @@ from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsD
     TransportCompanyPrice, Customer, PhotoGallery, TransportCompanyPrices
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
     NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
-    CustomerForm
+    CustomerForm, CityForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -154,7 +154,8 @@ class TransportCompanyPricePageView(TemplateView):
         form = TransportCompanyPriceForm()
         form.fields['price'].initial = transport_company_price.price
         form.fields['place'].initial = transport_company_price.place
-        return render(request, self.template_name, {'form': form})
+        city_form = CityForm()
+        return render(request, self.template_name, {'form': form, 'city_form': city_form})
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
@@ -2186,3 +2187,15 @@ def update_transport_companies(request):
     }
     html = render_to_string('transport_select.html', context)
     return JsonResponse({'html': html})
+
+
+def add_city(request):
+    print('ajax')
+    if request.method == 'POST':
+        form = CityForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

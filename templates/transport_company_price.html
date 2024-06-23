@@ -1,5 +1,3 @@
-
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -32,6 +30,57 @@
             </div>
 
         </form>
+        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#addCityModal">
+            Добавить город
+        </button>
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="addCityModal" tabindex="-1" aria-labelledby="addCityModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCityModalLabel">Добавить город</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-city-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="city-title" class="form-label">Название города</label>
+                            <input type="text" class="form-control" id="city-title" name="title" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    $(document).ready(function() {
+        $('#add-city-form').submit(function(event) {
+            event.preventDefault();
+            var title = $('#city-title').val();
+
+            $.ajax({
+                url: "{% url 'add_city' %}",
+                method: 'POST',
+                data: {
+                    'title': title,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    if (data.success) {
+                        location.reload(); // Перезагрузить страницу после успешного добавления города
+                    } else {
+                        alert('Ошибка при добавлении города');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Ошибка: ' + error.message);
+                }
+            });
+        });
+    });
+</script>
 {% endblock content %}

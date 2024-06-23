@@ -496,3 +496,8 @@ class TransportCompanyPriceForm(forms.Form):
             price=self.cleaned_data['price'],
         )
         return
+
+class CityForm(forms.ModelForm):
+    class Meta:
+        model = City
+        fields = ['title']

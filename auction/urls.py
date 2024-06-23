@@ -69,6 +69,7 @@ urlpatterns = [
     path('orders/<int:order_id>/download_all_documents/', views.download_all_documents, name='download_all_documents'),
     path('orders/transport/', views.OrderTransportView.as_view(), name='order_transport'),
     path('update_transport_companies/', views.update_transport_companies, name='update_transport_companies'),
+    path('add_city/', views.add_city, name='add_city'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))
