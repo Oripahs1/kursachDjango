@@ -878,6 +878,8 @@ class OrderInOrdersPageView(TemplateView):
                 print(int(price), base_bet * coefficient_bet, price_transportation, coefficient_excise,
                       coefficient_customs_duty, nds)
                 print(final_price)
+                order.order_status = 'Выкуплен'
+                order.save()
                 form.fields['price'].widget.attrs.update({'value': final_price})
 
 
@@ -947,6 +949,7 @@ class OrdersPageView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'auc_doc_btn' in request.POST:
+            print('Аукцион')
             document = docx.Document()
             styles = document.styles
             styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
@@ -968,7 +971,7 @@ class OrdersPageView(TemplateView):
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
                         run.font.size = Pt(9)  # Установите желаемый размер шрифта
-            orders = Order.objects.all()
+            orders = Order.objects.filter(order_status='В работе')
             records = []
             for order in orders:
                 records.append({
@@ -996,6 +999,7 @@ class OrdersPageView(TemplateView):
                 return JsonResponse({'file_url': file_url})
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest' and 'trans_btn' in request.POST:
+            print('Транспорт')
             document = docx.Document()
             styles = document.styles
             styles['Heading 1'].font.color.rgb = RGBColor(0, 0, 0)
@@ -1032,7 +1036,7 @@ class OrdersPageView(TemplateView):
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
                         run.font.size = Pt(9)  # Установите желаемый размер шрифта
-            orders = Order.objects.all()
+            orders = Order.objects.filter(order_status='Выкуплен')
             records = []
             for order in orders:
                 records.append({
@@ -1053,7 +1057,7 @@ class OrdersPageView(TemplateView):
 
 
 
-            file_path = 'media/client_contract/demo.docx'
+            file_path = f'media/client_contract/demo.docx'
             document.save(file_path)
 
             if os.path.exists(file_path):
@@ -2021,6 +2025,9 @@ def download_all_documents(request, order_id):
         order.defective_statement,
         order.export_certificate,
     ]
+    photos = PhotoGallery.objects.filter(order=order)
+    for photo in photos:
+        documents.append(photo.photo)
     if not order.contract:
         path_contract = OrderInOrdersPageView().create_contract(order.pk)['title']
         documents.append(path_contract)
@@ -2143,7 +2150,7 @@ class OrderTransportView(TemplateView):
                         for run in paragraph.runs:
                             run.font.size = Pt(9)  # Установите желаемый размер шрифта
 
-            file_path = 'media/client_contract/demo.docx'
+            file_path = f'media/client_contract/Заявка_на_перевозку_в_{ transport_company.title }.docx'
             document.save(file_path)
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as fh:
