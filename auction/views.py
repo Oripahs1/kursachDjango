@@ -1194,7 +1194,7 @@ class CustomerNewPageView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         if request.method == 'POST':
-            form = CustomerForm(request.POST)
+            form = CustomerForm(request.POST, request.FILES)
             if form.is_valid():
                 if Customer.objects.filter(passport_number=form.cleaned_data['passport_number'], passport_series=form.cleaned_data['passport_series']).exists():
                     print('Такой уже есть')
@@ -1202,10 +1202,24 @@ class CustomerNewPageView(TemplateView):
                     return django.http.HttpResponseRedirect(
                         reverse('customer_new_for_order', kwargs={'car_id': kwargs.get('car_id')}))
 
-                customer = form.save()
+                customer_id = form.save()
+                customer = get_object_or_404(Customer, pk=customer_id)
+                if 'inn' in request.FILES:
+                    customer.inn = request.FILES.get('inn')
+                else:
+                    customer.inn = customer.inn
+                if 'passport' in request.FILES:
+                    customer.passport = request.FILES.get('passport')
+                else:
+                    customer.passport = customer.passport
+                if 'registration' in request.FILES:
+                    customer.registration = request.FILES.get('registration')
+                else:
+                    customer.registration = customer.registration
+                customer.save()
                 messages.success(request, "Клиент создан")
                 if 'save_and_continue' in request.POST:
-                    return django.http.HttpResponseRedirect(reverse('order_with_customer', kwargs={'car_id': kwargs.get('car_id'), 'customer_id': customer}))
+                    return django.http.HttpResponseRedirect(reverse('order_with_customer', kwargs={'car_id': kwargs.get('car_id'), 'customer_id': customer_id}))
                 return django.http.HttpResponseRedirect(reverse('customers'))
             else:
                 messages.error(request, "Некорректная форма")
