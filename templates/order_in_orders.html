@@ -188,6 +188,11 @@
                     <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
                         <input type="submit" name="create_defective_statement" class="btn btn-outline-dark position-relative" value="Сформировать дефектную ведомость"/>
                     </div>
+                    <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
+                        <button type="button" class="btn btn-outline-dark position-relative" data-bs-toggle="modal" data-bs-target="#customFormModal">
+                            Предпросмотр данных для ПТД
+                        </button>
+                    </div>
                     {% endif %}
                 </div>
                  <div class="tab-pane fade" id="download" role="tabpanel" aria-labelledby="download-tab">
@@ -212,6 +217,26 @@
 
         </form>
     </div>
+    <!-- your_template.html -->
+    
+    
+    <div class="modal fade" id="customFormModal" tabindex="-1" aria-labelledby="customFormModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="customFormModalLabel">Заполните данные</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="customForm" method="post" action="{% url 'your_view' order.id_order %}">
+              {% csrf_token %}
+              {{ custom_form.as_p }}
+              <button type="button" class="btn btn-primary" id="submitCustomForm">Сохранить</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Подключение jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Подключение IMask.js -->
@@ -223,6 +248,24 @@
 
     <script>
     $(document).ready(function() {
+        $('#submitCustomForm').click(function() {
+        var form = $('#customForm');
+        var formData = new FormData(form[0]);
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                alert('PDF успешно сгенерирован');
+                $('#customFormModal').modal('hide');
+            },
+            error: function(xhr, status, error) {
+                alert('Ошибка: ' + error.message);
+            }
+        });
+    });
         // Инициализация flatpickr для выбора даты
         flatpickr("#id_date_end", {
             dateFormat: "Y-m-d",

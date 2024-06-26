@@ -21,12 +21,14 @@ from django.views.generic import TemplateView, ListView
 from django.shortcuts import render, redirect, get_object_or_404
 from openpyxl.reader.excel import load_workbook
 
+import pdfkit
+
 from kursachDjango import settings
 from .models import Car, PhotoCar, Worker, Order, Invoice, Duty, Price, CustomsDuty, Excise, TransportCompany, \
     TransportCompanyPrice, Customer, PhotoGallery, TransportCompanyPrices
 from .forms import ParserForm, RegistrationForm, LoginForm, LogoutForm, OrderForm, OrderInOrdersForm, InvoiceForm, \
     NewInvoiceForm, DutyForm, PriceForm, CustomsDutyForm, ExciseForm, TransportCompanyForm, TransportCompanyPriceForm, \
-    CustomerForm, CityForm
+    CustomerForm, CityForm, CustomForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -683,6 +685,7 @@ class OrderInOrdersPageView(TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
+        custom_form = CustomForm()
         order = Order.objects.get(id_order=kwargs['order_id'])
         car = order.id_car
         photos = order.photos.all()
@@ -692,6 +695,22 @@ class OrderInOrdersPageView(TemplateView):
             'sbts', 'ptd', 'client_contract', 'def_ved', 'export_certificate',
             'consignment', 'received_ptd', 'invoice', 'payment_order', 'contract_japan', 'photos'
         ]
+
+        custom_form.fields['brand_model'].initial = str(order.id_car.title)
+        custom_form.fields['engine_volume'].initial = str(order.id_car.volume)
+        custom_form.fields['body_number'].initial = str(order.id_car.the_body)
+        custom_form.fields['manufacture_date'].initial = str(order.id_car.year_car)
+        custom_form.fields['cost'].initial = str(order.price)
+        custom_form.fields['current_date'].initial = str(date.today())
+        custom_form.fields['manager_name'].initial = str(order.id_worker.full_name)
+        custom_form.fields['client_contract_number'].initial = str(order.pk) + '/' + str(order.id_customer.pk)
+        custom_form.fields['client_last_name'].initial = str(order.id_customer.last_name_client)
+        custom_form.fields['client_first_name'].initial = str(order.id_customer.first_name_client)
+        custom_form.fields['client_patronymic'].initial = str(order.id_customer.patronymic_client)
+        custom_form.fields['passport_info'].initial = f'{order.id_customer.passport_series} {order.id_customer.passport_number} {order.id_customer.date_of_issue}'
+        custom_form.fields['registration_address'].initial = order.id_customer.address
+
+
         form.fields['export_certificate_number'].initial = order.export_certificate_number
         form.fields['id_order'].widget.attrs.update({'value': order.id_order})
         form.fields['first_name_client'].widget.attrs.update({'value': order.id_customer.first_name_client})
@@ -734,7 +753,7 @@ class OrderInOrdersPageView(TemplateView):
                 field.widget.attrs['readonly'] = True
             for field_name in file_fields:
                 form.fields[field_name].widget.attrs['disabled'] = True
-        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo,  'photos': photos})
+        return render(request, self.template_name, {'order': order, 'form': form, 'order_id': order.id_order, 'car': car, 'photo': photo,  'photos': photos, 'custom_form': custom_form})
 
     def post(self, request, *args, **kwargs):
         print(request.FILES)
@@ -2213,3 +2232,25 @@ def add_city(request):
         else:
             return JsonResponse({'success': False, 'errors': form.errors})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def your_view(request, order_id):
+    order = get_object_or_404(Order, id_order=order_id)
+    if request.method == 'POST':
+        form = CustomForm(request.POST)
+        if form.is_valid():
+            # Обработка данных формы и генерация PDF
+            html_string = render_to_string('pdf_template.html', form.cleaned_data)
+            pdf = pdfkit.from_string(html_string, False)
+            response = JsonResponse({'message': 'PDF успешно сгенерирован'})
+            response['Content-Disposition'] = 'attachment; filename="document.pdf"'
+            response['Content-Type'] = 'application/pdf'
+            response.write(pdf)
+            return response
+    else:
+        form = CustomForm(initial={
+            'current_date': date.today(),
+            'manager_name': request.user.get_full_name() if request.user.is_authenticated else ''
+        })
+    context = {'form': form, 'order': order}
+    return render(request, 'your_template.html', context)

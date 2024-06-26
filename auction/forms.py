@@ -501,3 +501,18 @@ class CityForm(forms.ModelForm):
     class Meta:
         model = City
         fields = ['title']
+
+class CustomForm(forms.Form):
+    brand_model = forms.CharField(label='Марка, Модель', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    engine_volume = forms.CharField(label='Рабочий объем двигателя', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    body_number = forms.CharField(label='Номер кузова', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    manufacture_date = forms.CharField(label='Дата изготовления', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    cost = forms.CharField(label='Стоимость', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    current_date = forms.CharField(label='Текущая дата', max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    manager_name = forms.CharField(label='ФИО оперативного менеджера', max_length=100, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    client_contract_number = forms.CharField(label='№ договора с клиентом', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    client_last_name = forms.CharField(label='Фамилия', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    client_first_name = forms.CharField(label='Имя', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    client_patronymic = forms.CharField(label='Отчество', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    passport_info = forms.CharField(label='Серия, номер, дата выдачи паспорта', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    registration_address = forms.CharField(label='Адрес регистрации', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))

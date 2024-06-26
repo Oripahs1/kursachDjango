@@ -70,6 +70,7 @@ urlpatterns = [
     path('orders/transport/', views.OrderTransportView.as_view(), name='order_transport'),
     path('update_transport_companies/', views.update_transport_companies, name='update_transport_companies'),
     path('add_city/', views.add_city, name='add_city'),
+    path('order/<int:order_id>/', views.your_view, name='your_view'),
 ]
 
 urlpatterns += static('/media/', document_root=os.path.join(settings.BASE_DIR, 'media'))

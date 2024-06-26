@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Пассажирская Таможенная Декларация</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .header, .footer {
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+        }
+        .footer p {
+            font-size: 12px;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .field-label {
+            font-weight: bold;
+        }
+        .field-value {
+            margin-bottom: 10px;
+            display: inline-block;
+            width: 70%;
+        }
+        .signature-section {
+            margin-top: 50px;
+        }
+        .signature {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .signature div {
+            width: 45%;
+        }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ПАССАЖИРСКАЯ ТАМОЖЕННАЯ ДЕКЛАРАЦИЯ</h1>
+            <p>Заполняется физическим лицом, достигшим 16-летнего возраста.
+            В случае утвердительного ответа в соответствующем поле проставляется знак "" или "".
+            Экземпляр оформленной пассажирской таможенной декларации сохраняется на весь период временного
+            пребывания на таможенной территории ЕАЭС (за ее пределами) и предъявляется таможенному органу при
+            выезде (возвращении).
+            </p>
+        </div>
+        <div class="content">
+            <h2>1. Сведения о декларанте:</h2>
+            <div class="field">
+                <span class="field-label">Фамилия: </span>
+                <span class="field-value">{{ last_name }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Имя: </span>
+                <span class="field-value">{{ first_name }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Отчество: </span>
+                <span class="field-value">{{ middle_name }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">(документ, удостоверяющий личность (наименование, страна выдачи, серия, номер, дата выдачи)): </span>
+                <span class="field-value">{{ identity_document }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">(адрес постоянного места жительства (регистрации) (заполняется при ввозе (в том числе временном) транспортного
+средства, ввозе или вывозе наличных денежных средств и (или) денежных инструментов, транзите)</span>
+                <span class="field-value">{{ nationality }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">(адрес временного проживания (пребывания) в государстве – члене ЕАЭС (заполняется иностранным лицом при ввозе (в том числе
+временном) транспортного средства, ввозе или вывозе наличных денежных средств и (или) денежных инструментов, транзите) </span>
+                <span class="field-value">{{ place_of_birth }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">(страна отправления) </span>
+                <span class="field-value">{{ purpose_of_trip }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">(страна отправления) </span>
+                <span class="field-value">{{ vehicle_type }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label"> (страна назначения) </span>
+                <span class="field-value">{{ flight_number }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Со мной следуют лица, не достигшие 16-летнего возраста, в количестве  <span class="field-value">{{ arrival_datetime }}</span>чел.
+Мной, следующими со мной лицами, не достигшими 16-летнего возраста, либо в мой адрес (от меня)
+перемещаются следующие товары и транспортные средства: </span>
+               
+            </div>
+            <div class="field">
+                <span class="field-label">Страна отправления: </span>
+                <span class="field-value">{{ country_of_departure }}</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Страна назначения: </span>
+                <span class="field-value">{{ country_of_destination }}</span>
+            </div>
+            <h2>1. Сведения о декларанте:</h2>
+            <div class="field">
+                <span class="field-label">
+                    2.1. Сопровождаемый багаж, включая ручную кладь <span class="field-value">{{ tru_false }}</span> 
+                    2.2. Несопровождаемый багаж (багаж, следующий отдельно от въезжающего/выезжающего лица) (при въезде лица заполняется для учета норм ввоза товаров без уплаты платежей) <span class="field-value">{{ tru_false }}</span>
+                    2.3. Доставляемые в адрес (пересылаемые) товары без въезда/выезда лица <span class="field-value">{{ tru_false }}</span>
+                </span>
+            </div>
+            <h2>3. Сведения о товарах:</h2>
+            <div class="field">
+                <span class="field-label">
+                    Ввоз (свободное обращение) <span class="field-value">{{ tru_false }}</span> 
+                    Вывоз <span class="field-value">{{ tru_false }}</span>
+                    Временный вывоз <span class="field-value">{{ tru_false }}</span>
+                    Транзит (для товаров, ввозимых со льготой) <span class="field-value">{{ tru_false }}</span>
+                </span>
+                <span class="field-label">
+                    3.1. Наличные денежные средства и (или) дорожные чеки свыше 10 000 $ в эквиваленте (на 1 лицо), векселя, чеки (банковские чеки), ценные бумаги <*> <span class="field-value">{{ tru_false }}</span> 
+                    3.2. Товары, ввозимые с освобождением от уплаты таможенных пошлин, налогов (ввоз со льготой)<span class="field-value">{{ tru_false }}</span>
+                    3.3. Товары, стоимость, вес и (или) количество которых превышают нормы ввоза без уплаты таможенных пошлин, налогов <span class="field-value">{{ tru_false }}</span>
+                    3.4. Культурные ценности <span class="field-value">{{ tru_false }}</span>
+                    3.5. Гражданское и служебное оружие, его основные (составные) части, патроны к нему <span class="field-value">{{ tru_false }}</span>
+                    3.6. Наркотические средства, психотропные вещества, их прекурсоры в виде лекарственных средств <span class="field-value">{{ tru_false }}</span>
+                    3.7. Животные, растения <span class="field-value">{{ tru_false }}</span>
+                    3.8. Коллекционные материалы по минералогии, палеонтологии, кости ископаемых животных <span class="field-value">{{ tru_false }}</span>
+                    3.9. Образцы биологических материалов человека <span class="field-value">{{ tru_false }}</span>
+                    3.10. Другие товары, в отношении которых подлежат соблюдению запреты и ограничения и требуется представление подтверждающих документов и (или) сведений <span class="field-value">{{ tru_false }}</span>
+                </span>
+                <h2>4. Дополнительные сведения о товарах, в том числе указанных в графах 3.2 - 3.10:</h2>
+                <table>
+                    <thead>
+                        <th>N п/п</th>
+                        <th>Наименование товара и его описание (идентификационный номер и другие отличительные признаки), наименования, даты и номера документа, подтверждающего соблюдение условий ввоза с освобождением от уплаты таможенных пошлин, налогов, и (или) документа, подтверждающего соблюдение ограничений, а также наименования органов, выдавших такие документы</th>
+                        <th>Вес (с учетом фактически перемещаемой первичной упаковки)(кг)/количество (л, шт.)</th>
+                        <th>Стоимость (в валюте государства - члена ЕАЭС, евро или долларах США) </th>
+                    </thead>
+                    {% for i in range %}
+                        <td></td>
+                    {% endfor %}
+                </table>
+            </div>
+
+        </div>
+        <div class="signature-section">
+            <div class="signature">
+                <div>
+                    <div class="signature-line"></div>
+                    <div>Дата</div>
+                </div>
+                <div>
+                    <div class="signature-line"></div>
+                    <div>Подпись</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Распечатано с использованием сайта ФТС России</p>
+        </div>
+    </div>
+</body>
+</html>
