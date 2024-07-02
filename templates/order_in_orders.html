@@ -197,7 +197,10 @@
                 </div>
                  <div class="tab-pane fade" id="download" role="tabpanel" aria-labelledby="download-tab">
                     <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
-                        <a href="{% url 'download_all_documents' order.id_order %}" class="btn btn-outline-dark position-relative">Скачать все документы</a>
+                        <a href="{% url 'download_all_documents' order.id_order %}" class="btn btn-outline-dark position-relative">Скачать документы для таможни</a>
+                    </div>
+                    <div class="bd-example bd-example-position-examples d-flex justify-content-around mb-3">
+                        <a href="{% url 'download_all_documents' order.id_order %}" class="btn btn-outline-dark position-relative">Скачать документы в лабораторию</a>
                     </div>
                 </div>
                  <div class="tab-pane fade" id="photo" role="tabpanel" aria-labelledby="photo-tab">
